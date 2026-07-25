@@ -65,18 +65,22 @@ node scripts\image2-live-probe.js --confirm-paid-generation
 ### 4. 查看安全记录与图片
 
 ```powershell
-Get-Content runtime\probe\latest.json
+Get-Content runtime\probe\latest.json       # 最近一次付费探针尝试
+Get-Content runtime\probe\latest-check.json # 最近一次零费用配置检查
 ```
 
 记录包含：
 
+- `latest.json` 保留最近一次付费探针尝试，不会被之后的零费用检查覆盖；
+- `latest-check.json` 保存最近一次零费用配置检查；
+- `history/` 为每次运行保留一份带时间戳的不可变记录；
 - 是否真的发送付费请求；
 - 请求次数和实际耗时；
 - HTTP 类别与安全错误码；
 - 成功图片的绝对路径、字节数、格式、宽高；
 - 使用的固定模型和参考图路径。
 
-生成图片保存在 `runtime/generated/`，探针记录保存在 `runtime/probe/latest.json`；`runtime/` 已被 Git 忽略。
+生成图片保存在 `runtime/generated/`；最近一次付费探针记录保存在 `runtime/probe/latest.json`，零费用检查保存在 `runtime/probe/latest-check.json`，完整历史保存在 `runtime/probe/history/`。`runtime/` 已被 Git 忽略。
 
 ### 现场失败话术
 

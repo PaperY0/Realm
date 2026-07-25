@@ -14,6 +14,8 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const ENV_FILE_PATH = path.join(PROJECT_ROOT, '.env.local');
 const REFERENCE_IMAGE_PATH = path.join(PROJECT_ROOT, 'src', 'assets', 'world-gate-reference.png');
 const REPORT_PATH = path.join(PROJECT_ROOT, 'runtime', 'probe', 'latest.json');
+const CHECK_REPORT_PATH = path.join(PROJECT_ROOT, 'runtime', 'probe', 'latest-check.json');
+const HISTORY_DIRECTORY_PATH = path.join(PROJECT_ROOT, 'runtime', 'probe', 'history');
 const PAID_CONFIRMATION_FLAG = '--confirm-paid-generation';
 const LOCKED_MODEL = 'gpt-image-2';
 const LOCKED_SIZE = '720x1280';
@@ -206,6 +208,42 @@ async function writeReport(reportPath, report) {
   });
 }
 
+async function pathExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function historyFileName(report) {
+  const safeTimestamp = String(report.recordedAt || 'unknown-time')
+    .replace(/[^0-9A-Za-z_-]+/g, '-');
+  return `${safeTimestamp}-${report.mode}-${randomUUID().slice(0, 8)}.json`;
+}
+
+async function writeProbeReports({
+  report,
+  reportPath,
+  checkReportPath,
+  historyDirectoryPath,
+}) {
+  const historyPath = path.join(historyDirectoryPath, historyFileName(report));
+  await writeReport(historyPath, report);
+
+  if (report.mode === 'paid_live_generation') {
+    await writeReport(reportPath, report);
+    return Object.freeze({ primaryPath: reportPath, historyPath });
+  }
+
+  await writeReport(checkReportPath, report);
+  if (!(await pathExists(reportPath))) {
+    await writeReport(reportPath, report);
+  }
+  return Object.freeze({ primaryPath: checkReportPath, historyPath });
+}
+
 function makeBaseReport({ mode, recordedAt, referenceImagePath }) {
   return {
     schemaVersion: '1.0.0',
@@ -242,6 +280,12 @@ async function runProbe(options = {}) {
   const envFilePath = path.resolve(options.envFilePath || ENV_FILE_PATH);
   const referenceImagePath = path.resolve(options.referenceImagePath || REFERENCE_IMAGE_PATH);
   const reportPath = path.resolve(options.reportPath || REPORT_PATH);
+  const checkReportPath = path.resolve(
+    options.checkReportPath || path.join(path.dirname(reportPath), path.basename(CHECK_REPORT_PATH)),
+  );
+  const historyDirectoryPath = path.resolve(
+    options.historyDirectoryPath || path.join(path.dirname(reportPath), path.basename(HISTORY_DIRECTORY_PATH)),
+  );
   const generateImageImpl = options.generateImageImpl || generateImage;
   const loadEnvLocalImpl = options.loadEnvLocalImpl || loadEnvLocal;
   const providerFetchImpl = options.providerFetchImpl || globalThis.fetch;
@@ -320,7 +364,12 @@ async function runProbe(options = {}) {
   }
 
   report.elapsedMs = Math.max(0, Math.round(clock() - startedAt));
-  await writeReport(reportPath, report);
+  await writeProbeReports({
+    report,
+    reportPath,
+    checkReportPath,
+    historyDirectoryPath,
+  });
   return Object.freeze(report);
 }
 
@@ -345,7 +394,8 @@ function renderConsoleSummary(report, reportPath = REPORT_PATH) {
 
 async function main() {
   const report = await runProbe({ argv: process.argv.slice(2) });
-  process.stdout.write(renderConsoleSummary(report) + '\n');
+  const primaryReportPath = report.mode === 'paid_live_generation' ? REPORT_PATH : CHECK_REPORT_PATH;
+  process.stdout.write(renderConsoleSummary(report, primaryReportPath) + '\n');
   if (!report.success) process.exitCode = 1;
 }
 
@@ -357,7 +407,9 @@ if (require.main === module) {
 }
 
 module.exports = {
+  CHECK_REPORT_PATH,
   ENV_FILE_PATH,
+  HISTORY_DIRECTORY_PATH,
   PAID_CONFIRMATION_FLAG,
   PROJECT_ROOT,
   REFERENCE_IMAGE_PATH,

@@ -137,6 +137,34 @@ async function run() {
     assert.equal(failureReport.httpCategory, '4xx');
     assert.equal(failureReport.safeErrorCode, 'IMAGE_PROVIDER_ERROR');
 
+    const storedPaidFailure = fs.readFileSync(reportPath, 'utf8');
+    const checkReportPath = path.join(path.dirname(reportPath), 'latest-check.json');
+    const historyDirectoryPath = path.join(path.dirname(reportPath), 'history');
+    const followUpCheck = await runProbe({
+      argv: [],
+      envFilePath,
+      referenceImagePath,
+      reportPath,
+      projectRoot,
+      clock: makeClock(3_200, 3_205),
+      recordedAt: '2026-07-25T00:02:30.000Z',
+      generateImageImpl: async () => {
+        throw new Error('configuration check must not generate');
+      },
+    });
+    assert.equal(followUpCheck.status, 'configuration_ready_no_request');
+    assert.equal(
+      fs.readFileSync(reportPath, 'utf8'),
+      storedPaidFailure,
+      'zero-cost configuration checks must not overwrite the latest paid probe record',
+    );
+    assert.equal(JSON.parse(fs.readFileSync(checkReportPath, 'utf8')).mode, 'configuration_check');
+    assert.equal(
+      fs.readdirSync(historyDirectoryPath).filter((name) => name.endsWith('.json')).length,
+      4,
+      'every probe run must receive an immutable history record',
+    );
+
     const storedReport = fs.readFileSync(reportPath, 'utf8');
     const consoleSummary = renderConsoleSummary(failureReport, reportPath);
     for (const forbidden of [secretKey, providerSecret, createSafeDemoBrief().coreTension]) {
