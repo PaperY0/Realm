@@ -1,5 +1,11 @@
 'use strict';
 
+const {
+  MIANMIAN_UNFINISHED_NAME_TEMPLATE,
+  shouldUseMianmianFallback,
+  createMianmianFallbackBeats,
+} = require('../features/story/mianmian-fallback');
+
 const FIXED_GATEKEEPER = Object.freeze({
   ipId: 'inner-friction-gatekeeper-v1',
   name: '理线人',
@@ -35,11 +41,16 @@ function assertSafeBrief(brief) {
   if (brief.safetyStatus !== 'story_safe') {
     throw new TypeError('SafeStoryBrief must be story_safe');
   }
-  for (const key of ['briefId', 'coreTension', 'desiredDirection', 'emotionalDirection']) {
+  for (const key of ['briefId', 'coreTension', 'emotionalDirection']) {
     if (typeof brief[key] !== 'string' || !brief[key].trim()) {
       throw new TypeError('SafeStoryBrief.' + key + ' is required');
     }
   }
+  const useMianmianFallback = shouldUseMianmianFallback(brief);
+  if (!useMianmianFallback && (typeof brief.desiredDirection !== 'string' || !brief.desiredDirection.trim())) {
+    throw new TypeError('SafeStoryBrief.desiredDirection is required');
+  }
+  return useMianmianFallback;
 }
 
 function stableId(prefix, briefId) {
@@ -48,11 +59,13 @@ function stableId(prefix, briefId) {
 }
 
 function createStoryPackage(safeStoryBrief, options = {}) {
-  assertSafeBrief(safeStoryBrief);
+  const useMianmianFallback = assertSafeBrief(safeStoryBrief);
   const safeBrief = clone(safeStoryBrief);
   const bookId = stableId('book', safeBrief.briefId);
   const planId = stableId('plan', safeBrief.briefId);
-  const templateVersion = 'echo-controlled-v1';
+  const templateVersion = useMianmianFallback
+    ? MIANMIAN_UNFINISHED_NAME_TEMPLATE.templateId
+    : 'echo-controlled-v1';
   const storyBibleVersion = 'story-bible-v1';
   const styleGuideVersion = 'storybook-style-v1';
 
@@ -108,11 +121,12 @@ function createStoryPackage(safeStoryBrief, options = {}) {
     },
   ];
 
-  const chapterIds = beats.map((_beat, index) => bookId + '-chapter-' + (index + 1));
-  const chapterCards = beats.map((beat, index) => {
+  const selectedBeats = useMianmianFallback ? createMianmianFallbackBeats() : beats;
+  const chapterIds = selectedBeats.map((_beat, index) => bookId + '-chapter-' + (index + 1));
+  const chapterCards = selectedBeats.map((beat, index) => {
     const chapterNumber = index + 1;
     const chapterId = chapterIds[index];
-    const startState = index === 0 ? safeBrief.coreTension : beats[index - 1].end;
+    const startState = index === 0 ? safeBrief.coreTension : selectedBeats[index - 1].end;
     return {
       identity: {
         schemaVersion: 'chapter-card-v1',
@@ -130,11 +144,14 @@ function createStoryPackage(safeStoryBrief, options = {}) {
         optionalCaption: null,
       },
       narrativeContract: {
-        narrativeFunction: ['显影压力', '追踪机制', '看见放大', '尝试留白', '验证放慢', '重新分配', '形成信物'][index],
+        narrativeFunction: beat.narrativeFunction
+          || ['显影压力', '追踪机制', '看见放大', '尝试留白', '验证放慢', '重新分配', '形成信物'][index],
         visibleBeat: beat.text,
         startState,
         endState: beat.end,
         factsThatMustNotChange: clone(safeBrief.factsNotToInvent || []),
+        ...(beat.spreadNumbers ? { templateSpreadNumbers: clone(beat.spreadNumbers) } : {}),
+        ...(beat.templateSpreads ? { templateSpreads: clone(beat.templateSpreads) } : {}),
       },
       illustrationContract: {
         illustrationId: 'I' + chapterNumber,
@@ -143,11 +160,12 @@ function createStoryPackage(safeStoryBrief, options = {}) {
         protagonistAppearance: FIXED_GATEKEEPER.appearance,
         protagonistExpression: beat.expression,
         setting: beat.setting,
-        composition: '竖幅绘本主插画，理线人与旅人共同处于清晰的前中景关系中',
-        requiredProps: ['星纹线轴袋', '银线', chapterNumber >= 5 ? '慢一拍的小钟' : '旅人行囊'],
-        recurringSymbols: ['银线', '星点', '暖灯'],
-        palette: ['苔绿', '月白', '暖金'],
-        lighting: index < 3 ? '冷暖交界的柔光' : '逐章增加的暖光',
+        composition: beat.composition || '竖幅绘本主插画，理线人与旅人共同处于清晰的前中景关系中',
+        ...(beat.templateVisualDirections ? { templateVisualDirections: clone(beat.templateVisualDirections) } : {}),
+        requiredProps: clone(beat.requiredProps || ['星纹线轴袋', '银线', chapterNumber >= 5 ? '慢一拍的小钟' : '旅人行囊']),
+        recurringSymbols: clone(beat.recurringSymbols || ['银线', '星点', '暖灯']),
+        palette: clone(beat.palette || ['苔绿', '月白', '暖金']),
+        lighting: beat.lighting || (index < 3 ? '冷暖交界的柔光' : '逐章增加的暖光'),
         continuityFromPrevious: index === 0 ? null : chapterIds[index - 1] + ': 延续上一章结束状态与道具位置',
         continuityToNext: index === 6 ? null : chapterIds[index + 1] + ': 保留本章新增的状态变化与信物',
         requiresHumanApproval: true,
@@ -158,13 +176,24 @@ function createStoryPackage(safeStoryBrief, options = {}) {
   const storyPackage = {
     schemaVersion: 'story-package-v1',
     bookId,
+    bookTitle: useMianmianFallback
+      ? MIANMIAN_UNFINISHED_NAME_TEMPLATE.title
+      : '理线人与旅人的七章童话',
     frozen: true,
     safeStoryBrief: safeBrief,
     storyTemplateMatch: {
       schemaVersion: 'story-template-match-v1',
-      route: 'echo',
+      route: useMianmianFallback ? 'mianmian-labels-fallback' : 'echo',
       templateVersion,
-      reason: '以反复催促的回声机制转译持续自我要求与难以停下的拉扯',
+      reason: useMianmianFallback
+        ? 'SafeStoryBrief 的可用事实或关键缺口不足，采用完整标签卷模板，避免擅自补写现实人物、原因与结局。'
+        : '以反复催促的回声机制转译持续自我要求与难以停下的拉扯',
+      ...(useMianmianFallback ? {
+        templateTitle: MIANMIAN_UNFINISHED_NAME_TEMPLATE.title,
+        mappedSpreadNumbers: MIANMIAN_UNFINISHED_NAME_TEMPLATE.sevenChapterMapping
+          .map((mapping) => clone(mapping.spreadNumbers)),
+        templateContent: clone(MIANMIAN_UNFINISHED_NAME_TEMPLATE),
+      } : {}),
     },
     storyBible: {
       schemaVersion: storyBibleVersion,
@@ -173,10 +202,12 @@ function createStoryPackage(safeStoryBrief, options = {}) {
       protagonist: clone(FIXED_GATEKEEPER),
       storyTruth: {
         openingState: safeBrief.coreTension,
-        desiredDirection: safeBrief.desiredDirection,
+        desiredDirection: safeBrief.desiredDirection || '重新拿回观看自己的权利，并保留尚未被定义的部分',
         finalEmotionalDirection: safeBrief.emotionalDirection,
       },
-      recurringSymbols: ['银线', '星点', '暖灯', '慢一拍的小钟'],
+      recurringSymbols: useMianmianFallback
+        ? ['名字抽屉', '纸签', '月亮饰物', '黑纸签风筝', '风向桥']
+        : ['银线', '星点', '暖灯', '慢一拍的小钟'],
     },
     storybookStyleGuide: {
       schemaVersion: styleGuideVersion,
