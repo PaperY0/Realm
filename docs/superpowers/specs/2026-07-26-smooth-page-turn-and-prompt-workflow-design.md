@@ -54,7 +54,7 @@
 - `src/app.js`：生成阶段状态、阶段提示、阅读器翻页触发和临时纸片管理。
 - `src/styles.css`：正面/背面纸片、书脊透视、阴影和分段缓动。
 - `src/domain/story-package.js`：故事 Prompt、短剧本和章节 Image Prompt 的结构化合同。
-- `src/services/chapter-image-generation.js`：读取每章 Image Prompt 并生成对应图片。
+- `src/services/chapter-image-generation.js`：沿用现有七章并行图片生成器，保留并发上限、逐章状态和结果汇总；只让它读取前置阶段已经确定的每章 Image Prompt，不改成串行生成。
 - `server.js`：保持安全校验，提供故事包和七章插画阶段接口。
 - `src/index.html`：生成状态面板和章节 Prompt 的折叠展示结构。
 
@@ -72,7 +72,7 @@
 
 - 页面能依次显示总 AI Prompt、七章短剧本、七章 Image Prompt 和插画生成状态。
 - 每章右页文字短小，图片和章节对应。
-- 七章图片未全部成功时不能进入阅读器。
+- 七章图片未全部成功时不能进入阅读器；现有 `chapter-image-generation.js` 的并行任务和逐章失败状态继续作为唯一图片生成入口。
 - 生成失败可重试，且不会泄露原始表达或模型密钥。
 
 ### 验证
