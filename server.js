@@ -12,6 +12,7 @@ const SRC_DIR = path.join(ROOT_DIR, 'src');
 const ASSETS = new Map([
   ['/', { file: 'index.html', contentType: 'text/html; charset=utf-8' }],
   ['/styles.css', { file: 'styles.css', contentType: 'text/css; charset=utf-8' }],
+  ['/app.js', { file: 'app.js', contentType: 'text/javascript; charset=utf-8' }],
 ]);
 
 function getPort(value) {
@@ -91,7 +92,7 @@ const server = http.createServer((request, response) => {
     sendJson(response, 200, {
       ok: true,
       service: 'dream-book-world',
-      stage: 'skeleton',
+      stage: 'world-entry',
     });
     return;
   }
@@ -132,5 +133,5 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 server.listen({ host: HOST, port }, () => {
-  console.log('藏梦书境 skeleton listening at http://' + HOST + ':' + port);
+  console.log('藏梦书境 world entry listening at http://' + HOST + ':' + port);
 });

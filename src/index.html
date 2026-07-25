@@ -3,21 +3,190 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>藏梦书境</title>
+    <meta name="theme-color" content="#ebe1d2" />
+    <title>藏梦书境 · 世界入口</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
   </head>
-  <body>
-    <main class="shell">
-      <p class="eyebrow">DREAM BOOK WORLD · V0</p>
-      <h1>藏梦书境</h1>
-      <p class="status">工程骨架已启动</p>
-      <p class="description">
-        这是本机单实例 Demo 的最小运行入口。故事生成、插画审核和互动阅读功能将在后续步骤逐步实现。
-      </p>
-      <section class="placeholder" aria-label="后续功能占位">
-        <span>当前阶段</span>
-        <strong>工程骨架（Skeleton）</strong>
-      </section>
-    </main>
+  <body data-stage="door">
+    <div class="world-shell">
+      <header class="world-header">
+        <a class="brand" id="brand-home" href="#door-title" aria-label="返回藏梦书境入口">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>
+            <strong>藏梦书境</strong>
+            <small>一个把心事写成童话的世界</small>
+          </span>
+        </a>
+        <label class="motion-toggle">
+          <input id="reduce-motion" type="checkbox" />
+          <span class="toggle-track" aria-hidden="true"><span></span></span>
+          <span>减少动态</span>
+        </label>
+      </header>
+
+      <main class="scene-deck" id="scene-deck">
+        <section class="scene scene--door is-active" data-scene="door" aria-labelledby="door-title">
+          <div class="wash wash--violet" aria-hidden="true"></div>
+          <div class="mist mist--one" aria-hidden="true"></div>
+          <div class="mist mist--two" aria-hidden="true"></div>
+          <div class="paper-hills" aria-hidden="true">
+            <span class="hill hill--far"></span>
+            <span class="hill hill--near"></span>
+          </div>
+
+          <div class="door-copy scene-copy">
+            <p class="eyebrow">DREAM BOOK WORLD · V0</p>
+            <h1 id="door-title">推开门，<br />让心事成为童话。</h1>
+            <p>门后的路只通向一个地方。把门把向右拉开，拾页会在那边等你。</p>
+          </div>
+
+          <div class="door-stage" aria-label="童话世界大门">
+            <div class="door-frame" id="door-frame">
+              <div class="door-glow" aria-hidden="true"></div>
+              <div class="door-panel door-panel--left" aria-hidden="true">
+                <span class="door-paper-line line-one"></span>
+                <span class="door-paper-line line-two"></span>
+              </div>
+              <div class="door-panel door-panel--right" aria-hidden="true">
+                <span class="door-paper-line line-three"></span>
+                <span class="door-paper-line line-four"></span>
+              </div>
+              <div class="door-world" aria-hidden="true">
+                <span class="world-sun"></span>
+                <span class="world-tree tree-one"></span>
+                <span class="world-tree tree-two"></span>
+                <span class="world-path"></span>
+              </div>
+              <button
+                class="door-handle"
+                id="door-handle"
+                type="button"
+                role="slider"
+                aria-label="拖动门把打开童话世界大门"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                aria-describedby="door-hint"
+              >
+                <span class="handle-grip" aria-hidden="true"></span>
+                <span class="handle-pull" aria-hidden="true">→</span>
+              </button>
+            </div>
+            <p class="door-hint" id="door-hint">
+              <span aria-hidden="true">↔</span>
+              拖住门把向右拉 · 键盘可用方向键或 Enter
+            </p>
+          </div>
+
+          <div class="guide-card guide-card--shiye" aria-label="世界引路人拾页">
+            <div class="character character--shiye" aria-hidden="true">
+              <span class="character-ear ear-left"></span>
+              <span class="character-ear ear-right"></span>
+              <span class="character-face"><i></i><i></i></span>
+              <span class="character-body"></span>
+              <span class="character-bag">页</span>
+            </div>
+            <p><strong>拾页</strong><span>“慢一点也没关系，门会跟着你的手醒来。”</span></p>
+          </div>
+        </section>
+
+        <section class="scene scene--traveler" data-scene="traveler" aria-labelledby="traveler-title" aria-hidden="true">
+          <div class="paper-sky" aria-hidden="true"></div>
+          <div class="traveler-landscape" aria-hidden="true">
+            <div class="name-tree"><span></span><span></span><span></span></div>
+            <div class="stone-shore"></div>
+          </div>
+
+          <div class="traveler-copy scene-copy">
+            <p class="eyebrow">旅人初页</p>
+            <h2 id="traveler-title">在路开始记住你之前，<br />要留下一个小小的称呼吗？</h2>
+            <p>称呼和口袋印记都可以跳过。若填写，只保存在本机浏览器中，用于界面与收藏反馈，不会决定你的故事。</p>
+          </div>
+
+          <form class="traveler-card" id="traveler-form">
+            <label class="field-label" for="traveler-name">旅人称呼 <span>可选</span></label>
+            <div class="name-field">
+              <input id="traveler-name" name="travelerName" type="text" maxlength="16" autocomplete="nickname" placeholder="留空时称为“旅人”" />
+              <span class="name-leaf" aria-hidden="true">❧</span>
+            </div>
+
+            <fieldset class="mark-fieldset">
+              <legend>挑一枚口袋印记 <span>可选</span></legend>
+              <div class="mark-grid" id="mark-grid">
+                <button type="button" class="mark-option" data-mark="star" aria-pressed="false"><b aria-hidden="true">✦</b><span>星星</span></button>
+                <button type="button" class="mark-option" data-mark="drop" aria-pressed="false"><b aria-hidden="true">●</b><span>雨滴</span></button>
+                <button type="button" class="mark-option" data-mark="line" aria-pressed="false"><b aria-hidden="true">〰</b><span>蓝线</span></button>
+                <button type="button" class="mark-option" data-mark="boat" aria-pressed="false"><b aria-hidden="true">△</b><span>纸船</span></button>
+                <button type="button" class="mark-option" data-mark="leaf" aria-pressed="false"><b aria-hidden="true">❧</b><span>叶子</span></button>
+              </div>
+            </fieldset>
+
+            <div class="traveler-actions">
+              <button class="primary-button" type="submit">沿着脚步继续</button>
+              <button class="text-button" id="skip-profile" type="button">先不留下</button>
+            </div>
+            <p class="memory-line">“名字可以晚一点再想。路会先记得你的脚步。”</p>
+          </form>
+        </section>
+
+        <section class="scene scene--foyer" data-scene="foyer" aria-labelledby="foyer-title" aria-hidden="true">
+          <div class="foyer-wash" aria-hidden="true"></div>
+          <div class="foyer-copy scene-copy">
+            <p class="eyebrow">藏梦书境 · 门厅</p>
+            <h2 id="foyer-title"><span id="traveler-greeting">旅人</span>，这里现在只亮着一扇门。</h2>
+            <p>没有选卷，也没有岔路。拾页会留在门厅，理线正在门的另一侧收好线头。</p>
+          </div>
+
+          <div class="foyer-door-wrap">
+            <div class="closed-spines" aria-hidden="true">
+              <span>未完成的书脊</span><i></i><i></i><i></i><i></i>
+            </div>
+            <button class="world-door" id="inner-door" type="button" data-world-door="overthinking" aria-describedby="world-door-note">
+              <span class="world-door-stars" aria-hidden="true">· ✦ ·</span>
+              <strong>内耗之门</strong>
+              <small>唯一开放</small>
+              <span class="world-door-handle" aria-hidden="true"></span>
+            </button>
+            <p id="world-door-note">点击后会直接抵达风铃，不再二次确认。</p>
+          </div>
+
+          <div class="handoff" aria-label="拾页与理线的交接">
+            <div class="handoff-character handoff-shiye" aria-hidden="true">拾页</div>
+            <span class="thread-line" aria-hidden="true"></span>
+            <div class="handoff-character handoff-lixian" aria-hidden="true">理线</div>
+          </div>
+        </section>
+
+        <section class="scene scene--expression" data-scene="expression" aria-labelledby="expression-title" aria-hidden="true">
+          <div class="expression-sky" aria-hidden="true"></div>
+          <div class="wind-chimes" aria-hidden="true">
+            <span class="chime chime-one"></span>
+            <span class="chime chime-two"></span>
+            <span class="chime chime-three"></span>
+            <span class="chime chime-four"></span>
+            <span class="chime chime-five"></span>
+          </div>
+          <div class="lixian-character" aria-hidden="true">
+            <span class="lixian-head"></span><span class="lixian-body"></span><span class="lixian-thread"></span>
+          </div>
+
+          <div class="expression-card">
+            <p class="eyebrow">风铃入口</p>
+            <h2 id="expression-title">你已经抵达可以慢慢开口的地方。</h2>
+            <blockquote>“这里的风铃只替人保管说不出口的事。今天，有哪一句话还挂在你身上？”</blockquote>
+            <p class="expression-boundary">自然表达、可跳过追问与安全分流将在第 5 步接入。本步骤只验收到达表达入口的完整路径。</p>
+            <div class="arrival-badge" id="arrival-badge"><span aria-hidden="true">❧</span><strong>旅人</strong> 已抵达</div>
+            <button class="secondary-button" id="restart-demo" type="button">重新体验入口</button>
+          </div>
+        </section>
+      </main>
+
+      <footer class="world-footer">
+        <span id="journey-progress">1 / 4 · 世界大门</span>
+        <span class="privacy-note">本步骤不收集或保存任何心事内容</span>
+      </footer>
+      <div class="sr-only" id="live-status" aria-live="polite"></div>
+    </div>
   </body>
 </html>
