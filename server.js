@@ -4,11 +4,28 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const { URL } = require('node:url');
+const {
+  generateImage: defaultGenerateImage,
+  validateSafeStoryBrief,
+  ImageGenerationError,
+  DEFAULT_MODEL,
+} = require('./src/services/image-generation');
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3000;
+const MAX_JSON_BODY_BYTES = 64 * 1024;
 const ROOT_DIR = __dirname;
 const SRC_DIR = path.join(ROOT_DIR, 'src');
+const DEFAULT_GENERATED_DIR = path.join(ROOT_DIR, 'runtime', 'generated');
+const REFERENCE_ASSET = 'src/assets/world-gate-reference.png';
+const REFERENCE_FILE_NAME = 'world-gate-reference.png';
+const REFERENCE_ALIASES = new Set([
+  REFERENCE_FILE_NAME,
+  '/assets/' + REFERENCE_FILE_NAME,
+  REFERENCE_ASSET,
+]);
+const REFERENCE_FIELDS = new Set(['guardianIp', 'style']);
+const GENERATED_FILE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,119}\.png$/;
 const ASSETS = new Map([
   ['/', { file: 'index.html', contentType: 'text/html; charset=utf-8' }],
   ['/styles.css', { file: 'styles.css', contentType: 'text/css; charset=utf-8' }],
@@ -25,14 +42,27 @@ function getPort(value) {
   return port;
 }
 
-function sendJson(response, statusCode, payload) {
+function sendJson(request, response, statusCode, payload, extraHeaders = {}) {
+  if (response.writableEnded || response.destroyed) return;
   const body = JSON.stringify(payload);
   response.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body),
     'Cache-Control': 'no-store',
+    ...extraHeaders,
   });
-  response.end(body);
+  if (request.method === 'HEAD') response.end();
+  else response.end(body);
+}
+
+function imageGatewayConfigured(env) {
+  return Boolean(
+    env
+    && typeof env.AI_GATEWAY_API_KEY === 'string'
+    && env.AI_GATEWAY_API_KEY.trim()
+    && typeof env.MEDIA_BASE_URL === 'string'
+    && env.MEDIA_BASE_URL.trim(),
+  );
 }
 
 function resolveAsset(requestPath) {
@@ -43,8 +73,7 @@ function resolveAsset(requestPath) {
     return null;
   }
 
-  // Reject encoded or platform-specific traversal before resolving a file.
-  if (decodedPath.includes(String.fromCharCode(0)) || decodedPath.includes(String.fromCharCode(92))) return null;
+  if (decodedPath.includes('\0') || decodedPath.includes('\\')) return null;
   const segments = decodedPath.split('/');
   if (segments.some((segment) => segment === '..' || segment === '.')) return null;
 
@@ -54,85 +83,381 @@ function resolveAsset(requestPath) {
   const candidate = path.resolve(SRC_DIR, asset.file);
   const sourceRoot = path.resolve(SRC_DIR) + path.sep;
   if (!candidate.startsWith(sourceRoot)) return null;
-  return { ...asset, filePath: candidate };
+  return { ...asset, filePath: candidate, generated: false };
 }
 
-function serveAsset(response, asset) {
+function resolveGeneratedAsset(requestPath, generatedDir) {
+  const prefix = '/runtime/generated/';
+  if (!requestPath.startsWith(prefix)) return null;
+
+  let fileName;
+  try {
+    fileName = decodeURIComponent(requestPath.slice(prefix.length));
+  } catch {
+    return null;
+  }
+
+  if (!GENERATED_FILE_PATTERN.test(fileName) || fileName.includes('..')) return null;
+  const root = path.resolve(generatedDir);
+  const candidate = path.resolve(root, fileName);
+  if (!candidate.startsWith(root + path.sep)) return null;
+  return { filePath: candidate, contentType: 'image/png', generated: true };
+}
+
+function serveFile(request, response, asset) {
   fs.readFile(asset.filePath, (error, data) => {
     if (error) {
-      console.error(error);
-      sendJson(response, 500, { ok: false, error: 'internal_server_error' });
+      if (error.code === 'ENOENT') {
+        sendJson(request, response, 404, { ok: false, error: 'not_found' });
+      } else {
+        console.error('Static file read failed:', error.code || 'unknown');
+        sendJson(request, response, 500, { ok: false, error: 'internal_server_error' });
+      }
       return;
     }
+
     response.writeHead(200, {
       'Content-Type': asset.contentType,
       'Content-Length': data.length,
-      'Cache-Control': 'no-store',
+      'Cache-Control': asset.generated ? 'private, no-store' : 'no-store',
+      'X-Content-Type-Options': 'nosniff',
     });
-    response.end(data);
+    if (request.method === 'HEAD') response.end();
+    else response.end(data);
   });
 }
 
-const port = getPort(process.env.PORT);
-const server = http.createServer((request, response) => {
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    response.setHeader('Allow', 'GET, HEAD');
-    sendJson(response, 405, { ok: false, error: 'method_not_allowed' });
-    return;
-  }
+function requestBodyError(code) {
+  return Object.assign(new Error(code.toLowerCase()), { code });
+}
 
-  let requestUrl;
-  try {
-    requestUrl = new URL(request.url, 'http://127.0.0.1');
-  } catch {
-    sendJson(response, 400, { ok: false, error: 'bad_request' });
-    return;
-  }
-
-  if (requestUrl.pathname === '/health') {
-    sendJson(response, 200, {
-      ok: true,
-      service: 'dream-book-world',
-      stage: 'world-entry',
-    });
-    return;
-  }
-
-  const asset = resolveAsset(requestUrl.pathname);
-  if (asset) {
-    if (request.method === 'HEAD') {
-      response.writeHead(200, { 'Content-Type': asset.contentType });
-      response.end();
+function readJsonBody(request) {
+  return new Promise((resolve, reject) => {
+    const declaredLength = Number(request.headers['content-length']);
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_JSON_BODY_BYTES) {
+      request.resume();
+      reject(requestBodyError('REQUEST_TOO_LARGE'));
       return;
     }
-    serveAsset(response, asset);
-    return;
-  }
 
-  sendJson(response, 404, { ok: false, error: 'not_found' });
-});
+    let settled = false;
+    let total = 0;
+    const chunks = [];
 
-let isShuttingDown = false;
-function shutdown(signal) {
-  if (isShuttingDown) return;
-  isShuttingDown = true;
-  console.log('Received ' + signal + '; shutting down.');
-  server.close((error) => {
-    if (error) {
-      console.error(error);
-      process.exitCode = 1;
-    }
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+
+    request.on('data', (chunk) => {
+      if (settled) return;
+      total += chunk.length;
+      if (total > MAX_JSON_BODY_BYTES) {
+        fail(requestBodyError('REQUEST_TOO_LARGE'));
+        request.resume();
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    request.on('end', () => {
+      if (settled) return;
+      settled = true;
+      if (chunks.length === 0) {
+        reject(requestBodyError('INVALID_JSON'));
+        return;
+      }
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      } catch {
+        reject(requestBodyError('INVALID_JSON'));
+      }
+    });
+
+    request.on('aborted', () => fail(requestBodyError('REQUEST_ERROR')));
+    request.on('error', () => fail(requestBodyError('REQUEST_ERROR')));
   });
 }
 
-server.on('error', (error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+function assertPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('value must be a plain object');
+  }
+  return value;
+}
 
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+function normalizeReferenceImages(value) {
+  if (value === undefined) {
+    return Object.freeze({
+      guardianIp: REFERENCE_ASSET,
+      style: REFERENCE_ASSET,
+    });
+  }
 
-server.listen({ host: HOST, port }, () => {
-  console.log('藏梦书境 world entry listening at http://' + HOST + ':' + port);
-});
+  assertPlainObject(value);
+  const keys = Object.keys(value);
+  if (keys.length === 0 || keys.some((key) => !REFERENCE_FIELDS.has(key))) {
+    throw new Error('referenceImages contains unsupported fields');
+  }
+
+  const normalized = {};
+  for (const key of keys) {
+    if (typeof value[key] !== 'string' || !REFERENCE_ALIASES.has(value[key])) {
+      throw new Error('referenceImages must use an approved project asset alias');
+    }
+    normalized[key] = REFERENCE_ASSET;
+  }
+  return Object.freeze(normalized);
+}
+
+function validateApiBody(value) {
+  assertPlainObject(value);
+  const fields = Object.keys(value);
+  if (!Object.prototype.hasOwnProperty.call(value, 'safeStoryBrief')) {
+    throw new Error('safeStoryBrief is required');
+  }
+  if (fields.some((field) => field !== 'safeStoryBrief' && field !== 'referenceImages')) {
+    throw new Error('request contains unsupported fields');
+  }
+
+  return Object.freeze({
+    safeStoryBrief: validateSafeStoryBrief(value.safeStoryBrief),
+    referenceImages: normalizeReferenceImages(value.referenceImages),
+  });
+}
+
+function publicImageError(error) {
+  if (!(error instanceof ImageGenerationError)) {
+    return { status: 500, error: 'image_internal_error', message: '真实生成未完成，请稍后再试。' };
+  }
+
+  const mapping = {
+    IMAGE_INPUT_ERROR: { status: 400, error: 'invalid_story_brief', message: '故事摘要未通过安全校验。' },
+    IMAGE_CONFIG_ERROR: { status: 503, error: 'image2_not_configured', message: 'Image 2 服务尚未配置。' },
+    IMAGE_REFERENCE_ERROR: { status: 500, error: 'reference_asset_unavailable', message: '绘本参考图暂时不可用。' },
+    IMAGE_TIMEOUT: { status: 504, error: 'image_generation_timeout', message: 'Image 2 绘制超时，本次没有生成结果。' },
+    IMAGE_PROVIDER_ERROR: { status: 502, error: 'image_provider_error', message: 'Image 2 暂时没有完成这幅画。' },
+    IMAGE_RESPONSE_ERROR: { status: 502, error: 'invalid_image_response', message: 'Image 2 返回的图片未通过校验。' },
+    IMAGE_TOO_LARGE: { status: 502, error: 'image_too_large', message: 'Image 2 返回的图片超过大小限制。' },
+    IMAGE_FILE_EXISTS: { status: 409, error: 'image_file_conflict', message: '生成文件发生冲突，请重新发起。' },
+    IMAGE_WRITE_ERROR: { status: 500, error: 'image_write_error', message: '图片生成成功，但未能安全保存。' },
+  };
+  return mapping[error.code]
+    || { status: 500, error: 'image_internal_error', message: '真实生成未完成，请稍后再试。' };
+}
+
+function sanitizeGeneratedImage(value) {
+  assertPlainObject(value);
+  if (
+    typeof value.fileName !== 'string'
+    || !GENERATED_FILE_PATTERN.test(value.fileName)
+    || value.fileName.includes('..')
+    || value.url !== '/runtime/generated/' + value.fileName
+    || value.relativePath !== 'runtime/generated/' + value.fileName
+    || value.mediaType !== 'image/png'
+  ) {
+    throw new Error('image service returned an unsafe result');
+  }
+
+  const numberFields = ['bytes', 'referenceCount', 'width', 'height'];
+  for (const field of numberFields) {
+    if (!Number.isInteger(value[field]) || value[field] < 0) {
+      throw new Error('image service returned invalid metadata');
+    }
+  }
+
+  return Object.freeze({
+    url: value.url,
+    relativePath: value.relativePath,
+    fileName: value.fileName,
+    mediaType: value.mediaType,
+    bytes: value.bytes,
+    model: String(value.model || DEFAULT_MODEL),
+    size: String(value.size || ''),
+    quality: String(value.quality || ''),
+    outputFormat: String(value.outputFormat || 'png'),
+    requestMode: String(value.requestMode || ''),
+    referenceCount: value.referenceCount,
+    width: value.width,
+    height: value.height,
+  });
+}
+
+function createRequestHandler(options = {}) {
+  const generateImageImpl = options.generateImageImpl || defaultGenerateImage;
+  const env = options.env || process.env;
+  const generatedDir = path.resolve(options.generatedDir || DEFAULT_GENERATED_DIR);
+  if (typeof generateImageImpl !== 'function') throw new TypeError('generateImageImpl must be a function');
+
+  let generationInFlight = false;
+
+  return async function handleRequest(request, response) {
+    let requestUrl;
+    try {
+      requestUrl = new URL(request.url, 'http://127.0.0.1');
+    } catch {
+      sendJson(request, response, 400, { ok: false, error: 'bad_request' });
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/images/generate') {
+      if (request.method !== 'POST') {
+        sendJson(request, response, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'POST' });
+        return;
+      }
+
+      if (generationInFlight) {
+        sendJson(request, response, 409, {
+          ok: false,
+          error: 'image_generation_busy',
+          message: '上一幅童话插画仍在绘制，请等待它完成。',
+        });
+        return;
+      }
+
+      const contentType = String(request.headers['content-type'] || '').split(';', 1)[0].trim().toLowerCase();
+      if (contentType !== 'application/json') {
+        sendJson(request, response, 415, {
+          ok: false,
+          error: 'unsupported_media_type',
+          message: '请求必须使用 JSON。',
+        });
+        return;
+      }
+
+      let body;
+      try {
+        body = await readJsonBody(request);
+      } catch (error) {
+        if (error.code === 'REQUEST_TOO_LARGE') {
+          sendJson(request, response, 413, {
+            ok: false,
+            error: 'request_too_large',
+            message: '故事摘要超过 64KB 限制。',
+          });
+        } else {
+          sendJson(request, response, 400, {
+            ok: false,
+            error: 'invalid_json',
+            message: '请求内容不是有效 JSON。',
+          });
+        }
+        return;
+      }
+
+      let input;
+      try {
+        input = validateApiBody(body);
+      } catch {
+        sendJson(request, response, 400, {
+          ok: false,
+          error: 'invalid_request',
+          message: '请求只允许包含权威安全故事摘要和受限参考图。',
+        });
+        return;
+      }
+
+      generationInFlight = true;
+      try {
+        const result = await generateImageImpl({
+          safeStoryBrief: input.safeStoryBrief,
+          referenceImages: input.referenceImages,
+          generatedDir,
+        });
+        const image = sanitizeGeneratedImage(result);
+        sendJson(request, response, 201, { ok: true, image });
+      } catch (error) {
+        const publicError = publicImageError(error);
+        sendJson(request, response, publicError.status, {
+          ok: false,
+          error: publicError.error,
+          message: publicError.message,
+        });
+      } finally {
+        generationInFlight = false;
+      }
+      return;
+    }
+
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      sendJson(request, response, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'GET, HEAD' });
+      return;
+    }
+
+    if (requestUrl.pathname === '/health') {
+      const configured = imageGatewayConfigured(env);
+      sendJson(request, response, 200, {
+        ok: true,
+        service: 'dream-book-world',
+        stage: 'image2-gateway',
+        imageConfigured: configured,
+        imageModel: DEFAULT_MODEL,
+        image2: {
+          configured,
+          model: DEFAULT_MODEL,
+          referenceAsset: REFERENCE_FILE_NAME,
+        },
+      });
+      return;
+    }
+
+    const asset = resolveAsset(requestUrl.pathname)
+      || resolveGeneratedAsset(requestUrl.pathname, generatedDir);
+    if (asset) {
+      serveFile(request, response, asset);
+      return;
+    }
+
+    sendJson(request, response, 404, { ok: false, error: 'not_found' });
+  };
+}
+
+function createAppServer(options = {}) {
+  const handleRequest = createRequestHandler(options);
+  return http.createServer((request, response) => {
+    handleRequest(request, response).catch(() => {
+      sendJson(request, response, 500, { ok: false, error: 'internal_server_error' });
+    });
+  });
+}
+
+function startFromCommandLine() {
+  const port = getPort(process.env.PORT);
+  const server = createAppServer();
+  let isShuttingDown = false;
+
+  function shutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log('Received ' + signal + '; shutting down.');
+    server.close((error) => {
+      if (error) {
+        console.error(error);
+        process.exitCode = 1;
+      }
+    });
+  }
+
+  server.on('error', (error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  server.listen({ host: HOST, port }, () => {
+    console.log('藏梦书境 web demo listening at http://' + HOST + ':' + port);
+  });
+  return server;
+}
+
+if (require.main === module) startFromCommandLine();
+
+module.exports = {
+  HOST,
+  DEFAULT_PORT,
+  MAX_JSON_BODY_BYTES,
+  REFERENCE_ASSET,
+  createAppServer,
+  createRequestHandler,
+};
