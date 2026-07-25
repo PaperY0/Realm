@@ -766,12 +766,10 @@ function clearTurnSheets() {
   storybookBook.querySelectorAll('.storybook-turn-sheet').forEach((sheet) => sheet.remove());
 }
 
-function animatePageTurn(direction, oldPage, currentPageOverride = null) {
-  if (!storybookBook || !oldPage) return;
+function animatePageTurn(direction, frontPage, backPage) {
+  if (!storybookBook || !frontPage || !backPage) return;
   clearTurnSheets();
 
-  const pageClass = direction === 'previous' ? 'storybook-page--illustration' : 'storybook-page--copy';
-  const currentPage = currentPageOverride || storybookBook.querySelector('.' + pageClass);
   const makeFace = (page, faceClass) => {
     const face = page.cloneNode(true);
     const isIllustration = page.classList.contains('storybook-page--illustration');
@@ -788,8 +786,8 @@ function animatePageTurn(direction, oldPage, currentPageOverride = null) {
     : 'storybook-turn-sheet--next');
   sheet.setAttribute('aria-hidden', 'true');
   sheet.append(
-    makeFace(oldPage, 'storybook-turn-sheet__front'),
-    makeFace(currentPage || oldPage, 'storybook-turn-sheet__back'),
+    makeFace(frontPage, 'storybook-turn-sheet__front'),
+    makeFace(backPage, 'storybook-turn-sheet__back'),
   );
   const shadow = document.createElement('span');
   shadow.className = 'storybook-turn-shadow';
@@ -853,17 +851,16 @@ function renderStoryChapter({ animate = false } = {}) {
   const reader = state.storybook.reader;
   if (!storyPackage || !reader) return;
 
-  const oldPage = animate === 'previous'
-    ? storybookBook.querySelector('.storybook-page--illustration')
-    : storybookBook.querySelector('.storybook-page--copy');
-  const oldPageSnapshot = oldPage?.cloneNode(true);
   const snapshot = reader.snapshot();
   const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
   const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
-  let turnPageOverride = null;
+  let turnFrontPage = null;
+  let turnBackPage = null;
   if (animate) {
-    turnPageOverride = storybookBook.querySelector('.storybook-page--illustration')?.cloneNode(true);
-    const turnIllustrationState = turnPageOverride?.querySelector('.storybook-illustration-state');
+    const illustrationPage = storybookBook.querySelector('.storybook-page--illustration');
+    turnFrontPage = illustrationPage?.cloneNode(true);
+    turnBackPage = illustrationPage?.cloneNode(true);
+    const turnIllustrationState = turnBackPage?.querySelector('.storybook-illustration-state');
     if (turnIllustrationState) renderStoryIllustration(storyPackage, snapshot, card, turnIllustrationState);
   }
   storybookBook.classList.toggle('is-closed', closed);
@@ -883,7 +880,7 @@ function renderStoryChapter({ animate = false } = {}) {
   storybookStatus.textContent = closed ? '书已合上，故事停在第七章' : '请由你亲手翻动每一章';
   syncStorybookControls(snapshot);
   if (animate) {
-    animatePageTurn(animate, oldPageSnapshot, turnPageOverride);
+    animatePageTurn(animate, turnFrontPage, turnBackPage);
     state.storybook.illustrationTimer = window.setTimeout(() => {
       state.storybook.illustrationTimer = null;
       const latestSnapshot = state.storybook.reader?.snapshot();
