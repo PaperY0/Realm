@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/story-bible.schema.json",
+  "title": "StoryBible",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "bookId",
+    "internalRoute",
+    "literaryTitle",
+    "epigraph",
+    "protagonist",
+    "storyCore",
+    "world",
+    "continuityRules",
+    "languageRules",
+    "safetyBoundaries",
+    "endingPromise",
+    "chapterFunctions"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "internalRoute": { "type": "string", "enum": ["label", "echo"] },
+    "literaryTitle": { "type": "string", "minLength": 1 },
+    "epigraph": { "type": "string" },
+    "protagonist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipId", "narrativeRole", "invariantTraits", "visualReferenceSetId"],
+      "properties": {
+        "ipId": { "type": "string", "minLength": 1 },
+        "narrativeRole": { "type": "string", "minLength": 1 },
+        "invariantTraits": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "visualReferenceSetId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "storyCore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["centralTension", "fairyTaleMetaphor", "protagonistDesire", "recurringObstacle", "finalTransformation"],
+      "properties": {
+        "centralTension": { "type": "string", "minLength": 1 },
+        "fairyTaleMetaphor": { "type": "string", "minLength": 1 },
+        "protagonistDesire": { "type": "string", "minLength": 1 },
+        "recurringObstacle": { "type": "string", "minLength": 1 },
+        "finalTransformation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primarySetting", "timeAndWeather", "colorPalette", "atmosphere", "recurringSymbols"],
+      "properties": {
+        "primarySetting": { "type": "string", "minLength": 1 },
+        "timeAndWeather": { "type": "string", "minLength": 1 },
+        "colorPalette": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "atmosphere": { "type": "string", "minLength": 1 },
+        "recurringSymbols": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "continuityRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixedCostume", "fixedProps", "spatialRules", "visualInvariants"],
+      "properties": {
+        "fixedCostume": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "fixedProps": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "spatialRules": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "visualInvariants": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "languageRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narrativeVoice", "sentenceStyle", "forbiddenPhrases", "interpretationBoundary"],
+      "properties": {
+        "narrativeVoice": { "type": "string", "minLength": 1 },
+        "sentenceStyle": { "type": "string", "minLength": 1 },
+        "forbiddenPhrases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "interpretationBoundary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "safetyBoundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prohibitedContent", "factsNotToInvent", "crisisExclusions"],
+      "properties": {
+        "prohibitedContent": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "factsNotToInvent": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "crisisExclusions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "endingPromise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finalEmotionalDirection", "keepsake", "worldChange"],
+      "properties": {
+        "finalEmotionalDirection": { "type": "string", "minLength": 1 },
+        "keepsake": { "type": "string", "minLength": 1 },
+        "worldChange": { "type": "string", "minLength": 1 }
+      }
+    },
+    "chapterFunctions": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["chapterNumber", "narrativeFunction", "startState", "endState"],
+        "properties": {
+          "chapterNumber": { "type": "integer", "minimum": 1, "maximum": 7 },
+          "narrativeFunction": { "type": "string", "minLength": 1 },
+          "startState": { "type": "string", "minLength": 1 },
+          "endState": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

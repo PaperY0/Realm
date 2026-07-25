@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/story-package-validation-report.schema.json",
+  "title": "StoryPackageValidationReport",
+  "description": "A read-only aggregate report for deterministic structural validation and independent narrative-semantic validation before any media generation starts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "validationVersion",
+    "reportId",
+    "bookId",
+    "attemptNumber",
+    "overallResult",
+    "structuralChecks",
+    "narrativeChecks",
+    "failedCheckIds",
+    "evidenceLocations",
+    "repairInstructions"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "validationVersion": { "type": "string", "minLength": 1 },
+    "reportId": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "attemptNumber": { "type": "integer", "minimum": 1, "maximum": 2 },
+    "overallResult": { "type": "string", "enum": ["pass", "repairable", "blocked"] },
+    "structuralChecks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/checkResult" }
+    },
+    "narrativeChecks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/checkResult" }
+    },
+    "failedCheckIds": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "evidenceLocations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceLocation" }
+    },
+    "repairInstructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["checkId", "repairScope", "instruction"],
+        "properties": {
+          "checkId": { "type": "string", "minLength": 1 },
+          "repairScope": { "type": "string", "enum": ["format_repair", "full_replan"] },
+          "instruction": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A bounded instruction. It is not permission for the validator to rewrite story facts."
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "result", "severity", "summary"],
+      "properties": {
+        "checkId": { "type": "string", "minLength": 1 },
+        "result": { "type": "string", "enum": ["pass", "fail", "warning"] },
+        "severity": { "type": "string", "enum": ["blocking", "non_blocking"] },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidenceLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "artifactType", "artifactId", "jsonPointer"],
+      "properties": {
+        "checkId": { "type": "string", "minLength": 1 },
+        "artifactType": {
+          "type": "string",
+          "enum": [
+            "SafeStoryBrief",
+            "StoryTemplateMatch",
+            "StoryTemplate",
+            "StoryBible",
+            "BoundaryKeyframePlan",
+            "ChapterCard"
+          ]
+        },
+        "artifactId": { "type": "string", "minLength": 1 },
+        "jsonPointer": {
+          "type": "string",
+          "pattern": "^(|/.*)$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "overallResult": { "const": "pass" } }, "required": ["overallResult"] },
+      "then": {
+        "properties": {
+          "failedCheckIds": { "maxItems": 0 },
+          "repairInstructions": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "overallResult": { "const": "blocked" } }, "required": ["overallResult"] },
+      "then": {
+        "properties": {
+          "failedCheckIds": { "minItems": 1 }
+        }
+      }
+    }
+  ]
+}

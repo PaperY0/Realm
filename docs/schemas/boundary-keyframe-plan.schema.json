@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/boundary-keyframe-plan.schema.json",
+  "title": "BoundaryKeyframePlan",
+  "description": "One immutable plan containing the eight unique shared boundary-state contracts K0 through K7 for a seven-chapter storybook.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "planId",
+    "bookId",
+    "storyBibleVersion",
+    "templateVersion",
+    "ipReferenceSetId",
+    "globalVisualInvariants",
+    "keyframes"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "planId": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "storyBibleVersion": { "type": "string", "minLength": 1 },
+    "templateVersion": { "type": "string", "minLength": 1 },
+    "ipReferenceSetId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The fixed approved reference set that must be supplied again for every formal keyframe generation task."
+    },
+    "globalVisualInvariants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "keyframes": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "prefixItems": [
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K0" },
+                "keyframeIndex": { "const": 0 },
+                "previousChapterNumber": { "type": "null" },
+                "nextChapterNumber": { "const": 1 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K1" },
+                "keyframeIndex": { "const": 1 },
+                "previousChapterNumber": { "const": 1 },
+                "nextChapterNumber": { "const": 2 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K2" },
+                "keyframeIndex": { "const": 2 },
+                "previousChapterNumber": { "const": 2 },
+                "nextChapterNumber": { "const": 3 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K3" },
+                "keyframeIndex": { "const": 3 },
+                "previousChapterNumber": { "const": 3 },
+                "nextChapterNumber": { "const": 4 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K4" },
+                "keyframeIndex": { "const": 4 },
+                "previousChapterNumber": { "const": 4 },
+                "nextChapterNumber": { "const": 5 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K5" },
+                "keyframeIndex": { "const": 5 },
+                "previousChapterNumber": { "const": 5 },
+                "nextChapterNumber": { "const": 6 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K6" },
+                "keyframeIndex": { "const": 6 },
+                "previousChapterNumber": { "const": 6 },
+                "nextChapterNumber": { "const": 7 }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            { "$ref": "#/$defs/keyframe" },
+            {
+              "properties": {
+                "keyframeId": { "const": "K7" },
+                "keyframeIndex": { "const": 7 },
+                "previousChapterNumber": { "const": 7 },
+                "nextChapterNumber": { "type": "null" }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "stringSet": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "keyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keyframeId",
+        "keyframeIndex",
+        "previousChapterNumber",
+        "nextChapterNumber",
+        "narrativeState",
+        "protagonistState",
+        "environmentState",
+        "requiredProps",
+        "recurringSymbols",
+        "paletteAndLighting",
+        "continuityAnchors",
+        "imagePromptContract",
+        "composedFallbackContract",
+        "validationContract"
+      ],
+      "properties": {
+        "keyframeId": {
+          "type": "string",
+          "pattern": "^K[0-7]$"
+        },
+        "keyframeIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7
+        },
+        "previousChapterNumber": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 7
+        },
+        "nextChapterNumber": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 7
+        },
+        "narrativeState": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A stable visible story state, not an action sequence."
+        },
+        "protagonistState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["appearance", "pose", "expression", "gaze"],
+          "properties": {
+            "appearance": { "type": "string", "minLength": 1 },
+            "pose": { "type": "string", "minLength": 1 },
+            "expression": { "type": "string", "minLength": 1 },
+            "gaze": { "type": "string", "minLength": 1 }
+          }
+        },
+        "environmentState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["setting", "spatialLayout", "weatherAndAtmosphere"],
+          "properties": {
+            "setting": { "type": "string", "minLength": 1 },
+            "spatialLayout": { "type": "string", "minLength": 1 },
+            "weatherAndAtmosphere": { "type": "string", "minLength": 1 }
+          }
+        },
+        "requiredProps": { "$ref": "#/$defs/stringSet" },
+        "recurringSymbols": { "$ref": "#/$defs/stringSet" },
+        "paletteAndLighting": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["palette", "lighting"],
+          "properties": {
+            "palette": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "lighting": { "type": "string", "minLength": 1 }
+          }
+        },
+        "continuityAnchors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mustRemainStable", "changesFromPrevious", "mayReferenceAdjacentFrame"],
+          "properties": {
+            "mustRemainStable": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "changesFromPrevious": { "$ref": "#/$defs/stringSet" },
+            "mayReferenceAdjacentFrame": { "type": "boolean" }
+          }
+        },
+        "imagePromptContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requiredElements", "forbiddenElements", "composition", "providerNeutralPrompt"],
+          "properties": {
+            "requiredElements": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "forbiddenElements": { "$ref": "#/$defs/stringSet" },
+            "composition": { "type": "string", "minLength": 1 },
+            "providerNeutralPrompt": { "type": "string", "minLength": 1 }
+          }
+        },
+        "composedFallbackContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ipAssetId", "templateSceneId", "requiredStoryElements", "compositionInstructions"],
+          "properties": {
+            "ipAssetId": { "type": "string", "minLength": 1 },
+            "templateSceneId": { "type": "string", "minLength": 1 },
+            "requiredStoryElements": { "$ref": "#/$defs/stringSet" },
+            "compositionInstructions": { "type": "string", "minLength": 1 }
+          }
+        },
+        "validationContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mustShow", "mustNotShow", "ipConsistencyChecks", "stateChecks"],
+          "properties": {
+            "mustShow": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "mustNotShow": { "$ref": "#/$defs/stringSet" },
+            "ipConsistencyChecks": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            },
+            "stateChecks": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/chapter-card.schema.json",
+  "title": "ChapterCard",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identity",
+    "userVisibleCopy",
+    "narrativeContract",
+    "boundaryContract",
+    "visualContract",
+    "shotContract",
+    "promptContract",
+    "fallbackPlan",
+    "validationContract"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "bookId", "chapterId", "chapterNumber", "storyBibleVersion", "templateVersion"],
+      "properties": {
+        "schemaVersion": { "type": "string", "minLength": 1 },
+        "bookId": { "type": "string", "minLength": 1 },
+        "chapterId": { "type": "string", "minLength": 1 },
+        "chapterNumber": { "type": "integer", "minimum": 1, "maximum": 7 },
+        "storyBibleVersion": { "type": "string", "minLength": 1 },
+        "templateVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "userVisibleCopy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chapterTitle", "chapterText", "optionalCaption"],
+      "properties": {
+        "chapterTitle": { "type": "string", "minLength": 1 },
+        "chapterText": { "type": "string", "minLength": 1 },
+        "optionalCaption": { "type": ["string", "null"] }
+      }
+    },
+    "narrativeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narrativeFunction", "visibleBeat", "startState", "endState", "factsThatMustNotChange"],
+      "properties": {
+        "narrativeFunction": { "type": "string", "minLength": 1 },
+        "visibleBeat": { "type": "string", "minLength": 1 },
+        "startState": { "type": "string", "minLength": 1 },
+        "endState": { "type": "string", "minLength": 1 },
+        "factsThatMustNotChange": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "boundaryContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startKeyframeId", "endKeyframeId", "startStateDescription", "endStateDescription"],
+      "properties": {
+        "startKeyframeId": { "type": "string", "minLength": 1 },
+        "endKeyframeId": { "type": "string", "minLength": 1 },
+        "startStateDescription": { "type": "string", "minLength": 1 },
+        "endStateDescription": { "type": "string", "minLength": 1 }
+      }
+    },
+    "visualContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["setting", "protagonistAppearance", "protagonistExpression", "requiredProps", "recurringSymbols", "palette", "lighting", "forbiddenVisualChanges"],
+      "properties": {
+        "setting": { "type": "string", "minLength": 1 },
+        "protagonistAppearance": { "type": "string", "minLength": 1 },
+        "protagonistExpression": { "type": "string", "minLength": 1 },
+        "requiredProps": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "recurringSymbols": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "palette": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "lighting": { "type": "string", "minLength": 1 },
+        "forbiddenVisualChanges": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "shotContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["durationSeconds", "shotSize", "cameraMovement", "primaryAction", "environmentalMotion", "motionIntensity", "noInternalCuts"],
+      "properties": {
+        "durationSeconds": { "type": "number", "const": 5 },
+        "shotSize": { "type": "string", "minLength": 1 },
+        "cameraMovement": { "type": "string", "minLength": 1 },
+        "primaryAction": { "type": "string", "minLength": 1 },
+        "environmentalMotion": { "type": "string", "minLength": 1 },
+        "motionIntensity": { "type": "string", "minLength": 1 },
+        "noInternalCuts": { "type": "boolean", "const": true }
+      }
+    },
+    "promptContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredElements", "prohibitedElements", "continuityReminder", "providerPromptHints"],
+      "properties": {
+        "requiredElements": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "prohibitedElements": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "continuityReminder": { "type": "string", "minLength": 1 },
+        "providerPromptHints": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "fallbackPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startFrameMotion", "transitionStyle", "endFrameMotion", "environmentalEffects"],
+      "properties": {
+        "startFrameMotion": { "type": "string", "minLength": 1 },
+        "transitionStyle": { "type": "string", "minLength": 1 },
+        "endFrameMotion": { "type": "string", "minLength": 1 },
+        "environmentalEffects": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "validationContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mustShow", "mustNotShow", "startFrameChecks", "endFrameChecks", "continuityChecks"],
+      "properties": {
+        "mustShow": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "mustNotShow": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "startFrameChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "endFrameChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "continuityChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      }
+    }
+  }
+}

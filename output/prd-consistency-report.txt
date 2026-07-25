@@ -1,0 +1,27 @@
+PRD consistency report - 2026-07-25
+Workspace: C:/Users/16617/Desktop/develop
+Checks: 22, Passed: 22, Failed: 0
+
+PASS | PRD version/date | V2.0 / 2026-07-25
+PASS | Single world only | 内耗世界 only
+PASS | Routes hidden | label/echo internal only
+PASS | All seven personalized | No fixed fallback story
+PASS | No fixed chapter slots | Causal template only
+PASS | Eight boundary frames | K0-K7
+PASS | Five-second single shot | 5s / no cuts
+PASS | Manual next chapter | User-paced reading
+PASS | Five/Thirty minute policy | 5 min open / 30 min poll
+PASS | No global video cap | Per-chapter retry only
+PASS | Media profile | 720p H.264 silent
+PASS | Exact models | All three accepted
+PASS | Environment model config | .env.example aligned
+PASS | Example key empty | No real key in example
+PASS | Context names aligned | Canonical terms present
+PASS | Schemas parse | 8/8 JSON files
+PASS | Schema has no chapterSlots | story-template schema flexible
+PASS | Chapter schema constants | duration=5 / noInternalCuts=true
+PASS | No human approval | Automated media gate
+PASS | Old PRD conflicts removed | none found
+PASS | ADR numbering | 1-31 continuous; missing=
+PASS | No obvious API secret | none found
+

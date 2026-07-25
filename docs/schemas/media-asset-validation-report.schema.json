@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/media-asset-validation-report.schema.json",
+  "title": "MediaAssetValidationReport",
+  "description": "An unattended technical and visual-semantic validation report for a generated boundary keyframe or chapter video.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "validationVersion",
+    "reportId",
+    "bookId",
+    "assetType",
+    "assetId",
+    "attemptNumber",
+    "overallResult",
+    "technicalChecks",
+    "visualChecks",
+    "failedCheckIds",
+    "warningCheckIds",
+    "nextAction",
+    "humanApprovalRequired"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "validationVersion": { "type": "string", "minLength": 1 },
+    "reportId": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "assetType": { "type": "string", "enum": ["boundary_keyframe", "chapter_video"] },
+    "assetId": { "type": "string", "minLength": 1 },
+    "attemptNumber": { "type": "integer", "minimum": 1, "maximum": 2 },
+    "overallResult": { "type": "string", "enum": ["pass", "warning", "fail"] },
+    "technicalChecks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/checkResult" }
+    },
+    "visualChecks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/checkResult" }
+    },
+    "failedCheckIds": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "warningCheckIds": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "nextAction": {
+      "type": "string",
+      "enum": ["accept", "retry", "compose_keyframe", "use_dynamic_fallback"]
+    },
+    "humanApprovalRequired": {
+      "type": "boolean",
+      "const": false
+    }
+  },
+  "$defs": {
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "result", "severity", "summary", "evidence"],
+      "properties": {
+        "checkId": { "type": "string", "minLength": 1 },
+        "result": { "type": "string", "enum": ["pass", "warning", "fail"] },
+        "severity": { "type": "string", "enum": ["hard", "soft"] },
+        "summary": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Machine-readable measurements or concise visual observations; no user raw input."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "overallResult": { "const": "pass" } }, "required": ["overallResult"] },
+      "then": {
+        "properties": {
+          "failedCheckIds": { "maxItems": 0 },
+          "warningCheckIds": { "maxItems": 0 },
+          "nextAction": { "const": "accept" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "overallResult": { "const": "warning" } }, "required": ["overallResult"] },
+      "then": {
+        "properties": {
+          "failedCheckIds": { "maxItems": 0 },
+          "warningCheckIds": { "minItems": 1 },
+          "nextAction": { "const": "accept" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "overallResult": { "const": "fail" } }, "required": ["overallResult"] },
+      "then": {
+        "properties": {
+          "failedCheckIds": { "minItems": 1 },
+          "nextAction": { "enum": ["retry", "compose_keyframe", "use_dynamic_fallback"] }
+        }
+      }
+    }
+  ]
+}

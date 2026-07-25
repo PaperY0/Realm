@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/safe-story-brief.schema.json",
+  "title": "SafeStoryBrief",
+  "description": "Privacy-filtered, story-safe facts derived from the user's expression. It must not contain raw input, full follow-up dialogue, identifying details, or internal story-template routing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "briefId",
+    "safetyStatus",
+    "situationCategory",
+    "coreTension",
+    "feltPressure",
+    "repeatedResponse",
+    "fearedMeaning",
+    "desiredDirection",
+    "emotionalDirection",
+    "storyUsableFacts",
+    "factsNotToInvent",
+    "prohibitedInterpretations",
+    "userConfirmedSentence",
+    "missingStoryInformation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "briefId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "safetyStatus": {
+      "type": "string",
+      "const": "story_safe",
+      "description": "A SafeStoryBrief may only be created for the story_safe workflow state."
+    },
+    "situationCategory": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A neutral situation description, not a diagnosis and not the internal label/echo route."
+    },
+    "coreTension": {
+      "type": "string",
+      "minLength": 1
+    },
+    "feltPressure": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "repeatedResponse": {
+      "type": ["string", "null"],
+      "description": "A safely abstracted recurring response. Null when the user did not provide enough information."
+    },
+    "fearedMeaning": {
+      "type": ["string", "null"],
+      "description": "What the user fears the situation may mean, only when supported by their expression."
+    },
+    "desiredDirection": {
+      "type": ["string", "null"],
+      "description": "The direction the user hopes for, without inventing an outcome."
+    },
+    "emotionalDirection": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The safe emotional movement the story may support without claiming therapy or resolution."
+    },
+    "storyUsableFacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Abstracted facts that may be transformed into fairy-tale material; no identifying details or verbatim dialogue."
+    },
+    "factsNotToInvent": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "prohibitedInterpretations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Diagnoses, motives, real-world conclusions, or identity claims the story must not make."
+    },
+    "userConfirmedSentence": {
+      "type": ["string", "null"],
+      "description": "A sentence preserved verbatim only after separate explicit confirmation; otherwise null."
+    },
+    "missingStoryInformation": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Information that remains unknown. Missing information is not permission to invent it."
+    }
+  }
+}

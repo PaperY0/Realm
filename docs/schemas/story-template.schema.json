@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/story-template.schema.json",
+  "title": "StoryTemplate",
+  "description": "A versioned causal and safety constraint for one internal story route. It deliberately does not assign fixed plots to seven chapter slots.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "templateId",
+    "templateVersion",
+    "internalRoute",
+    "applicability",
+    "causalMechanism",
+    "narrativeAnchors",
+    "freePlanningRules",
+    "optionalBeatPalette",
+    "forbiddenShortcuts",
+    "followupHints",
+    "endingRules",
+    "languageConstraints",
+    "safetyConstraints"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "templateId": { "type": "string", "minLength": 1 },
+    "templateVersion": { "type": "string", "minLength": 1 },
+    "internalRoute": { "type": "string", "enum": ["label", "echo"] },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["positiveSignals", "exclusionSignals", "requiredBriefFields", "unsupportedConditions"],
+      "properties": {
+        "positiveSignals": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "exclusionSignals": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "requiredBriefFields": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "unsupportedConditions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "causalMechanism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger", "reinforcingResponse", "amplification", "requiredRecognition", "relationshipChange", "resolutionBoundary"],
+      "properties": {
+        "trigger": { "type": "string", "minLength": 1 },
+        "reinforcingResponse": { "type": "string", "minLength": 1 },
+        "amplification": { "type": "string", "minLength": 1 },
+        "requiredRecognition": { "type": "string", "minLength": 1, "description": "What the protagonist must notice through story events, not through an inserted lecture." },
+        "relationshipChange": { "type": "string", "minLength": 1, "description": "The required relational change; no fixed action, scene, or symbol is prescribed." },
+        "resolutionBoundary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "narrativeAnchors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["opening", "pivotWindow", "ending"],
+      "properties": {
+        "opening": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["chapterNumber", "requiredFunction"],
+          "properties": {
+            "chapterNumber": { "type": "integer", "const": 1 },
+            "requiredFunction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "pivotWindow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["earliestChapter", "latestChapter", "requiredFunction"],
+          "properties": {
+            "earliestChapter": { "type": "integer", "const": 3 },
+            "latestChapter": { "type": "integer", "const": 5 },
+            "requiredFunction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "ending": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["chapterNumber", "requiredFunction"],
+          "properties": {
+            "chapterNumber": { "type": "integer", "const": 7 },
+            "requiredFunction": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "freePlanningRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chapterCount", "allowBeatReordering", "allowBeatMerging", "allowBeatSpanning", "requireStateChangePerChapter", "requireCausalContinuity"],
+      "properties": {
+        "chapterCount": { "type": "integer", "const": 7 },
+        "allowBeatReordering": { "type": "boolean", "const": true },
+        "allowBeatMerging": { "type": "boolean", "const": true },
+        "allowBeatSpanning": { "type": "boolean", "const": true },
+        "requireStateChangePerChapter": { "type": "boolean", "const": true },
+        "requireCausalContinuity": { "type": "boolean", "const": true }
+      }
+    },
+    "optionalBeatPalette": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["beatId", "narrativePurpose", "possibleExpressions"],
+        "properties": {
+          "beatId": { "type": "string", "minLength": 1 },
+          "narrativePurpose": { "type": "string", "minLength": 1 },
+          "possibleExpressions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true, "description": "Non-binding examples that must not be copied as default plot events." }
+        }
+      }
+    },
+    "forbiddenShortcuts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Generic lectures, instant solutions, fixed symbolic endings, or other moves that would make different books feel templated."
+    },
+    "followupHints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["missingInformation", "naturalQuestionGoal"],
+        "properties": {
+          "missingInformation": { "type": "string", "minLength": 1 },
+          "naturalQuestionGoal": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "endingRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedRelationshipChange", "prohibitedConclusion", "keepsakeFunction", "worldChangeFunction"],
+      "properties": {
+        "allowedRelationshipChange": { "type": "string", "minLength": 1 },
+        "prohibitedConclusion": { "type": "string", "minLength": 1 },
+        "keepsakeFunction": { "type": "string", "minLength": 1 },
+        "worldChangeFunction": { "type": "string", "minLength": 1 }
+      }
+    },
+    "languageConstraints": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "safetyConstraints": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  }
+}

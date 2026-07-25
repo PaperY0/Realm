@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/story-template-match.schema.json",
+  "title": "StoryTemplateMatch",
+  "description": "The single final internal story-template route produced after optional follow-up. It is not user-visible and must not contain raw user input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "matchId",
+    "briefId",
+    "routerVersion",
+    "route",
+    "templateId",
+    "templateVersion",
+    "matchedCriteria",
+    "conflictingCriteria",
+    "missingInformation",
+    "decisionReason"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "matchId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "briefId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "routerVersion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the routing rules and structured-output workflow."
+    },
+    "route": {
+      "type": "string",
+      "enum": ["label", "echo", "unsupported"]
+    },
+    "templateId": {
+      "type": ["string", "null"]
+    },
+    "templateVersion": {
+      "type": ["string", "null"]
+    },
+    "matchedCriteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Stable IDs of human-authored template criteria supported by the SafeStoryBrief."
+    },
+    "conflictingCriteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Stable criterion IDs that conflict with or weaken the selected route."
+    },
+    "missingInformation": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Unresolved information after all optional follow-up has ended."
+    },
+    "decisionReason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A short internal explanation containing no raw user wording or psychological classification."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "route": { "const": "unsupported" }
+        },
+        "required": ["route"]
+      },
+      "then": {
+        "properties": {
+          "templateId": { "type": "null" },
+          "templateVersion": { "type": "null" }
+        }
+      },
+      "else": {
+        "properties": {
+          "templateId": { "type": "string", "minLength": 1 },
+          "templateVersion": { "type": "string", "minLength": 1 },
+          "matchedCriteria": { "minItems": 1 }
+        }
+      }
+    }
+  ]
+}
