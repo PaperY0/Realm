@@ -147,59 +147,6 @@ button {
   letter-spacing: 0.04em;
 }
 
-.motion-toggle {
-  display: inline-flex;
-  min-height: 40px;
-  align-items: center;
-  gap: 10px;
-  color: #5f5567;
-  cursor: pointer;
-  font-size: 13px;
-  user-select: none;
-}
-
-.motion-toggle input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.toggle-track {
-  display: inline-flex;
-  width: 42px;
-  height: 24px;
-  align-items: center;
-  padding: 3px;
-  border: 1px solid rgba(58, 49, 66, 0.2);
-  border-radius: 999px;
-  background: rgba(255, 250, 242, 0.75);
-  transition: background 220ms ease;
-}
-
-.toggle-track span {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #887891;
-  box-shadow: 0 2px 5px rgba(47, 38, 52, 0.25);
-  transition: transform 220ms ease, background 220ms ease;
-}
-
-.motion-toggle input:checked + .toggle-track {
-  background: #5e5877;
-}
-
-.motion-toggle input:checked + .toggle-track span {
-  background: #fff6e8;
-  transform: translateX(18px);
-}
-
-.motion-toggle input:focus-visible + .toggle-track {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
-}
-
 .scene-deck,
 .scene {
   width: 100%;
@@ -1317,10 +1264,6 @@ button {
     font-size: 14px;
   }
 
-  .motion-toggle {
-    font-size: 11px;
-  }
-
   .scene h1 {
     font-size: 42px;
   }
@@ -1359,26 +1302,6 @@ button {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-body.reduce-motion *,
-body.reduce-motion *::before,
-body.reduce-motion *::after {
-  scroll-behavior: auto !important;
-  animation-duration: 1ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 1ms !important;
-}
-
 /* Stage 4 reference-faithful world gate: preserve every supplied painted detail. */
 body[data-stage="door"] {
   background: #6b5c94;
@@ -1394,46 +1317,8 @@ body[data-stage="door"] .world-shell {
   overflow: hidden;
 }
 
-.motion-toggle--global {
-  position: absolute;
-  z-index: 55;
-  top: clamp(16px, 2.4vh, 30px);
-  right: clamp(20px, 3vw, 58px);
-}
-
 body[data-stage="door"] .world-header {
   display: none;
-}
-
-body[data-stage="door"] .motion-toggle--global {
-  position: fixed;
-  z-index: 60;
-  top: 12px;
-  right: 12px;
-  width: 1px;
-  height: 1px;
-  min-height: 0;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
-}
-
-body[data-stage="door"] .motion-toggle--global:focus-within {
-  width: auto;
-  height: auto;
-  min-height: 40px;
-  padding: 8px 12px;
-  overflow: visible;
-  border: 1px solid rgba(255, 247, 220, 0.72);
-  border-radius: 999px;
-  background: rgba(65, 52, 91, 0.82);
-  color: #fff9e8;
-  box-shadow: 0 8px 30px rgba(35, 25, 52, 0.3);
-  clip: auto;
-  white-space: normal;
-  clip-path: none;
 }
 
 body[data-stage="door"] .world-footer {
@@ -1524,10 +1409,6 @@ body[data-stage="door"] .scene--door {
     max-height: 100dvh;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-}
-
 
 /* Stage 8: Web-only expression to real gpt-image-2 vertical demo slice. */
 body[data-stage="expression"] .world-shell {
@@ -2289,26 +2170,6 @@ body[data-stage="expression"] .arrival-badge {
 @keyframes image-thread-orbit-compact {
   from { transform: rotate(0deg) translateX(38px) rotate(0deg); }
   to { transform: rotate(360deg) translateX(38px) rotate(-360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .expression-action,
-  .expression-action.is-pressed,
-  .generation-steps li,
-  .thread-orbit span {
-    animation: none !important;
-    transform: none !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-body.reduce-motion .expression-action,
-body.reduce-motion .expression-action.is-pressed,
-body.reduce-motion .generation-steps li,
-body.reduce-motion .thread-orbit span {
-  animation: none !important;
-  transform: none !important;
-  transition-duration: 1ms !important;
 }
 
 /* Seven-chapter storybook preview */
@@ -3351,17 +3212,6 @@ body.reduce-motion .thread-orbit span {
   font-size: 10px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .storybook-turn-sheet,
-  .storybook-turn-sheet__front,
-  .storybook-turn-sheet__back,
-  .storybook-turn-shadow {
-    animation: none !important;
-    transform: none !important;
-    transition: none !important;
-  }
-}
-
 @media (max-width: 1180px) {
   .scene--storybook {
     padding-right: 28px;
@@ -3674,36 +3524,6 @@ body.reduce-motion .thread-orbit span {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .storybook-book,
-  .storybook-page,
-  .storybook-turn-sheet,
-  .storybook-turn-sheet__front,
-  .storybook-turn-sheet__back,
-  .storybook-turn-shadow,
-  .storybook-control,
-  .storybook-progress li,
-  .storybook-empty-glyph {
-    animation: none !important;
-    transform: none !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-body.reduce-motion .storybook-book,
-body.reduce-motion .storybook-page,
-body.reduce-motion .storybook-turn-sheet,
-body.reduce-motion .storybook-turn-sheet__front,
-body.reduce-motion .storybook-turn-sheet__back,
-body.reduce-motion .storybook-turn-shadow,
-body.reduce-motion .storybook-control,
-body.reduce-motion .storybook-progress li,
-body.reduce-motion .storybook-empty-glyph {
-  animation: none !important;
-  transform: none !important;
-  transition-duration: 1ms !important;
-}
-
 /* Video-led world entry: the gate remains the user's first deliberate action. */
 .world-entry-video {
   position: absolute;
@@ -3845,14 +3665,6 @@ body[data-stage="foyer"] .handoff-character {
 
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .scene--door.is-transitioning,
-  body[data-stage="foyer"] .scene--foyer {
-    animation: none;
-    transition-duration: 1ms;
-  }
-}
-
 /* Emotion hall: a watercolor world with five quiet, discoverable doors. */
 .scene--foyer {
   position: relative;
@@ -3877,7 +3689,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   overflow: hidden;
 }
 
-.emotion-hall-art,
+.emotion-hall-background,
 .emotion-hall-shade {
   position: absolute;
   inset: 0;
@@ -3885,7 +3697,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   height: 100%;
 }
 
-.emotion-hall-art {
+.emotion-hall-background {
   z-index: 0;
   object-fit: contain;
   object-position: center;
@@ -3938,108 +3750,6 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   position: absolute;
   z-index: 8;
   inset: 0;
-}
-
-.emotion-door {
-  position: absolute;
-  top: 51%;
-  width: 13.7%;
-  height: 57%;
-  border: 0;
-  border-radius: 44% 44% 10% 10% / 20% 20% 6% 6%;
-  background: transparent;
-  color: #fff8e9;
-  cursor: pointer;
-  transform: translate(-50%, -50%);
-  animation: door-breathe 6.5s ease-in-out infinite;
-  transition: filter 260ms ease, opacity 260ms ease;
-}
-
-.emotion-door--overthinking { left: 16%; animation-delay: -0.3s; }
-.emotion-door--sadness { left: 34%; animation-delay: -1.6s; }
-.emotion-door--anxiety { left: 51%; animation-delay: -3.1s; }
-.emotion-door--anger { left: 68%; animation-delay: -4.4s; }
-.emotion-door--joy { left: 85%; animation-delay: -5.2s; }
-
-.emotion-door::before {
-  position: absolute;
-  inset: 5% 5% 8%;
-  border: 1px solid transparent;
-  border-radius: inherit;
-  content: "";
-  transition: border-color 220ms ease, box-shadow 220ms ease, background 220ms ease;
-}
-
-.emotion-door__focus {
-  position: absolute;
-  inset: 18% 13% 16%;
-  border-radius: 50%;
-  opacity: 0;
-  background: radial-gradient(circle, rgba(255, 229, 142, 0.28), transparent 68%);
-  transition: opacity 220ms ease, transform 220ms ease;
-}
-
-.emotion-door__label,
-.emotion-door__state {
-  position: absolute;
-  left: 50%;
-  display: block;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-
-.emotion-door__label {
-  bottom: 16%;
-  padding: 0.42rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(59, 44, 53, 0.5);
-  font-family: Georgia, "Songti SC", serif;
-  font-size: clamp(0.95rem, 1.25vw, 1.35rem);
-  letter-spacing: 0.15em;
-  text-shadow: 0 1px 0 rgba(44, 30, 37, 0.35);
-}
-
-.emotion-door__state {
-  bottom: 8%;
-  color: rgba(255, 248, 231, 0.76);
-  font-size: clamp(0.65rem, 0.75vw, 0.8rem);
-  letter-spacing: 0.12em;
-}
-
-.emotion-door:hover,
-.emotion-door:focus-visible,
-.emotion-door.is-selected {
-  filter: brightness(1.08) saturate(1.08);
-}
-
-.emotion-door:hover::before,
-.emotion-door:focus-visible::before,
-.emotion-door.is-selected::before {
-  border-color: rgba(255, 222, 132, 0.78);
-  background: linear-gradient(180deg, rgba(255, 231, 146, 0.11), transparent 46%);
-  box-shadow: 0 0 2.5rem rgba(255, 211, 106, 0.28), inset 0 0 1.5rem rgba(255, 231, 146, 0.2);
-}
-
-.emotion-door:hover .emotion-door__focus,
-.emotion-door:focus-visible .emotion-door__focus,
-.emotion-door.is-selected .emotion-door__focus {
-  opacity: 1;
-  transform: scale(1.08);
-}
-
-.emotion-door.is-selected .emotion-door__label {
-  background: #59445f;
-  box-shadow: 0 0.7rem 1.4rem rgba(59, 39, 53, 0.2);
-}
-
-.emotion-door:not(.emotion-door--overthinking) {
-  opacity: 0.78;
-}
-
-.emotion-door:not(.emotion-door--overthinking):hover,
-.emotion-door:not(.emotion-door--overthinking):focus-visible,
-.emotion-door:not(.emotion-door--overthinking).is-selected {
-  opacity: 1;
 }
 
 .emotion-door-dialogue {
@@ -4211,221 +3921,12 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .emotion-door,
-  .emotion-door-dialogue {
-    animation: none;
-  }
-}
-
-body.reduce-motion .emotion-door,
-body.reduce-motion .emotion-door-dialogue {
-  animation: none;
-}
-
-/* Real five-door layers: the hall image remains the painted plate; these layers give each door a tactile edge without redrawing it. */
-.emotion-door {
-  --door-glow: 255, 211, 116;
-  --door-ink: 103, 73, 63;
-  --door-wash: 247, 206, 133;
-  isolation: isolate;
-  overflow: visible;
-}
-
-.emotion-door--overthinking { --door-glow: 255, 211, 116; --door-ink: 112, 78, 67; --door-wash: 246, 201, 123; }
-.emotion-door--sadness { --door-glow: 183, 199, 245; --door-ink: 82, 84, 121; --door-wash: 169, 184, 224; }
-.emotion-door--anxiety { --door-glow: 255, 193, 128; --door-ink: 95, 92, 111; --door-wash: 215, 204, 210; }
-.emotion-door--anger { --door-glow: 255, 157, 83; --door-ink: 107, 61, 43; --door-wash: 184, 104, 63; }
-.emotion-door--joy { --door-glow: 255, 226, 122; --door-ink: 111, 91, 47; --door-wash: 220, 194, 91; }
-
-.emotion-door::before {
-  content: none;
-}
-
-.emotion-door__body,
-.emotion-door__guardian-layer,
-.emotion-door__frame,
-.emotion-door__leaf,
-.emotion-door__seam,
-.emotion-door__light,
-.emotion-door__guardian-shadow {
-  position: absolute;
-  display: block;
-  pointer-events: none;
-}
-
-.emotion-door__body {
-  z-index: 1;
-  inset: 5% 5% 8%;
-  overflow: hidden;
-  border: max(1px, 0.12vw) solid rgba(var(--door-ink), 0.42);
-  border-radius: 46% 46% 8% 8% / 22% 22% 5% 5%;
-  background:
-    linear-gradient(90deg, rgba(var(--door-wash), 0.12), transparent 23% 77%, rgba(var(--door-wash), 0.1)),
-    linear-gradient(180deg, rgba(255, 249, 220, 0.08), transparent 46%, rgba(var(--door-ink), 0.11));
-  box-shadow:
-    inset 0 0 0 max(1px, 0.08vw) rgba(255, 244, 205, 0.34),
-    inset 0 -1.4rem 1.8rem rgba(var(--door-ink), 0.1),
-    0 0.55rem 0.9rem rgba(80, 54, 57, 0.13);
-  transform-origin: 50% 100%;
-  animation: door-float 6.4s ease-in-out infinite;
-  transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
-}
-
-.emotion-door__frame {
-  z-index: 1;
-  inset: 4% 4.5%;
-  border: max(1px, 0.07vw) solid rgba(var(--door-ink), 0.34);
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 max(1px, 0.05vw) rgba(255, 245, 213, 0.24);
-}
-
-.emotion-door__leaf {
-  z-index: 2;
-  inset: 13% 16% 11%;
-  border-right: max(1px, 0.07vw) solid rgba(var(--door-ink), 0.28);
-  border-left: max(1px, 0.07vw) solid rgba(255, 247, 211, 0.45);
-  border-radius: 48% 48% 5% 5% / 18% 18% 3% 3%;
-  background: linear-gradient(90deg, rgba(255, 248, 218, 0.08), transparent 48%, rgba(var(--door-ink), 0.08));
-}
-
-.emotion-door__seam {
-  z-index: 3;
-  top: 18%;
-  bottom: 10%;
-  left: 50%;
-  width: max(1px, 0.08vw);
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, transparent, rgba(var(--door-ink), 0.54) 14% 86%, transparent);
-  box-shadow: 1px 0 rgba(255, 245, 205, 0.34), 0 0 0.3rem rgba(var(--door-glow), 0.26);
-}
-
-.emotion-door__light {
-  z-index: 0;
-  inset: 13% 11% 17%;
-  border-radius: 48% 48% 9% 9% / 24% 24% 6% 6%;
-  opacity: 0.48;
-  background: radial-gradient(ellipse at 50% 35%, rgba(var(--door-glow), 0.36), transparent 62%);
-  mix-blend-mode: screen;
-  transition: opacity 240ms ease, transform 240ms ease;
-}
-
-.emotion-door__guardian-layer {
-  z-index: 2;
-  right: 14%;
-  bottom: 14%;
-  left: 14%;
-  height: 38%;
-  border-radius: 48% 48% 40% 40%;
-  opacity: 0.58;
-  background: radial-gradient(ellipse at 50% 68%, rgba(var(--door-glow), 0.26), transparent 57%);
-  mix-blend-mode: screen;
-  animation: guardian-settle 6.4s ease-in-out infinite;
-  transition: opacity 240ms ease, transform 240ms ease;
-}
-
-.emotion-door__guardian-shadow {
-  right: 9%;
-  bottom: 2%;
-  left: 9%;
-  height: 10%;
-  border-radius: 50%;
-  background: rgba(81, 58, 57, 0.2);
-  filter: blur(3px);
-  mix-blend-mode: multiply;
-}
-
-.emotion-door__label,
-.emotion-door__state,
-.emotion-door__focus {
-  z-index: 4;
-}
-
-.emotion-door__focus {
-  inset: 2% 1% 5%;
-  border: max(1px, 0.1vw) solid rgba(var(--door-glow), 0.78);
-  border-radius: 47% 47% 10% 10% / 22% 22% 6% 6%;
-  background: radial-gradient(ellipse at 50% 38%, rgba(var(--door-glow), 0.12), transparent 66%);
-  box-shadow: 0 0 1.7rem rgba(var(--door-glow), 0.32), inset 0 0 1.2rem rgba(var(--door-glow), 0.14);
-}
-
-.emotion-door:hover .emotion-door__body,
-.emotion-door:focus-visible .emotion-door__body,
-.emotion-door.is-selected .emotion-door__body {
-  border-color: rgba(var(--door-glow), 0.9);
-  box-shadow: inset 0 0 0 max(1px, 0.08vw) rgba(255, 247, 214, 0.56), inset 0 -1.4rem 1.8rem rgba(var(--door-ink), 0.08), 0 0.8rem 1.5rem rgba(80, 54, 57, 0.18), 0 0 2rem rgba(var(--door-glow), 0.35);
-  transform: translateY(-5px) scale(1.025);
-  animation-play-state: paused;
-}
-
-.emotion-door:hover .emotion-door__light,
-.emotion-door:focus-visible .emotion-door__light,
-.emotion-door.is-selected .emotion-door__light {
-  opacity: 0.94;
-  transform: scale(1.08);
-}
-
-.emotion-door:hover .emotion-door__guardian-layer,
-.emotion-door:focus-visible .emotion-door__guardian-layer,
-.emotion-door.is-selected .emotion-door__guardian-layer {
-  opacity: 0.96;
-  transform: translateY(-3px) scale(1.04);
-  animation-play-state: paused;
-}
-
-.emotion-door:focus-visible {
-  outline: none;
-}
-
-.emotion-door:focus-visible .emotion-door__label,
-.emotion-door.is-selected .emotion-door__label {
-  color: #fff9df;
-  text-shadow: 0 0 0.7rem rgba(var(--door-glow), 0.68), 0 1px 0 rgba(44, 30, 37, 0.35);
-}
-
-.emotion-door--overthinking .emotion-door__body,
-.emotion-door--overthinking .emotion-door__guardian-layer { animation-delay: -0.3s; }
-.emotion-door--sadness .emotion-door__body,
-.emotion-door--sadness .emotion-door__guardian-layer { animation-delay: -1.6s; }
-.emotion-door--anxiety .emotion-door__body,
-.emotion-door--anxiety .emotion-door__guardian-layer { animation-delay: -3.1s; }
-.emotion-door--anger .emotion-door__body,
-.emotion-door--anger .emotion-door__guardian-layer { animation-delay: -4.4s; }
-.emotion-door--joy .emotion-door__body,
-.emotion-door--joy .emotion-door__guardian-layer { animation-delay: -5.2s; }
-
-@keyframes door-float {
-  0%, 100% { transform: translateY(0) rotate(-0.18deg); }
-  50% { transform: translateY(-4px) rotate(0.18deg); }
-}
-
-@keyframes guardian-settle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .emotion-door__body,
-  .emotion-door__guardian-layer {
-    animation: none;
-    transition-duration: 1ms;
-  }
-}
-
-body.reduce-motion .emotion-door__body,
-body.reduce-motion .emotion-door__guardian-layer {
-  animation: none;
-  transition-duration: 1ms;
-}
-
 /* The expression page is intentionally a different, tactile picture-book scene. */
-body[data-stage="expression"] .world-header,
-body[data-stage="expression"] .motion-toggle--global {
+body[data-stage="expression"] .world-header {
   display: none;
 }
 
-body[data-stage="foyer"] .world-header,
-body[data-stage="foyer"] .motion-toggle--global {
+body[data-stage="foyer"] .world-header {
   display: none;
 }
 
@@ -4975,8 +4476,8 @@ body[data-stage="expression"] .scene--expression::before {
 }
 
 body[data-stage="expression"] .expression-paper {
-  width: min(920px, calc(100% - 36px));
-  height: min(596px, calc(100dvh - 124px));
+  width: min(1080px, calc(100% - 28px));
+  height: min(676px, calc(100dvh - 44px));
   transform: rotate(-.28deg);
   border: 1px solid rgba(177, 128, 64, .34);
   border-radius: 14px 10px 16px 12px;
@@ -5036,7 +4537,7 @@ body[data-stage="expression"] .paper-sheet__corner { display: none; }
 @media (max-width: 900px) {
   body[data-stage="expression"] .expression-paper {
     width: calc(100% - 20px);
-    height: calc(100dvh - 112px);
+    height: calc(100dvh - 76px);
     transform: rotate(-.18deg);
   }
 }
