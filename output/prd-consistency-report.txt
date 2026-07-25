@@ -1,38 +1,59 @@
 PRD consistency report - 2026-07-25
 Workspace: C:/Users/16617/Desktop/develop
-Checks: 34, Passed: 34, Failed: 0
+Checks: 55, Passed: 55, Failed: 0
 
 PASS | PRD version/date | V2.1 / 2026-07-25
 PASS | Single world only | Only 内耗世界 is user-visible
 PASS | Routes hidden | Label/echo remain internal
-PASS | All seven personalized | Story, copy, illustration and motion are personalized
+PASS | All seven personalized | All chapters use this input
+PASS | Complete first-entry stages | 8/8 stages present
+PASS | Manual door opening | No autoplay substitute
+PASS | Door discoverability | 10-second target
+PASS | Motion accessibility | Reduced motion + keyboard
+PASS | Traveler first page optionality | Name never blocks
+PASS | Pocket mark isolation | UI identity only
+PASS | World IP handoff | Roles separated
+PASS | Wind-chime expression | Text or unknown
+PASS | Session need choices | 4 choices
+PASS | Session need may be skipped | null when skipped
+PASS | Session need isolation | Tone only
+PASS | Follow-up limit | 0-2, skippable
+PASS | Paper-boat waiting ritual | World feedback retained
 PASS | Default media path | Reviewed illustration -> local 2.5D preview
-PASS | Optional enhancement | Seedance is per-chapter and non-blocking
-PASS | Seven illustrations | Exactly seven primary chapter illustrations
+PASS | Optional enhancement | Per chapter, non-blocking
+PASS | Seven illustrations | Exactly seven
 PASS | Human illustration review | Review precedes motion
-PASS | Open-book gate | All seven previews required
+PASS | Open-book gate | All seven required
 PASS | Portrait media profile | 9:16 / 720x1280
-PASS | Duration profile | 5-8 seconds per chapter
-PASS | Controlled motion | 1 camera move / 2-3 layers / 2 micro-motions
+PASS | Duration profile | 5-8 seconds only
+PASS | Controlled motion | 1 camera / 2-3 layers / 2 micro
 PASS | No 3D pipeline | Explicitly prohibited
-PASS | Five-minute demo ceiling | No partial or fake book at deadline
-PASS | Enhancement background deadline | Only approved Seedance tasks
-PASS | Exact models | Text, image and optional video models pinned
-PASS | Gateway config | Configured relay endpoints retained
-PASS | Example key empty | No real API key in .env.example
+PASS | Non-branch interaction | Visual response only
+PASS | No chapter autoplay | User advances
+PASS | Active close-book ritual | User closes the book
+PASS | Limited echo response | Location-bound short response
+PASS | Single current book | One current book only
+PASS | Re-entry restores current book | Resume/re-read only
+PASS | New experience requires reset | No next book without reset
+PASS | Five-minute demo ceiling | No partial/fake book
+PASS | Exact models | Pinned text/image/video
+PASS | Gateway config | Relay endpoints retained
+PASS | Example key empty | No real key
 PASS | Schema JSON parse | 9/9 files parsed
 PASS | Schema metaschema validation | 9/9 Draft 2020-12 schemas valid
 PASS | Schema IDs unique | 9 unique $id values
 PASS | Old schema removed | Legacy boundary schema absent
-PASS | New planning schemas present | ChapterIllustrationPlan + StorybookStyleGuide
-PASS | ChapterCard old fields removed | Illustration/motion/enhancement contracts only
-PASS | ChapterCard identity mapping | Chapter 1-7 map to I1-I7
-PASS | Media asset types | Illustration, local preview, optional enhancement
-PASS | Media human gates | Review and per-chapter approval represented
-PASS | Enhancement failure retention | Failed enhancement retains local preview
-PASS | ADR 0032 accepted | New media architecture is normative
-PASS | Legacy media ADRs superseded | 11/11 point to ADR 0032
+PASS | New planning schemas present | Illustration plan + style guide
+PASS | SafeStoryBrief sessionNeed valid cases | null + 4 values accepted
+PASS | SafeStoryBrief invalid sessionNeed rejected | Unknown value rejected
+PASS | SafeStoryBrief sessionNeed field required | Missing field rejected; null means skipped
+PASS | SafeStoryBrief sessionNeed boundary documented | Tone only, no routing/plot/profile
 PASS | ADR numbering | 1-32 continuous
-PASS | No legacy media contract in active docs | 0 hits; historical and superseded files excluded
+PASS | ADR 0032 accepted | 2.5D architecture normative
+PASS | Legacy media ADRs superseded | 11/11 point to ADR 0032
+PASS | ADR 0028 single-book boundary | Single-book demo fixed
+PASS | No legacy media contract in active docs | 0 normative hits; glossary Avoid examples excluded
+PASS | No 8-10 second active contract | 0 hits
+PASS | No pre-generated demo substitution | Explicitly forbidden
 PASS | No obvious API secret | 0 suspicious files
 PASS | Git whitespace check | git diff --check clean

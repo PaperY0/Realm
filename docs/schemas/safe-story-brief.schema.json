@@ -9,6 +9,7 @@
     "schemaVersion",
     "briefId",
     "safetyStatus",
+    "sessionNeed",
     "situationCategory",
     "coreTension",
     "feltPressure",
@@ -35,6 +36,17 @@
       "type": "string",
       "const": "story_safe",
       "description": "A SafeStoryBrief may only be created for the story_safe workflow state."
+    },
+    "sessionNeed": {
+      "type": ["string", "null"],
+      "enum": [
+        "stay_with_me",
+        "help_me_sort_it_out",
+        "give_me_courage",
+        "let_it_remain",
+        null
+      ],
+      "description": "The user-selected need for this session, or null when the user skips it. It may affect only the tone of the epigraph and the short response after the book is closed; it must not participate in volume matching, alter the seven-chapter plot, or enter any persistent personality profile."
     },
     "situationCategory": {
       "type": "string",
