@@ -3041,6 +3041,34 @@ body[data-stage="expression"] .arrival-badge {
   filter: brightness(0.94);
 }
 
+/* The reverse side of a forward turn is the next chapter's illustration,
+   never a mirrored copy of the previous text page. */
+.storybook-turn-sheet__back[data-turn-page="illustration"] {
+  display: block;
+  padding: 0;
+}
+
+.storybook-turn-sheet__back[data-turn-page="illustration"] .storybook-illustration-state {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.storybook-turn-sheet__back[data-turn-page="illustration"] .storybook-chapter-illustration {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: inherit;
+  box-shadow: none;
+  object-fit: cover;
+}
+
 /* Turn faces deliberately do not inherit .storybook-page: the wrapper owns the 3D transform. */
 .storybook-turn-sheet__front.storybook-page,
 .storybook-turn-sheet__back.storybook-page {
@@ -4263,8 +4291,10 @@ body[data-stage="expression"] .paper-generation-card {
 }
 
 body[data-stage="expression"] .paper-boat-sequence {
-  position: fixed;
-  inset: 0;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw;
+  height: 100dvh;
   z-index: 1000;
   display: none;
   min-height: 100dvh;
@@ -4293,11 +4323,75 @@ body[data-stage="expression"] .paper-boat-lake {
   background: linear-gradient(155deg, #7f7899, #e09d87 62%, #e8c474);
 }
 body[data-stage="expression"] .paper-boat-lake video {
+  position: absolute;
+  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  max-width: none;
+  max-height: none;
   opacity: 1;
   mix-blend-mode: normal;
+}
+
+/* Immersive chapter artwork: keep the animation inside the paper instead of
+   presenting it as a separate framed image. */
+body[data-stage="storybook"] .world-shell,
+body[data-stage="storybook"] .scene--storybook {
+  background: #f2dcd0 url("/assets/storybook-watercolor-background.png") center / cover no-repeat;
+}
+
+body[data-stage="storybook"] .brand-mark,
+body[data-stage="storybook"] .brand small {
+  display: none;
+}
+
+body[data-stage="storybook"] .brand {
+  gap: 0;
+}
+
+body[data-stage="storybook"] .brand strong {
+  color: rgba(73, 59, 79, 0.78);
+  font-size: clamp(16px, 1.35vw, 22px);
+  letter-spacing: 0.12em;
+}
+
+/* The global header already carries the book title on the reading page. */
+body[data-stage="storybook"] .storybook-heading h2 {
+  visibility: hidden;
+}
+
+body[data-stage="storybook"] .storybook-page--illustration {
+  padding: 0;
+}
+
+body[data-stage="storybook"] .storybook-illustration-state {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-stage="storybook"] .storybook-illustration-state::before,
+body[data-stage="storybook"] .storybook-illustration-state::after,
+body[data-stage="storybook"] .storybook-fallback-note,
+body[data-stage="storybook"] .storybook-truth-note,
+body[data-stage="storybook"] .storybook-page-label {
+  display: none;
+}
+
+body[data-stage="storybook"] .storybook-chapter-illustration {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: inherit;
+  box-shadow: none;
+  object-fit: cover;
 }
 body[data-stage="expression"] .paper-boat-lake__veil {
   position: absolute;
@@ -4345,6 +4439,10 @@ body[data-stage="expression"] .paper-boat-fold-copy {
   margin-top: 24px;
   color: #624c54;
   text-align: center;
+}
+body[data-stage="expression"] .paper-boat-fold-copy h2 {
+  white-space: nowrap;
+  font-size: clamp(1.8rem, 5vw, 4rem);
 }
 body[data-stage="expression"] .paper-boat-fold-copy__eyebrow,
 body[data-stage="expression"] .paper-boat-voyage-copy__eyebrow {

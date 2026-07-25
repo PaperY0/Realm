@@ -90,6 +90,7 @@ const state = {
     requestController: null,
     turning: false,
     turnTimer: null,
+    illustrationTimer: null,
   },
   paperBoat: {
     state: 'idle',
@@ -150,8 +151,12 @@ const paperBoatVideo = document.querySelector('#paper-boat-video');
 const paperBoatVoyageMessage = document.querySelector('#paper-boat-voyage-message');
 const paperBoatStatus = document.querySelector('#paper-boat-status');
 const paperBoatRetry = document.querySelector('#paper-boat-retry');
+const paperBoatFoldEyebrow = document.querySelector('.paper-boat-fold-copy__eyebrow');
+const paperBoatFoldTitle = document.querySelector('#paper-boat-fold-title');
+const paperBoatFoldCopy = document.querySelector('#paper-boat-fold-copy');
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
 const storybookTitle = document.querySelector('#storybook-title');
+const brandTitle = document.querySelector('#brand-home strong');
 const storybookStatus = document.querySelector('#storybook-status');
 const storybookBook = document.querySelector('#storybook-book');
 const storybookChapterKicker = document.querySelector('#storybook-chapter-kicker');
@@ -508,8 +513,16 @@ function setPaperBoatState(nextState, message = null) {
 
 function startPaperBoatWait() {
   if (!paperBoatSequence) return;
+  // Keep the cinematic waiting layer outside the expression workbench so no
+  // parent layout, transform, or overflow rule can constrain its viewport.
+  if (paperBoatSequence.parentElement !== document.body) {
+    document.body.appendChild(paperBoatSequence);
+  }
   clearPaperBoatWait();
   state.paperBoat.state = 'folding';
+  if (paperBoatFoldEyebrow) paperBoatFoldEyebrow.textContent = '风铃正在收好这句话';
+  if (paperBoatFoldTitle) paperBoatFoldTitle.textContent = '纸张正在折叠';
+  if (paperBoatFoldCopy) paperBoatFoldCopy.textContent = '把这句话，折成一只可以出发的纸船。';
   paperBoatSequence.dataset.paperBoatState = 'folding';
   paperBoatSequence.hidden = false;
   document.body.dataset.paperBoatWaiting = 'true';
@@ -520,6 +533,9 @@ function startPaperBoatWait() {
   }
   state.paperBoat.transitionTimer = window.setTimeout(() => {
     setPaperBoatState('floating');
+    if (paperBoatFoldEyebrow) paperBoatFoldEyebrow.textContent = '纸船已经出发';
+    if (paperBoatFoldTitle) paperBoatFoldTitle.textContent = '纸船正驶向远方';
+    if (paperBoatFoldCopy) paperBoatFoldCopy.textContent = '载着这句话，去往还没有名字的湖面。';
     if (paperBoatVideo) {
       state.paperBoat.voyageCopyListener = syncPaperBoatVoyageCopy;
       paperBoatVideo.addEventListener('timeupdate', state.paperBoat.voyageCopyListener);
@@ -724,7 +740,9 @@ function syncStorybookControls(snapshot = state.storybook.reader?.snapshot()) {
 
 function releaseStorybookPageTurn() {
   if (state.storybook.turnTimer !== null) window.clearTimeout(state.storybook.turnTimer);
+  if (state.storybook.illustrationTimer !== null) window.clearTimeout(state.storybook.illustrationTimer);
   state.storybook.turnTimer = null;
+  state.storybook.illustrationTimer = null;
   state.storybook.turning = false;
   syncStorybookControls();
 }
@@ -746,16 +764,18 @@ function clearTurnSheets() {
   storybookBook.querySelectorAll('.storybook-turn-sheet').forEach((sheet) => sheet.remove());
 }
 
-function animatePageTurn(direction, oldPage) {
+function animatePageTurn(direction, oldPage, currentPageOverride = null) {
   if (!storybookBook || !oldPage) return;
   clearTurnSheets();
 
   const pageClass = direction === 'previous' ? 'storybook-page--illustration' : 'storybook-page--copy';
-  const currentPage = storybookBook.querySelector('.' + pageClass);
+  const currentPage = currentPageOverride || storybookBook.querySelector('.' + pageClass);
   const makeFace = (page, faceClass) => {
     const face = page.cloneNode(true);
+    const isIllustration = page.classList.contains('storybook-page--illustration');
     face.classList.remove('storybook-page');
     face.classList.add('storybook-turn-face', faceClass);
+    face.dataset.turnPage = isIllustration ? 'illustration' : 'copy';
     face.removeAttribute('aria-label');
     face.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
     return face;
@@ -796,28 +816,8 @@ function renderStoryProgress(storyPackage, currentChapter) {
   storybookProgress.replaceChildren(...items);
 }
 
-function renderStoryChapter({ animate = false } = {}) {
-  const storyPackage = state.storybook.storyPackage;
-  const reader = state.storybook.reader;
-  if (!storyPackage || !reader) return;
-
-  const oldPage = animate === 'previous'
-    ? storybookBook.querySelector('.storybook-page--illustration')
-    : storybookBook.querySelector('.storybook-page--copy');
-  const oldPageSnapshot = oldPage?.cloneNode(true);
-  const snapshot = reader.snapshot();
-  const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
-  const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
-  storybookBook.classList.toggle('is-closed', closed);
-  storybookBook.dataset.readerPhase = snapshot.phase;
-  storybookBook.dataset.currentChapter = String(snapshot.currentChapter);
-  storybookBook.hidden = closed;
-  storybookKeepsake.hidden = !closed;
-  storybookTitle.textContent = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '绾线与旅人的七章童话';
-  storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
-  storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
-  storybookChapterText.textContent = card.userVisibleCopy.chapterText;
-  storybookIllustrationState.replaceChildren();
+function renderStoryIllustration(storyPackage, snapshot, card, target = storybookIllustrationState) {
+  target.replaceChildren();
   const illustration = storyPackage.chapterIllustrations?.find(
     (item) => item.chapterNumber === snapshot.currentChapter
       && (item.state === 'succeeded' || item.state === 'fallback')
@@ -831,31 +831,69 @@ function renderStoryChapter({ animate = false } = {}) {
     illustrationImage.width = 720;
     illustrationImage.height = 1280;
     illustrationImage.loading = 'eager';
-    storybookIllustrationState.append(illustrationImage);
-    if (illustration.state === 'fallback') {
-      const fallbackNote = document.createElement('small');
-      fallbackNote.className = 'storybook-fallback-note';
-      fallbackNote.textContent = '本章使用已审核模板画面';
-      storybookIllustrationState.append(fallbackNote);
-    }
-  } else {
-    const illustrationGlyph = document.createElement('span');
-    illustrationGlyph.className = 'storybook-empty-glyph';
-    illustrationGlyph.setAttribute('aria-hidden', 'true');
-    illustrationGlyph.textContent = '✧';
-    const illustrationTitle = document.createElement('strong');
-    illustrationTitle.textContent = '章节插画尚未生成';
-    const illustrationDetail = document.createElement('span');
-    illustrationDetail.textContent = '七章真实生成完成后才会在这里出现。';
-    storybookIllustrationState.append(illustrationGlyph, illustrationTitle, illustrationDetail);
+    target.append(illustrationImage);
+    return;
   }
+
+  const illustrationGlyph = document.createElement('span');
+  illustrationGlyph.className = 'storybook-empty-glyph';
+  illustrationGlyph.setAttribute('aria-hidden', 'true');
+  illustrationGlyph.textContent = '✧';
+  const illustrationTitle = document.createElement('strong');
+  illustrationTitle.textContent = '章节插画尚未生成';
+  const illustrationDetail = document.createElement('span');
+  illustrationDetail.textContent = '七章真实生成完成后才会在这里出现。';
+  target.append(illustrationGlyph, illustrationTitle, illustrationDetail);
+}
+
+function renderStoryChapter({ animate = false } = {}) {
+  const storyPackage = state.storybook.storyPackage;
+  const reader = state.storybook.reader;
+  if (!storyPackage || !reader) return;
+
+  const oldPage = animate === 'previous'
+    ? storybookBook.querySelector('.storybook-page--illustration')
+    : storybookBook.querySelector('.storybook-page--copy');
+  const oldPageSnapshot = oldPage?.cloneNode(true);
+  const snapshot = reader.snapshot();
+  const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
+  const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
+  let turnPageOverride = null;
+  if (animate) {
+    turnPageOverride = storybookBook.querySelector('.storybook-page--illustration')?.cloneNode(true);
+    const turnIllustrationState = turnPageOverride?.querySelector('.storybook-illustration-state');
+    if (turnIllustrationState) renderStoryIllustration(storyPackage, snapshot, card, turnIllustrationState);
+  }
+  storybookBook.classList.toggle('is-closed', closed);
+  storybookBook.dataset.readerPhase = snapshot.phase;
+  storybookBook.dataset.currentChapter = String(snapshot.currentChapter);
+  storybookBook.hidden = closed;
+  storybookKeepsake.hidden = !closed;
+  const bookTitle = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '绾线与旅人的七章童话';
+  storybookTitle.textContent = bookTitle;
+  if (brandTitle) brandTitle.textContent = bookTitle;
+  storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
+  storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
+  storybookChapterText.textContent = card.userVisibleCopy.chapterText;
+  if (!animate) renderStoryIllustration(storyPackage, snapshot, card);
   renderStoryProgress(storyPackage, snapshot.currentChapter);
   storybookStatus.textContent = closed ? '书已合上，故事停在第七章' : '请由你亲手翻动每一章';
   syncStorybookControls(snapshot);
-  if (animate) animatePageTurn(animate, oldPageSnapshot);
+  if (animate) {
+    animatePageTurn(animate, oldPageSnapshot, turnPageOverride);
+    state.storybook.illustrationTimer = window.setTimeout(() => {
+      state.storybook.illustrationTimer = null;
+      const latestSnapshot = state.storybook.reader?.snapshot();
+      if (latestSnapshot) {
+        const latestCard = storyPackage.chapterCards[latestSnapshot.currentChapter - 1];
+        renderStoryIllustration(storyPackage, latestSnapshot, latestCard);
+      }
+    }, STORYBOOK_PAGE_TURN_MS);
+  }
   saveStorybookSnapshot();
 }
 
+// 章节插画尚未生成时，阅读器仍然可以正常打开。
 function initializeStoryReader(storyPackage, snapshot = null) {
   releaseStorybookPageTurn();
   if (!window.DreamBookReader) throw new Error('reader_unavailable');
