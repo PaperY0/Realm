@@ -5,6 +5,8 @@
   "description": "藏梦书境 V0 本机单实例 Demo",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/stage3.test.js && node tests/stage4.test.js"
+    "test": "node tests/stage3.test.js && node tests/stage4.test.js && node tests/stage5.test.js",
+    "demo": "node server.js",
+    "demo:check": "npm test && node scripts/demo-preflight.js && node --check src/app.js && node --check server.js"
   }
 }
