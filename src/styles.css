@@ -4655,6 +4655,10 @@ body[data-stage="expression"] .scene--expression {
   background: url('/assets/expression-watercolor-wash.png') center / cover no-repeat;
 }
 
+body[data-stage="expression"] .world-shell {
+  background: url('/assets/expression-watercolor-wash.png') center / cover no-repeat;
+}
+
 body[data-stage="expression"] .world-footer,
 body[data-stage="expression"] .paper-world__cloud,
 body[data-stage="expression"] .paper-world__spark {
