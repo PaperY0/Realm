@@ -1685,3 +1685,229 @@ body.reduce-motion *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
 }
+
+/* Stage 4 reference-faithful world gate: preserve every supplied painted detail. */
+body[data-stage="door"] {
+  background: #6b5c94;
+}
+
+body[data-stage="door"] .world-shell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.motion-toggle--global {
+  position: absolute;
+  z-index: 55;
+  top: clamp(16px, 2.4vh, 30px);
+  right: clamp(20px, 3vw, 58px);
+}
+
+body[data-stage="door"] .world-header {
+  display: none;
+}
+
+body[data-stage="door"] .motion-toggle--global {
+  position: fixed;
+  z-index: 60;
+  top: 12px;
+  right: 12px;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+body[data-stage="door"] .motion-toggle--global:focus-within {
+  width: auto;
+  height: auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  overflow: visible;
+  border: 1px solid rgba(255, 247, 220, 0.72);
+  border-radius: 999px;
+  background: rgba(65, 52, 91, 0.82);
+  color: #fff9e8;
+  box-shadow: 0 8px 30px rgba(35, 25, 52, 0.3);
+  clip: auto;
+  white-space: normal;
+  clip-path: none;
+}
+
+body[data-stage="door"] .world-footer {
+  display: none;
+}
+
+body[data-stage="door"] .world-shell::after {
+  opacity: 0;
+}
+
+body[data-stage="door"] .scene-deck,
+body[data-stage="door"] .scene--door {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.scene--door {
+  place-items: center;
+  padding: 0;
+  isolation: isolate;
+  background: #6b5c94;
+}
+
+.scene--door::before {
+  position: absolute;
+  z-index: 0;
+  inset: -5%;
+  background: #6b5c94 url("/assets/world-gate-reference.png") center / cover no-repeat;
+  content: "";
+  opacity: 0.72;
+  filter: blur(28px) saturate(0.86) brightness(0.72);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+.reference-stage {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(100vw, calc(100dvh * 1.7777778));
+  height: min(100dvh, calc(100vw * 0.5625));
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #6b5c94;
+  box-shadow: 0 0 70px rgba(44, 34, 66, 0.2);
+  transform: translate(-50%, -50%);
+  touch-action: none;
+  user-select: none;
+}
+
+.reference-art,
+.reference-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.reference-art {
+  pointer-events: none;
+}
+
+.reference-art img {
+  object-fit: contain;
+  object-position: center;
+}
+
+.reference-seam-light {
+  position: absolute;
+  z-index: 4;
+  top: 19.5%;
+  bottom: 12.5%;
+  left: 49.82%;
+  width: calc(0.16% + var(--door-open) * 2.5%);
+  border-radius: 50%;
+  opacity: var(--door-open);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 250, 190, 0.98) 0 15%,
+    rgba(255, 221, 75, 0.78) 34%,
+    rgba(255, 171, 44, 0.28) 63%,
+    transparent 78%
+  );
+  filter: blur(calc(1px + var(--door-open) * 8px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.reference-door-hotspot,
+.reference-door-hotspot:hover,
+.reference-door-hotspot:active,
+.reference-door-hotspot.is-dragging {
+  position: absolute;
+  z-index: 8;
+  top: 47.57%;
+  left: 47.61%;
+  display: block;
+  width: 11.96%;
+  height: 27.08%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 54% 46% 58% 42%;
+  opacity: 1;
+  background: transparent;
+  box-shadow: none;
+  transform: translate3d(calc(var(--door-open) * 30%), 0, 24px);
+  transition: transform 80ms linear, box-shadow 120ms ease;
+  cursor: grab;
+  touch-action: none;
+}
+
+.reference-door-hotspot:focus-visible {
+  outline: 3px solid rgba(255, 247, 190, 0.96);
+  outline-offset: 3px;
+  background: rgba(255, 228, 104, 0.05);
+  box-shadow: 0 0 0 7px rgba(89, 62, 119, 0.55), 0 0 24px rgba(255, 215, 73, 0.45);
+}
+
+.reference-door-hotspot:active,
+.reference-door-hotspot.is-dragging {
+  cursor: grabbing;
+}
+
+.reference-stage .door-hint.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+body.reduce-motion .reference-door-hotspot,
+body.reduce-motion .reference-seam-light {
+  transition-duration: 1ms !important;
+}
+
+@media (max-width: 900px) {
+  body[data-stage="door"] .world-shell,
+  body[data-stage="door"] .scene-deck,
+  body[data-stage="door"] .scene--door {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .reference-stage {
+    width: 100vw;
+    height: calc(100vw * 0.5625);
+    max-height: 100dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reference-door-hotspot,
+  .reference-seam-light {
+    transition-duration: 1ms !important;
+  }
+}

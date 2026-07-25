@@ -13,6 +13,7 @@ const ASSETS = new Map([
   ['/', { file: 'index.html', contentType: 'text/html; charset=utf-8' }],
   ['/styles.css', { file: 'styles.css', contentType: 'text/css; charset=utf-8' }],
   ['/app.js', { file: 'app.js', contentType: 'text/javascript; charset=utf-8' }],
+  ['/assets/world-gate-reference.png', { file: 'assets/world-gate-reference.png', contentType: 'image/png' }],
 ]);
 
 function getPort(value) {

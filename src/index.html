@@ -18,76 +18,44 @@
             <small>一个把心事写成童话的世界</small>
           </span>
         </a>
-        <label class="motion-toggle">
-          <input id="reduce-motion" type="checkbox" />
-          <span class="toggle-track" aria-hidden="true"><span></span></span>
-          <span>减少动态</span>
-        </label>
       </header>
+
+      <label class="motion-toggle motion-toggle--global">
+        <input id="reduce-motion" type="checkbox" aria-label="减少动态" />
+        <span class="toggle-track" aria-hidden="true"><span></span></span>
+        <span>减少动态</span>
+      </label>
 
       <main class="scene-deck" id="scene-deck">
         <section class="scene scene--door is-active" data-scene="door" aria-labelledby="door-title">
-          <div class="wash wash--violet" aria-hidden="true"></div>
-          <div class="mist mist--one" aria-hidden="true"></div>
-          <div class="mist mist--two" aria-hidden="true"></div>
-          <div class="paper-hills" aria-hidden="true">
-            <span class="hill hill--far"></span>
-            <span class="hill hill--near"></span>
-          </div>
-
-          <div class="door-copy scene-copy">
-            <p class="eyebrow">DREAM BOOK WORLD · V0</p>
-            <h1 id="door-title">推开门，<br />让心事成为童话。</h1>
-            <p>门后的路只通向一个地方。把门把向右拉开，拾页会在那边等你。</p>
-          </div>
-
-          <div class="door-stage" aria-label="童话世界大门">
-            <div class="door-frame" id="door-frame">
-              <div class="door-glow" aria-hidden="true"></div>
-              <div class="door-panel door-panel--left" aria-hidden="true">
-                <span class="door-paper-line line-one"></span>
-                <span class="door-paper-line line-two"></span>
-              </div>
-              <div class="door-panel door-panel--right" aria-hidden="true">
-                <span class="door-paper-line line-three"></span>
-                <span class="door-paper-line line-four"></span>
-              </div>
-              <div class="door-world" aria-hidden="true">
-                <span class="world-sun"></span>
-                <span class="world-tree tree-one"></span>
-                <span class="world-tree tree-two"></span>
-                <span class="world-path"></span>
-              </div>
-              <button
-                class="door-handle"
-                id="door-handle"
-                type="button"
-                role="slider"
-                aria-label="拖动门把打开童话世界大门"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-                aria-describedby="door-hint"
-              >
-                <span class="handle-grip" aria-hidden="true"></span>
-                <span class="handle-pull" aria-hidden="true">→</span>
-              </button>
-            </div>
-            <p class="door-hint" id="door-hint">
-              <span aria-hidden="true">↔</span>
-              拖住门把向右拉 · 键盘可用方向键或 Enter
+          <h1 class="sr-only" id="door-title">推开童话世界大门</h1>
+          <div class="reference-stage" id="door-frame">
+            <picture class="reference-art">
+              <img
+                src="/assets/world-gate-reference.png"
+                width="2048"
+                height="1152"
+                alt="水彩童话世界：星星拱门立在山丘中央，橙色小路穿过花草通向发光的双开门，左下角有背着绿色挎包的白色小引路人"
+                draggable="false"
+              />
+            </picture>
+            <span class="reference-seam-light" aria-hidden="true"></span>
+            <button
+              class="door-handle reference-door-hotspot"
+              id="door-handle"
+              type="button"
+              role="slider"
+              aria-label="拖动门上的叶形把手打开童话世界大门"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-describedby="door-hint"
+            >
+              <span class="sr-only">向右拖动开门，也可按 Enter</span>
+            </button>
+            <p class="door-hint sr-only" id="door-hint">
+              向右拖动叶形门把，或按 Enter 打开大门
             </p>
-          </div>
-
-          <div class="guide-card guide-card--shiye" aria-label="世界引路人拾页">
-            <div class="character character--shiye" aria-hidden="true">
-              <span class="character-ear ear-left"></span>
-              <span class="character-ear ear-right"></span>
-              <span class="character-face"><i></i><i></i></span>
-              <span class="character-body"></span>
-              <span class="character-bag">页</span>
-            </div>
-            <p><strong>拾页</strong><span>“慢一点也没关系，门会跟着你的手醒来。”</span></p>
           </div>
         </section>
 

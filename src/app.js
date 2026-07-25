@@ -30,6 +30,8 @@ const state = {
   draggingDoor: false,
   dragStartX: 0,
   dragStartProgress: 0,
+  dragTravel: 220,
+  dragPointerId: null,
   doorOpened: false,
   displayName: '',
   pocketMark: '',
@@ -39,6 +41,7 @@ const state = {
 const scenes = Array.from(document.querySelectorAll('[data-scene]'));
 const body = document.body;
 const brandHome = document.querySelector('#brand-home');
+const doorScene = document.querySelector('[data-scene="door"]');
 const doorFrame = document.querySelector('#door-frame');
 const doorHandle = document.querySelector('#door-handle');
 const doorHint = document.querySelector('#door-hint');
@@ -172,9 +175,20 @@ function setDoorProgress(nextProgress) {
   }
 }
 
-function finishOpeningDoor() {
-  state.doorOpened = true;
+function clearDoorDrag(pointerId = state.dragPointerId) {
   state.draggingDoor = false;
+  state.dragPointerId = null;
+  doorHandle.classList.remove('is-dragging');
+  doorScene.classList.remove('is-engaged');
+  if (pointerId !== null && pointerId !== undefined && doorHandle.hasPointerCapture?.(pointerId)) {
+    doorHandle.releasePointerCapture(pointerId);
+  }
+}
+
+function finishOpeningDoor() {
+  if (state.doorOpened) return;
+  state.doorOpened = true;
+  clearDoorDrag();
   setDoorProgress(1);
   doorHandle.setAttribute('aria-disabled', 'true');
   doorHint.innerHTML = '<span aria-hidden="true">✦</span> 门已经醒了，拾页正带你往前走';
@@ -184,28 +198,29 @@ function finishOpeningDoor() {
 
 function handleDoorPointerDown(event) {
   if (state.doorOpened || event.button > 0) return;
+  const frameBounds = doorFrame.getBoundingClientRect();
   state.draggingDoor = true;
+  state.dragPointerId = event.pointerId;
   state.dragStartX = event.clientX;
   state.dragStartProgress = state.doorProgress;
+  const availableTravel = Math.max(80, frameBounds.right - state.dragStartX - 8);
+  state.dragTravel = Math.max(80, Math.min(frameBounds.width * 0.48, availableTravel / 0.92));
   doorHandle.setPointerCapture?.(event.pointerId);
   doorHandle.classList.add('is-dragging');
+  doorScene.classList.add('is-engaged');
 }
 
 function handleDoorPointerMove(event) {
   if (!state.draggingDoor || state.doorOpened) return;
-  const travel = Math.max(220, doorFrame.getBoundingClientRect().width * 0.48);
   const delta = event.clientX - state.dragStartX;
-  setDoorProgress(state.dragStartProgress + delta / travel);
+  setDoorProgress(state.dragStartProgress + delta / state.dragTravel);
 }
 
 function stopDoorDrag(event) {
-  if (!state.draggingDoor) return;
-  state.draggingDoor = false;
-  doorHandle.classList.remove('is-dragging');
-  if (event?.pointerId !== undefined && doorHandle.hasPointerCapture?.(event.pointerId)) {
-    doorHandle.releasePointerCapture(event.pointerId);
-  }
-  if (!state.doorOpened && state.doorProgress > 0.68) finishOpeningDoor();
+  if (!state.draggingDoor && state.dragPointerId === null) return;
+  const shouldOpen = !state.doorOpened && state.doorProgress > 0.68;
+  clearDoorDrag(event?.pointerId);
+  if (shouldOpen) finishOpeningDoor();
 }
 
 function handleDoorKeyboard(event) {
@@ -230,12 +245,12 @@ function handleDoorKeyboard(event) {
   setDoorProgress(increments[event.key] === 1 ? 1 : increments[event.key] === -1 ? 0 : state.doorProgress + increments[event.key]);
 }
 
+
 function resetEntry() {
   state.doorOpened = false;
-  state.draggingDoor = false;
+  clearDoorDrag();
   doorHandle.removeAttribute('aria-disabled');
-  doorHandle.classList.remove('is-dragging');
-  doorHint.innerHTML = '<span aria-hidden="true">↔</span> 拖住门把向右拉 · 键盘可用方向键或 Enter';
+  doorHint.innerHTML = '<span aria-hidden="true">↔</span> 向右拉开门把 · 也可按 Enter';
   setDoorProgress(0);
   goToScene('door');
   window.setTimeout(() => doorHandle.focus(), state.reduceMotion ? 0 : 350);
