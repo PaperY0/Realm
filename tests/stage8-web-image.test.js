@@ -31,7 +31,7 @@ assert.match(html, /我总担心自己做得不够好，明明很累，却还是
 assert.match(html, /id="expression-text"[^>]*maxlength="800"/);
 assert.match(html, /id="expression-not-sure"[^>]*>我还不知道怎么说</);
 assert.match(html, /id="followup-skip"/);
-assert.match(html, /id="generate-story"[^>]*>把它写成童话</);
+assert.match(html, /id="generate-image"[^>]*>生成真实第一章插画</);
 assert.match(html, /真实 AI · gpt-image-2/);
 assert.match(html, /正在整理故事线/);
 assert.match(html, /正在调色/);
@@ -56,7 +56,9 @@ assert.match(app, /url\.origin !== window\.location\.origin/);
 assert.match(app, /url\.pathname\.startsWith\('\/runtime\/generated\/'\)/);
 assert.match(app, /generatedImage\.removeAttribute\('src'\)/);
 assert.match(requestSource, /state\.expression\.generationAttempted/);
-assert.match(requestSource, /generateStory\.disabled = true/);
+assert.match(requestSource, /generateImage\.disabled = true/);
+assert.match(app, /generateImage\.addEventListener\('click', requestRealImage\)/);
+assert.doesNotMatch(app, /generateStory\.addEventListener\('click', requestRealImage\)/);
 assert.doesNotMatch(app, /retryGeneration/);
 
 // Evaluate the pure Stage 8 logic in isolation.

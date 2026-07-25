@@ -2,12 +2,15 @@
 
 const PROFILE_KEY = 'dream-book-world.profile.v0';
 const MOTION_KEY = 'dream-book-world.reduce-motion.v0';
-const SCENE_ORDER = ['door', 'traveler', 'foyer', 'expression'];
+const STORYBOOK_STORAGE_KEY = 'dream-book-world.storybook.v0';
+const STORYBOOK_PAGE_TURN_MS = 560;
+const SCENE_ORDER = ['door', 'traveler', 'foyer', 'expression', 'storybook'];
 const SCENE_LABELS = {
   door: '世界大门',
   traveler: '旅人初页',
   foyer: '内耗之门',
   expression: '风铃入口',
+  storybook: '七章绘本',
 };
 const MARK_LABELS = {
   star: '星星',
@@ -62,6 +65,15 @@ const state = {
     requestController: null,
     progressTimers: [],
   },
+  storybook: {
+    storyPackage: null,
+    reader: null,
+    loading: false,
+    requestToken: 0,
+    requestController: null,
+    turning: false,
+    turnTimer: null,
+  },
 };
 
 const scenes = Array.from(document.querySelectorAll('[data-scene]'));
@@ -99,6 +111,7 @@ const followupSkip = document.querySelector('#followup-skip');
 const briefPanel = document.querySelector('#brief-panel');
 const safeSummary = document.querySelector('#safe-summary');
 const generateStory = document.querySelector('#generate-story');
+const generateImage = document.querySelector('#generate-image');
 const newExpression = document.querySelector('#new-expression');
 const generationCard = document.querySelector('#generation-card');
 const generationIdle = document.querySelector('#generation-idle');
@@ -111,6 +124,21 @@ const generatedImage = document.querySelector('#generated-image');
 const generatedCaption = document.querySelector('#generated-caption');
 const generationSteps = Array.from(document.querySelectorAll('[data-progress-step]'));
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
+const storybookTitle = document.querySelector('#storybook-title');
+const storybookStatus = document.querySelector('#storybook-status');
+const storybookBook = document.querySelector('#storybook-book');
+const storybookChapterKicker = document.querySelector('#storybook-chapter-kicker');
+const storybookChapterTitle = document.querySelector('#storybook-chapter-title');
+const storybookChapterText = document.querySelector('#storybook-chapter-text');
+const storybookIllustrationState = document.querySelector('#storybook-illustration-state');
+const storybookPrevious = document.querySelector('#storybook-prev');
+const storybookNext = document.querySelector('#storybook-next');
+const storybookClose = document.querySelector('#storybook-close');
+const storybookReopen = document.querySelector('#storybook-reopen');
+const storybookReturn = document.querySelector('#storybook-return');
+const storybookProgress = document.querySelector('#storybook-progress');
+const storybookKeepsake = document.querySelector('#storybook-keepsake');
+const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookReturn].filter(Boolean);
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -496,14 +524,15 @@ function resetGenerationView() {
   state.expression.requestToken += 1;
   generatedImage.removeAttribute('src');
   state.expression.generationAttempted = false;
-  generateStory.disabled = false;
+  if (generateImage) generateImage.disabled = false;
   generationErrorMessage.textContent = '本次请求已安全结束，不会在页面内重试。';
   generationSteps.forEach((step) => step.classList.remove('is-active', 'is-complete'));
   setGenerationView('idle');
 }
 
-function resetExpressionFlow({ focus = false } = {}) {
+function resetExpressionFlow({ focus = false, preserveStorybook = false } = {}) {
   resetGenerationView();
+  if (!preserveStorybook) resetStorybook();
   state.expression.mode = null;
   state.expression.followUpIndex = 0;
   state.expression.safeBrief = null;
@@ -615,6 +644,251 @@ function finishExpressionBrief() {
   window.setTimeout(() => generateStory.focus(), state.reduceMotion ? 0 : 180);
 }
 
+function clearStorybookStorage() {
+  try {
+    window.localStorage.removeItem(STORYBOOK_STORAGE_KEY);
+  } catch {
+    // Storage is optional; the in-memory reader remains usable.
+  }
+}
+
+function resetStorybook() {
+  releaseStorybookPageTurn();
+  state.storybook.requestController?.abort();
+  state.storybook.requestController = null;
+  state.storybook.requestToken += 1;
+  state.storybook.loading = false;
+  state.storybook.storyPackage = null;
+  state.storybook.reader = null;
+  clearStorybookStorage();
+  if (storybookBook) storybookBook.classList.remove('is-turning-next', 'is-turning-previous', 'is-closed');
+  if (storybookStatus) storybookStatus.textContent = '七章故事尚未生成';
+  if (generateStory) {
+    generateStory.disabled = false;
+    generateStory.textContent = '生成七章故事';
+  }
+}
+
+function readerChaptersFrom(storyPackage) {
+  const cards = storyPackage?.chapterCards;
+  if (!Array.isArray(cards) || cards.length !== 7) throw new Error('invalid_story_package');
+  return cards.map((card, index) => {
+    const chapterNumber = card?.identity?.chapterNumber;
+    const chapterId = card?.identity?.chapterId;
+    const title = card?.userVisibleCopy?.chapterTitle;
+    const text = card?.userVisibleCopy?.chapterText;
+    if (chapterNumber !== index + 1 || typeof chapterId !== 'string' || !chapterId || typeof title !== 'string' || !title || typeof text !== 'string' || !text) {
+      throw new Error('invalid_story_package');
+    }
+    return { chapterNumber, chapterId };
+  });
+}
+
+function saveStorybookSnapshot() {
+  if (!state.storybook.storyPackage || !state.storybook.reader) return;
+  safeStorageSet(STORYBOOK_STORAGE_KEY, JSON.stringify({
+    storyPackage: state.storybook.storyPackage,
+    readerSnapshot: state.storybook.reader.snapshot(),
+  }));
+}
+
+function syncStorybookControls(snapshot = state.storybook.reader?.snapshot()) {
+  if (!snapshot || !state.storybook.reader) return;
+  const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
+  const turning = state.storybook.turning;
+  storybookPrevious.disabled = closed || turning || !state.storybook.reader.canGoPrevious();
+  storybookNext.disabled = closed || turning || !state.storybook.reader.canGoNext();
+  storybookNext.hidden = closed || state.storybook.reader.canCloseBook();
+  storybookClose.hidden = closed || !state.storybook.reader.canCloseBook();
+  storybookClose.disabled = closed || turning || !state.storybook.reader.canCloseBook();
+  storybookReopen.hidden = !closed;
+}
+
+function releaseStorybookPageTurn() {
+  if (state.storybook.turnTimer !== null) window.clearTimeout(state.storybook.turnTimer);
+  state.storybook.turnTimer = null;
+  state.storybook.turning = false;
+  syncStorybookControls();
+}
+
+function beginStorybookPageTurn() {
+  if (state.reduceMotion) return true;
+  if (state.storybook.turning) return false;
+  state.storybook.turning = true;
+  syncStorybookControls();
+  state.storybook.turnTimer = window.setTimeout(() => {
+    state.storybook.turnTimer = null;
+    state.storybook.turning = false;
+    syncStorybookControls();
+  }, STORYBOOK_PAGE_TURN_MS);
+  return true;
+}
+
+function animatePageTurn(direction) {
+  if (!storybookBook || state.reduceMotion) return;
+  const className = direction === 'previous' ? 'is-turning-previous' : 'is-turning-next';
+  storybookBook.classList.remove('is-turning-next', 'is-turning-previous');
+  void storybookBook.offsetWidth;
+  storybookBook.classList.add(className);
+  window.setTimeout(() => storybookBook.classList.remove(className), STORYBOOK_PAGE_TURN_MS);
+}
+
+function renderStoryProgress(storyPackage, currentChapter) {
+  const items = storyPackage.chapterCards.map((card, index) => {
+    const item = document.createElement('li');
+    const number = index + 1;
+    item.dataset.chapterNumber = String(number);
+    item.classList.toggle('is-current', number === currentChapter);
+    if (number === currentChapter) item.setAttribute('aria-current', 'step');
+    const numberLabel = document.createElement('span');
+    numberLabel.textContent = String(number).padStart(2, '0');
+    const title = document.createElement('small');
+    title.textContent = card.userVisibleCopy.chapterTitle;
+    item.append(numberLabel, title);
+    return item;
+  });
+  storybookProgress.replaceChildren(...items);
+}
+
+function renderStoryChapter({ animate = false } = {}) {
+  const storyPackage = state.storybook.storyPackage;
+  const reader = state.storybook.reader;
+  if (!storyPackage || !reader) return;
+
+  const snapshot = reader.snapshot();
+  const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
+  const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
+  storybookBook.classList.toggle('is-closed', closed);
+  storybookBook.dataset.readerPhase = snapshot.phase;
+  storybookBook.dataset.currentChapter = String(snapshot.currentChapter);
+  storybookBook.hidden = closed;
+  storybookKeepsake.hidden = !closed;
+  storybookTitle.textContent = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '理线人与旅人的七章童话';
+  storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
+  storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
+  storybookChapterText.textContent = card.userVisibleCopy.chapterText;
+  storybookIllustrationState.replaceChildren();
+  const illustrationGlyph = document.createElement('span');
+  illustrationGlyph.className = 'storybook-empty-glyph';
+  illustrationGlyph.setAttribute('aria-hidden', 'true');
+  illustrationGlyph.textContent = '✧';
+  const illustrationTitle = document.createElement('strong');
+  illustrationTitle.textContent = '章节插画尚未生成';
+  const illustrationDetail = document.createElement('span');
+  illustrationDetail.textContent = '真实生成完成后才会在这里出现。';
+  storybookIllustrationState.append(illustrationGlyph, illustrationTitle, illustrationDetail);
+  renderStoryProgress(storyPackage, snapshot.currentChapter);
+  storybookStatus.textContent = closed ? '书已合上，故事停在第七章' : '请由你亲手翻动每一章';
+  syncStorybookControls(snapshot);
+  if (animate) animatePageTurn(animate);
+  saveStorybookSnapshot();
+}
+
+function initializeStoryReader(storyPackage, snapshot = null) {
+  releaseStorybookPageTurn();
+  if (!window.DreamBookReader) throw new Error('reader_unavailable');
+  const chapters = readerChaptersFrom(storyPackage);
+  const reader = snapshot
+    ? window.DreamBookReader.restoreReaderState({ chapters, snapshot })
+    : window.DreamBookReader.createReaderState({ chapters });
+  state.storybook.storyPackage = storyPackage;
+  state.storybook.reader = reader;
+  renderStoryChapter();
+  return reader;
+}
+
+function restoreStorybookPreview() {
+  const stored = safeStorageGet(STORYBOOK_STORAGE_KEY);
+  if (!stored) return false;
+  try {
+    const saved = JSON.parse(stored);
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('invalid_snapshot');
+    initializeStoryReader(saved.storyPackage, saved.readerSnapshot);
+    return true;
+  } catch {
+    resetStorybook();
+    return false;
+  }
+}
+
+async function requestStoryPackage() {
+  if (state.storybook.loading || !state.expression.safeBrief || state.expression.safeBrief.safetyStatus !== 'story_safe') return;
+  state.storybook.loading = true;
+  generateStory.disabled = true;
+  generateStory.textContent = '正在写成七章…';
+  storybookStatus.textContent = '理线人正在整理七章故事';
+  const requestToken = ++state.storybook.requestToken;
+  const controller = new AbortController();
+  state.storybook.requestController = controller;
+  let response = null;
+  let payload = null;
+
+  try {
+    response = await fetch('/api/story-package', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ safeStoryBrief: state.expression.safeBrief }),
+      signal: controller.signal,
+    });
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+    if (!response.ok || payload?.ok !== true || !payload.storyPackage) throw new Error('story_generation_failed');
+    if (requestToken !== state.storybook.requestToken) return;
+    initializeStoryReader(payload.storyPackage);
+    generateStory.textContent = '七章故事已生成';
+    goToScene('storybook');
+    announce('七章童话已经写好，请由你亲手翻页');
+  } catch (error) {
+    if (requestToken !== state.storybook.requestToken || error?.name === 'AbortError') return;
+    storybookStatus.textContent = response?.status === 400
+      ? '安全故事线未通过服务端校验，请换一句重新说'
+      : '七章故事暂时没有生成，请检查本机服务后再试';
+    generateStory.disabled = false;
+    generateStory.textContent = '重新生成七章故事';
+    announce(storybookStatus.textContent);
+  } finally {
+    if (requestToken === state.storybook.requestToken) {
+      state.storybook.loading = false;
+      state.storybook.requestController = null;
+    }
+  }
+}
+
+function goPreviousChapter() {
+  if (!state.storybook.reader?.canGoPrevious() || !beginStorybookPageTurn()) return;
+  state.storybook.reader.previousChapter();
+  renderStoryChapter({ animate: 'previous' });
+  announce(storybookChapterKicker.textContent + '，' + storybookChapterTitle.textContent);
+}
+
+function goNextChapter() {
+  if (!state.storybook.reader?.canGoNext() || !beginStorybookPageTurn()) return;
+  state.storybook.reader.nextChapter();
+  renderStoryChapter({ animate: 'next' });
+  announce(storybookChapterKicker.textContent + '，' + storybookChapterTitle.textContent);
+}
+
+function closeStorybook() {
+  if (!state.storybook.reader?.canCloseBook() || !beginStorybookPageTurn()) return;
+  state.storybook.reader.closeBook();
+  renderStoryChapter({ animate: 'next' });
+  announce('你已经亲手合上这本七章童话');
+}
+
+function reopenStorybook() {
+  if (!state.storybook.storyPackage) return;
+  initializeStoryReader(state.storybook.storyPackage);
+  announce('故事重新从第一章打开');
+}
+
+function returnToExpression() {
+  goToScene('expression');
+  announce('已回到安全故事线，当前七章故事仍保留在本机');
+}
+
 function updateGenerationProgress(activeIndex) {
   const labels = ['正在整理故事线', '正在调色', 'gpt-image-2 正在绘制'];
   generationStatus.textContent = labels[activeIndex];
@@ -669,7 +943,7 @@ async function requestRealImage() {
   ) return;
   state.expression.generating = true;
   state.expression.generationAttempted = true;
-  generateStory.disabled = true;
+  generateImage.disabled = true;
   clearTransientExpression();
   startGenerationProgress();
 
@@ -715,7 +989,7 @@ async function requestRealImage() {
     if (requestToken === state.expression.requestToken) {
       state.expression.generating = false;
       state.expression.requestController = null;
-      generateStory.disabled = true;
+      generateImage.disabled = true;
     }
   }
 }
@@ -760,6 +1034,7 @@ function continueFromTraveler() {
 const travelerPressTargets = [travelerForm.querySelector('.primary-button'), skipProfile, ...markOptions];
 travelerPressTargets.forEach(bindPressFeedback);
 expressionPressTargets.forEach(bindPressFeedback);
+storybookPressTargets.forEach(bindPressFeedback);
 
 doorHandle.addEventListener('pointerdown', handleDoorPointerDown);
 doorHandle.addEventListener('pointermove', handleDoorPointerMove);
@@ -813,12 +1088,22 @@ expressionForm.addEventListener('submit', (event) => {
 expressionNotSure.addEventListener('click', () => startExpression('not_sure_how_to_say'));
 followupSubmit.addEventListener('click', () => completeFollowUp('answered'));
 followupSkip.addEventListener('click', () => completeFollowUp('skipped'));
-generateStory.addEventListener('click', requestRealImage);
+generateStory.addEventListener('click', requestStoryPackage);
+generateImage.addEventListener('click', requestRealImage);
+storybookPrevious.addEventListener('click', goPreviousChapter);
+storybookNext.addEventListener('click', goNextChapter);
+storybookClose.addEventListener('click', closeStorybook);
+storybookReopen.addEventListener('click', reopenStorybook);
+storybookReturn.addEventListener('click', returnToExpression);
 newExpression.addEventListener('click', () => resetExpressionFlow({ focus: true }));
 
 reduceMotionToggle.addEventListener('change', () => {
   state.reduceMotion = reduceMotionToggle.checked;
   body.classList.toggle('reduce-motion', state.reduceMotion);
+  if (state.reduceMotion) {
+    releaseStorybookPageTurn();
+    storybookBook.classList.remove('is-turning-next', 'is-turning-previous');
+  }
   safeStorageSet(MOTION_KEY, String(state.reduceMotion));
   announce(state.reduceMotion ? '已开启减少动态效果' : '已恢复完整动态效果');
 });
@@ -840,6 +1125,10 @@ window.__REALM_STAGE8__ = Object.freeze({
 });
 
 loadPreferences();
-resetExpressionFlow();
+resetExpressionFlow({ preserveStorybook: true });
 setDoorProgress(0);
-goToScene('door', { focus: false });
+if (restoreStorybookPreview()) {
+  goToScene('storybook', { focus: false });
+} else {
+  goToScene('door', { focus: false });
+}

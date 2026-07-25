@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%2730%27 fill=%27%23fffaf0%27/%3E%3Cpath d=%27M32 14c2.3 10.2 7.8 15.7 18 18-10.2 2.3-15.7 7.8-18 18-2.3-10.2-7.8-15.7-18-18 10.2-2.3 15.7-7.8 18-18Z%27 fill=%27%23cc8452%27/%3E%3C/svg%3E" />
     <title>藏梦书境 · 世界入口</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/reader-state.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body data-stage="door">
@@ -190,7 +191,8 @@
                 <h3>原始心事已清除，只留下不含身份信息的童话线索。</h3>
                 <ul class="safe-summary" id="safe-summary"></ul>
                 <div class="expression-actions">
-                  <button class="expression-primary expression-action" id="generate-story" type="button">把它写成童话</button>
+                  <button class="expression-primary expression-action" id="generate-story" type="button">生成七章故事</button>
+                  <button class="expression-quiet expression-action" id="generate-image" type="button">生成真实第一章插画</button>
                   <button class="expression-quiet expression-action" id="new-expression" type="button">换一句重新说</button>
                 </div>
               </div>
@@ -201,7 +203,7 @@
                 <span class="generation-spark" aria-hidden="true">✦</span>
                 <p class="eyebrow">一张真实童话主插画</p>
                 <h3 id="generation-title">不是样片，也不是预制结果。</h3>
-                <p>点击“把它写成童话”后，网页会请求服务端，由 <strong>gpt-image-2</strong> 现场绘制 720 × 1280 PNG。</p>
+                <p>点击“生成真实第一章插画”后，网页才会请求服务端，由 <strong>gpt-image-2</strong> 现场绘制 720 × 1280 PNG。生成七章故事不会产生图片费用。</p>
                 <div class="real-ai-badge"><i aria-hidden="true"></i>真实 AI · gpt-image-2</div>
               </div>
 
@@ -236,6 +238,106 @@
           </div>
 
           <button class="restart-expression expression-action" id="restart-demo" type="button">重新体验入口</button>
+        </section>
+
+        <section class="scene scene--storybook" data-scene="storybook" aria-labelledby="storybook-title" aria-hidden="true">
+          <div class="storybook-atmosphere" aria-hidden="true">
+            <span class="storybook-star storybook-star--one">✦</span>
+            <span class="storybook-star storybook-star--two">✧</span>
+            <span class="storybook-star storybook-star--three">✦</span>
+            <span class="storybook-thread storybook-thread--one"></span>
+            <span class="storybook-thread storybook-thread--two"></span>
+          </div>
+
+          <header class="storybook-heading">
+            <div class="storybook-heading-copy">
+              <p class="eyebrow">七章绘本 · 结构预览</p>
+              <h2 id="storybook-title">你的童话，已经装订成七个章节</h2>
+              <p id="storybook-status" class="storybook-status" role="status" aria-live="polite">
+                七章结构已准备；章节插画尚未生成。
+              </p>
+            </div>
+            <button class="storybook-control storybook-control--quiet" id="storybook-return" type="button">
+              <span aria-hidden="true">←</span> 返回故事线
+            </button>
+          </header>
+
+          <div class="storybook-reader-shell">
+            <aside class="storybook-chapter-rail" aria-label="七章目录">
+              <div class="storybook-rail-heading">
+                <span aria-hidden="true">❦</span>
+                <p>故事目录</p>
+              </div>
+              <ol id="storybook-progress" class="storybook-progress">
+                <li class="is-current" data-chapter-number="1" aria-current="step"><span>01</span><small>总也收不完的刻度</small></li>
+                <li data-chapter-number="2"><span>02</span><small>线团里的回声</small></li>
+                <li data-chapter-number="3"><span>03</span><small>不会熄灭的灯塔</small></li>
+                <li data-chapter-number="4"><span>04</span><small>留白桥</small></li>
+                <li data-chapter-number="5"><span>05</span><small>慢一拍的钟</small></li>
+                <li data-chapter-number="6"><span>06</span><small>把重线分给风</small></li>
+                <li data-chapter-number="7"><span>07</span><small>灯光里的停留</small></li>
+              </ol>
+              <p class="storybook-rail-note">每次只读一章，不会自动连播。</p>
+            </aside>
+
+            <div class="storybook-stage">
+              <article class="storybook-book" id="storybook-book" data-reader-phase="reading" aria-label="打开的七章童话书">
+                <span class="storybook-page-back storybook-page-back--left" aria-hidden="true"></span>
+                <span class="storybook-page-back storybook-page-back--right" aria-hidden="true"></span>
+                <span class="storybook-spine" aria-hidden="true"></span>
+
+                <section class="storybook-page storybook-page--illustration" aria-label="章节插画区域">
+                  <div class="storybook-page-corner" aria-hidden="true">✦</div>
+                  <p class="storybook-page-label">本章画面</p>
+                  <div class="storybook-illustration-state" id="storybook-illustration-state" role="status">
+                    <span class="storybook-empty-glyph" aria-hidden="true">✧</span>
+                    <strong>章节插画尚未生成</strong>
+                    <span>真实生成完成后才会在这里出现。</span>
+                  </div>
+                  <p class="storybook-truth-note"><span aria-hidden="true">○</span> 没有使用样片、假图或预制结果替代</p>
+                </section>
+
+                <section class="storybook-page storybook-page--copy" aria-labelledby="storybook-chapter-title">
+                  <div class="storybook-copy-rule" aria-hidden="true"><span></span><b>❧</b><span></span></div>
+                  <p class="storybook-chapter-kicker" id="storybook-chapter-kicker">第 1 章 / 共 7 章</p>
+                  <h3 id="storybook-chapter-title">总也收不完的刻度</h3>
+                  <p class="storybook-chapter-text" id="storybook-chapter-text">
+                    理线人发现山坡上的刻度藤越长越密，旅人的行囊也跟着变沉。它没有替旅人下结论，只邀请旅人先看清那些不断收紧的线。
+                  </p>
+                  <div class="storybook-page-mark" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <nav class="storybook-controls" aria-label="章节阅读控制">
+                    <button class="storybook-control storybook-control--page" id="storybook-prev" type="button" disabled>
+                      <span aria-hidden="true">←</span> 上一章
+                    </button>
+                    <span class="storybook-folio" aria-hidden="true">1 · 7</span>
+                    <button class="storybook-control storybook-control--primary" id="storybook-next" type="button">
+                      下一章 <span aria-hidden="true">→</span>
+                    </button>
+                    <button class="storybook-control storybook-control--primary" id="storybook-close" type="button" disabled>
+                      合上这本书
+                    </button>
+                  </nav>
+                </section>
+              </article>
+
+              <section class="storybook-keepsake" id="storybook-keepsake" aria-labelledby="storybook-keepsake-title" hidden>
+                <div class="storybook-closed-book" aria-hidden="true">
+                  <span class="storybook-closed-spine"></span>
+                  <span class="storybook-cover-star">✦</span>
+                  <strong>藏梦书境</strong>
+                  <small>七章已珍藏</small>
+                </div>
+                <div class="storybook-keepsake-copy">
+                  <p class="eyebrow">本机纪念页</p>
+                  <h3 id="storybook-keepsake-title">你已经亲手读完这本书</h3>
+                  <p>故事停在第七章。只有你主动选择，书页才会再次打开。</p>
+                  <button class="storybook-control storybook-control--primary" id="storybook-reopen" type="button">重新打开绘本</button>
+                </div>
+              </section>
+            </div>
+          </div>
         </section>
       </main>
 

@@ -10,6 +10,7 @@ const {
   ImageGenerationError,
   DEFAULT_MODEL,
 } = require('./src/services/image-generation');
+const { createStoryPackage } = require('./src/domain/story-package');
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3000;
@@ -30,6 +31,7 @@ const ASSETS = new Map([
   ['/', { file: 'index.html', contentType: 'text/html; charset=utf-8' }],
   ['/styles.css', { file: 'styles.css', contentType: 'text/css; charset=utf-8' }],
   ['/app.js', { file: 'app.js', contentType: 'text/javascript; charset=utf-8' }],
+  ['/reader-state.js', { file: 'features/reader/reader-state.js', contentType: 'text/javascript; charset=utf-8' }],
   ['/assets/world-gate-reference.png', { file: 'assets/world-gate-reference.png', contentType: 'image/png' }],
 ]);
 
@@ -227,6 +229,28 @@ function validateApiBody(value) {
   });
 }
 
+function validateStoryPackageApiBody(value) {
+  assertPlainObject(value);
+  const fields = Object.keys(value);
+  if (fields.length !== 1 || fields[0] !== 'safeStoryBrief') {
+    throw requestBodyError('INVALID_REQUEST');
+  }
+  if (
+    !value.safeStoryBrief
+    || typeof value.safeStoryBrief !== 'object'
+    || Array.isArray(value.safeStoryBrief)
+    || value.safeStoryBrief.safetyStatus !== 'story_safe'
+  ) {
+    throw requestBodyError('INVALID_STORY_BRIEF');
+  }
+
+  try {
+    return validateSafeStoryBrief(value.safeStoryBrief);
+  } catch {
+    throw requestBodyError('INVALID_STORY_BRIEF');
+  }
+}
+
 function publicImageError(error) {
   if (!(error instanceof ImageGenerationError)) {
     return { status: 500, error: 'image_internal_error', message: '真实生成未完成，请稍后再试。' };
@@ -298,6 +322,70 @@ function createRequestHandler(options = {}) {
       requestUrl = new URL(request.url, 'http://127.0.0.1');
     } catch {
       sendJson(request, response, 400, { ok: false, error: 'bad_request' });
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/story-package') {
+      if (request.method !== 'POST') {
+        sendJson(request, response, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'POST' });
+        return;
+      }
+
+      const contentType = String(request.headers['content-type'] || '').split(';', 1)[0].trim().toLowerCase();
+      if (contentType !== 'application/json') {
+        sendJson(request, response, 415, {
+          ok: false,
+          error: 'unsupported_media_type',
+          message: '请求必须使用 JSON。',
+        });
+        return;
+      }
+
+      let body;
+      try {
+        body = await readJsonBody(request);
+      } catch (error) {
+        if (error.code === 'REQUEST_TOO_LARGE') {
+          sendJson(request, response, 413, {
+            ok: false,
+            error: 'request_too_large',
+            message: '故事摘要超过 64KB 限制。',
+          });
+        } else {
+          sendJson(request, response, 400, {
+            ok: false,
+            error: 'invalid_json',
+            message: '请求内容不是有效 JSON。',
+          });
+        }
+        return;
+      }
+
+      let safeStoryBrief;
+      try {
+        safeStoryBrief = validateStoryPackageApiBody(body);
+      } catch (error) {
+        const invalidStoryBrief = error.code === 'INVALID_STORY_BRIEF';
+        sendJson(request, response, 400, {
+          ok: false,
+          error: invalidStoryBrief ? 'invalid_story_brief' : 'invalid_request',
+          message: invalidStoryBrief
+            ? '故事摘要未通过 story_safe 安全校验。'
+            : '请求只能包含 safeStoryBrief。',
+        });
+        return;
+      }
+
+      try {
+        const storyPackage = createStoryPackage(safeStoryBrief);
+        sendJson(request, response, 201, { ok: true, storyPackage });
+      } catch {
+        sendJson(request, response, 400, {
+          ok: false,
+          error: 'invalid_story_brief',
+          message: '故事摘要无法生成安全的七章故事包。',
+        });
+      }
       return;
     }
 

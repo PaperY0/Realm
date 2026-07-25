@@ -8,7 +8,7 @@
   "description": "藏梦书境 V0 本机单实例 Demo",
   "scripts": {
     "start": "node -r ./src/services/image-generation.js server.js",
-    "test": "node -r ./src/services/image-generation.js tests/stage3.test.js && node -r ./src/services/image-generation.js tests/stage4.test.js && node -r ./src/services/image-generation.js tests/stage5.test.js && node -r ./src/services/image-generation.js tests/stage6-image.test.js && node -r ./src/services/image-generation.js tests/stage7-server-image.test.js && node tests/stage8-web-image.test.js && node tests/stage9-image-probe.test.js && node tests/stage10-story-package.test.js && node tests/stage11-reader-state.test.js",
+    "test": "node -r ./src/services/image-generation.js tests/stage3.test.js && node -r ./src/services/image-generation.js tests/stage4.test.js && node -r ./src/services/image-generation.js tests/stage5.test.js && node -r ./src/services/image-generation.js tests/stage6-image.test.js && node -r ./src/services/image-generation.js tests/stage7-server-image.test.js && node tests/stage8-web-image.test.js && node tests/stage9-image-probe.test.js && node tests/stage10-story-package.test.js && node tests/stage11-reader-state.test.js && node tests/stage12-server-story.test.js && node tests/stage13-web-storybook.test.js",
     "demo": "node -r ./src/services/image-generation.js server.js",
     "demo:check": "npm test && node -r ./src/services/image-generation.js scripts/demo-preflight.js && node --check src/app.js && node --check server.js && node --check src/services/image-generation.js",
     "test:image2-probe": "node tests/stage9-image-probe.test.js",

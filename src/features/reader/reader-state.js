@@ -195,7 +195,7 @@ function restoreReaderState(options) {
   return ReaderState.restore(options);
 }
 
-module.exports = {
+const readerStateApi = Object.freeze({
   CHAPTER_COUNT,
   READER_SNAPSHOT_VERSION,
   READER_PHASES,
@@ -206,4 +206,7 @@ module.exports = {
   presentationFor,
   createReaderState,
   restoreReaderState,
-};
+});
+
+if (typeof module !== 'undefined' && module.exports) module.exports = readerStateApi;
+if (typeof window !== 'undefined') window.DreamBookReader = readerStateApi;
