@@ -4661,3 +4661,9 @@ body[data-stage="expression"] .paper-sheet::before {
     opacity: .34;
   }
 }
+
+@media (max-height: 800px) and (min-width: 821px) {
+  body[data-stage="expression"] .expression-paper {
+    transform: rotate(-.22deg) scale(0.9);
+  }
+}
