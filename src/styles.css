@@ -2969,6 +2969,7 @@ body[data-stage="expression"] .arrival-badge {
 }
 
 .storybook-keepsake-copy {
+  position: relative;
   max-width: 520px;
 }
 
@@ -2994,6 +2995,19 @@ body[data-stage="expression"] .arrival-badge {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.storybook-archive-note {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin: 15px 0 0;
+  color: #8a694a;
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  line-height: 1.7;
 }
 
 .storybook-turn-sheet {
@@ -4400,63 +4414,75 @@ body[data-stage="storybook"] .storybook-chapter-illustration {
   object-fit: cover;
 }
 
-/* Completed book: V3.3 picture-book cover, controls, and chapter index. */
+/* Completed book: supplied watercolor cover with live title text. */
 body[data-stage="storybook"] .storybook-closed-book {
-  isolation: isolate;
-  overflow: hidden;
-  border: 2px solid rgba(88, 62, 86, 0.56);
-  border-radius: 18px 34px 37px 17px;
-  background:
-    radial-gradient(ellipse at 50% 24%, rgba(255, 213, 112, 0.9) 0 7%, rgba(255, 213, 112, 0) 24%),
-    radial-gradient(ellipse at 16% 82%, rgba(107, 146, 109, 0.82) 0 11%, rgba(107, 146, 109, 0) 38%),
-    radial-gradient(ellipse at 86% 76%, rgba(237, 139, 117, 0.78) 0 9%, rgba(237, 139, 117, 0) 35%),
-    radial-gradient(ellipse at 78% 18%, rgba(190, 135, 180, 0.84) 0 8%, rgba(190, 135, 180, 0) 34%),
-    radial-gradient(ellipse at 25% 28%, rgba(119, 136, 185, 0.86) 0 14%, rgba(119, 136, 185, 0) 43%),
-    linear-gradient(142deg, #5a5b91 0%, #82669a 34%, #bd7c96 65%, #dc9a6d 100%);
-  color: #fff9e9;
-  box-shadow: -11px 14px 0 #e9d7b7, -14px 18px 0 rgba(89, 65, 90, 0.22), 0 30px 44px rgba(78, 52, 79, 0.26);
+  display: block;
+  width: min(100%, 390px);
+  aspect-ratio: 1164 / 1352;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: url('/assets/storybook-keepsake-cover.png') center / contain no-repeat;
+  box-shadow: none;
+  color: #5b4252;
+  transform: none;
 }
 
 body[data-stage="storybook"] .storybook-closed-book::before,
 body[data-stage="storybook"] .storybook-closed-book::after {
-  z-index: 0;
-  border-color: rgba(255, 237, 171, 0.52);
-  border-radius: 15px 26px 29px 14px;
-}
-
-body[data-stage="storybook"] .storybook-closed-book::after {
-  border-color: rgba(93, 63, 93, 0.34);
+  display: none;
 }
 
 body[data-stage="storybook"] .storybook-closed-book > :not(.storybook-closed-spine) {
-  position: relative;
   z-index: 1;
 }
 
-body[data-stage="storybook"] .storybook-closed-spine {
-  z-index: 1;
-  border-right-color: rgba(255, 236, 180, 0.54);
-  border-left-color: rgba(74, 47, 76, 0.32);
-  box-shadow: 6px 0 15px rgba(62, 38, 69, 0.23);
-}
-
+body[data-stage="storybook"] .storybook-closed-spine,
 body[data-stage="storybook"] .storybook-cover-star {
-  color: #ffe08b;
-  text-shadow: 0 5px 14px rgba(125, 77, 83, 0.38);
+  display: none;
 }
 
 body[data-stage="storybook"] .storybook-closed-book strong {
-  max-width: 76%;
-  color: #fffdf0;
-  font-size: clamp(19px, 2.15vw, 30px);
-  line-height: 1.3;
+  position: absolute;
+  top: 47%;
+  right: 15%;
+  left: 21%;
+  max-width: none;
+  color: #553d50;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.32;
   text-align: center;
-  text-shadow: 0 3px 12px rgba(69, 43, 74, 0.42);
+  text-shadow: 0 1px 0 rgba(255, 249, 220, 0.7);
 }
 
 body[data-stage="storybook"] .storybook-closed-book small {
-  color: rgba(255, 249, 225, 0.88);
-  text-shadow: 0 2px 8px rgba(62, 40, 67, 0.34);
+  position: absolute;
+  top: 61%;
+  right: 15%;
+  left: 21%;
+  color: rgba(85, 61, 80, 0.82);
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 249, 220, 0.7);
+}
+
+body[data-stage="storybook"] #storybook-cover-title {
+  display: none;
+}
+
+body[data-stage="storybook"] .storybook-keepsake {
+  border-color: rgba(183, 133, 67, 0.22);
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(255, 250, 210, 0.82), transparent 33%),
+    radial-gradient(ellipse at 84% 82%, rgba(240, 201, 105, 0.24), transparent 39%),
+    repeating-linear-gradient(6deg, rgba(162, 118, 72, 0.035) 0 1px, transparent 1px 9px),
+    #fff1bd;
+  box-shadow: 0 28px 60px rgba(122, 88, 48, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+@media (min-width: 821px) {
+  body[data-stage="storybook"] .storybook-closed-book {
+    transform: translateY(70px);
+  }
 }
 
 body[data-stage="storybook"] .storybook-control--primary {

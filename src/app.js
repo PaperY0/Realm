@@ -169,6 +169,7 @@ const storybookNext = document.querySelector('#storybook-next');
 const storybookClose = document.querySelector('#storybook-close');
 const storybookReopen = document.querySelector('#storybook-reopen');
 const storybookArchive = document.querySelector('#storybook-archive');
+const storybookArchiveNote = document.querySelector('#storybook-archive-note');
 const storybookReturn = document.querySelector('#storybook-return');
 const storybookProgress = document.querySelector('#storybook-progress');
 const storybookKeepsake = document.querySelector('#storybook-keepsake');
@@ -1106,6 +1107,9 @@ function closeStorybook() {
 
 function reopenStorybook() {
   if (!state.storybook.storyPackage) return;
+  storybookArchive.textContent = '存入书架';
+  storybookArchive.disabled = false;
+  storybookArchiveNote.hidden = true;
   initializeStoryReader(state.storybook.storyPackage);
   announce('故事重新从第一章打开');
 }
@@ -1115,7 +1119,8 @@ function archiveStorybook() {
   saveStorybookSnapshot();
   storybookArchive.textContent = '已存入书架';
   storybookArchive.disabled = true;
-  announce('这本童话已存入书架');
+  storybookArchiveNote.hidden = false;
+  announce('风把它送进书架，世界已经记住了你的故事');
 }
 
 function returnToExpression() {

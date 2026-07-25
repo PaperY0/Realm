@@ -71,6 +71,7 @@ const requiredIds = [
   'storybook-close',
   'storybook-reopen',
   'storybook-archive',
+  'storybook-archive-note',
   'storybook-return',
   'storybook-progress',
   'storybook-keepsake',
@@ -154,6 +155,8 @@ assert.match(app, /storybookBook\.dataset\.currentChapter\s*=\s*String\(snapshot
 assert.match(app, /storybookCoverTitle\.textContent\s*=\s*bookTitle/);
 assert.match(app, /storybookArchive\.addEventListener\(\s*['"]click['"]\s*,\s*archiveStorybook\s*\)/);
 assert.match(app, /function\s+archiveStorybook\s*\([\s\S]*?saveStorybookSnapshot\s*\(\)/);
+assert.match(app, /storybookArchiveNote\.hidden\s*=\s*false/);
+assert.match(css, /storybook-keepsake-cover\.png/);
 
 // Animated page turns are single-flight: a rapid second click cannot skip a chapter.
 const beginPageTurn = functionSource(app, 'beginStorybookPageTurn');
