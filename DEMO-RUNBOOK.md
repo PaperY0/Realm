@@ -26,11 +26,12 @@ notepad .env.local
 
 ```env
 AI_GATEWAY_API_KEY=请填写服务端密钥
-MEDIA_BASE_URL=https://draw.openai-next.com
+MEDIA_BASE_URL=https://api.openai-next.com/v1
 ```
 
 - 密钥只放在 `.env.local`，不要写入网页、仓库、截图、聊天记录或投屏终端命令。
 - 探针只从仓库根目录 `.env.local` 读取 `AI_GATEWAY_API_KEY` 和 `MEDIA_BASE_URL`。
+- 当前示例地址已与本机统一中转配置对齐；零费用配置检查通过不等于真实图片生成已成功验收。
 - 固定模型为 `gpt-image-2`，固定输出为 `720×1280`、`medium`、PNG。
 - 默认将 `src/assets/world-gate-reference.png` 同时作为 `guardianIp` 和 `style` 参考图。
 

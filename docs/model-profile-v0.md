@@ -5,9 +5,10 @@
 ## 接入边界
 
 - `TEXT_BASE_URL`：`https://api.openai-next.com/v1`
-- `MEDIA_BASE_URL`：`https://draw.openai-next.com`
+- `MEDIA_BASE_URL`：`https://api.openai-next.com/v1`
 - 认证：由同一个服务端环境变量提供 API Key，禁止进入浏览器包、数据库、日志或仓库。
 - 浏览器只调用本地 Node.js 服务，不直接访问中转站。
+- 当前媒体地址已通过本机配置检查；真实 `gpt-image-2` 成功结果仍须以单次付费探针单独验收。
 
 ## 固定模型
 

@@ -746,7 +746,7 @@ planned → queued → generating → validating → awaiting_human_review
 ### 15.1 统一接入
 
 - 文本中转基础地址：`https://api.openai-next.com/v1`
-- 图像中转基础地址：`https://draw.openai-next.com`
+- 图像中转基础地址：`https://api.openai-next.com/v1`
 - API Key：由本地环境变量统一提供，不进入仓库。
 - 固定文本模型：`gpt-5.6-sol`
 - 固定图像模型：`gpt-image-2`
