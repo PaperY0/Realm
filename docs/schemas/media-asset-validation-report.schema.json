@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://cangmeng.local/schemas/media-asset-validation-report.schema.json",
   "title": "MediaAssetValidationReport",
-  "description": "An unattended technical and visual-semantic validation report for a generated boundary keyframe or chapter video.",
+  "description": "A read-only technical, visual, and human-gate report for a chapter illustration, local 2.5D preview, or optional real-motion enhancement.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,68 +10,201 @@
     "validationVersion",
     "reportId",
     "bookId",
+    "chapterNumber",
     "assetType",
     "assetId",
     "attemptNumber",
-    "overallResult",
+    "automatedResult",
     "technicalChecks",
     "visualChecks",
     "failedCheckIds",
     "warningCheckIds",
-    "nextAction",
-    "humanApprovalRequired"
+    "humanGate",
+    "releaseResult",
+    "nextAction"
   ],
   "properties": {
-    "schemaVersion": { "type": "string", "minLength": 1 },
-    "validationVersion": { "type": "string", "minLength": 1 },
-    "reportId": { "type": "string", "minLength": 1 },
-    "bookId": { "type": "string", "minLength": 1 },
-    "assetType": { "type": "string", "enum": ["boundary_keyframe", "chapter_video"] },
-    "assetId": { "type": "string", "minLength": 1 },
-    "attemptNumber": { "type": "integer", "minimum": 1, "maximum": 2 },
-    "overallResult": { "type": "string", "enum": ["pass", "warning", "fail"] },
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "validationVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reportId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bookId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chapterNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 7
+    },
+    "assetType": {
+      "type": "string",
+      "enum": [
+        "chapter_illustration",
+        "storybook_motion_preview",
+        "seedance_enhancement"
+      ]
+    },
+    "assetId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attemptNumber": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "automatedResult": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "warning",
+        "fail"
+      ]
+    },
     "technicalChecks": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/checkResult" }
+      "items": {
+        "$ref": "#/$defs/checkResult"
+      }
     },
     "visualChecks": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/checkResult" }
+      "items": {
+        "$ref": "#/$defs/checkResult"
+      }
     },
     "failedCheckIds": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
     },
     "warningCheckIds": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "uniqueItems": true
+    },
+    "humanGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "status",
+        "decidedAt",
+        "notes"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "illustration_review",
+            "enhancement_generation_approval"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected"
+          ]
+        },
+        "decidedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "releaseResult": {
+      "type": "string",
+      "enum": [
+        "blocked",
+        "approved",
+        "retained_previous_asset"
+      ]
     },
     "nextAction": {
       "type": "string",
-      "enum": ["accept", "retry", "compose_keyframe", "use_dynamic_fallback"]
-    },
-    "humanApprovalRequired": {
-      "type": "boolean",
-      "const": false
+      "enum": [
+        "await_illustration_review",
+        "regenerate_illustration",
+        "produce_storybook_motion",
+        "accept_asset",
+        "request_enhancement_approval",
+        "submit_seedance_enhancement",
+        "retry_generation",
+        "keep_storybook_motion_preview",
+        "reject_asset"
+      ]
     }
   },
   "$defs": {
     "checkResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["checkId", "result", "severity", "summary", "evidence"],
+      "required": [
+        "checkId",
+        "result",
+        "severity",
+        "summary",
+        "evidence"
+      ],
       "properties": {
-        "checkId": { "type": "string", "minLength": 1 },
-        "result": { "type": "string", "enum": ["pass", "warning", "fail"] },
-        "severity": { "type": "string", "enum": ["hard", "soft"] },
-        "summary": { "type": "string", "minLength": 1 },
+        "checkId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "warning",
+            "fail"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "hard",
+            "soft"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
         "evidence": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 },
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Machine-readable measurements or concise visual observations; no user raw input."
         }
       }
@@ -79,31 +212,408 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "overallResult": { "const": "pass" } }, "required": ["overallResult"] },
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "chapter_illustration"
+          }
+        },
+        "required": [
+          "assetType"
+        ]
+      },
       "then": {
         "properties": {
-          "failedCheckIds": { "maxItems": 0 },
-          "warningCheckIds": { "maxItems": 0 },
-          "nextAction": { "const": "accept" }
+          "humanGate": {
+            "properties": {
+              "type": {
+                "const": "illustration_review"
+              },
+              "status": {
+                "enum": [
+                  "pending",
+                  "approved",
+                  "rejected"
+                ]
+              }
+            }
+          }
         }
       }
     },
     {
-      "if": { "properties": { "overallResult": { "const": "warning" } }, "required": ["overallResult"] },
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "storybook_motion_preview"
+          }
+        },
+        "required": [
+          "assetType"
+        ]
+      },
       "then": {
         "properties": {
-          "failedCheckIds": { "maxItems": 0 },
-          "warningCheckIds": { "minItems": 1 },
-          "nextAction": { "const": "accept" }
+          "humanGate": {
+            "properties": {
+              "type": {
+                "const": "none"
+              },
+              "status": {
+                "const": "not_required"
+              },
+              "decidedAt": {
+                "type": "null"
+              }
+            }
+          }
         }
       }
     },
     {
-      "if": { "properties": { "overallResult": { "const": "fail" } }, "required": ["overallResult"] },
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "seedance_enhancement"
+          }
+        },
+        "required": [
+          "assetType"
+        ]
+      },
       "then": {
         "properties": {
-          "failedCheckIds": { "minItems": 1 },
-          "nextAction": { "enum": ["retry", "compose_keyframe", "use_dynamic_fallback"] }
+          "humanGate": {
+            "properties": {
+              "type": {
+                "const": "enhancement_generation_approval"
+              },
+              "status": {
+                "const": "approved"
+              },
+              "decidedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "automatedResult": {
+            "const": "pass"
+          }
+        },
+        "required": [
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "failedCheckIds": {
+            "maxItems": 0
+          },
+          "warningCheckIds": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "automatedResult": {
+            "const": "warning"
+          }
+        },
+        "required": [
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "failedCheckIds": {
+            "maxItems": 0
+          },
+          "warningCheckIds": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "automatedResult": {
+            "const": "fail"
+          }
+        },
+        "required": [
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "failedCheckIds": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "chapter_illustration"
+          },
+          "humanGate": {
+            "properties": {
+              "status": {
+                "const": "pending"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "assetType",
+          "humanGate"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "blocked"
+          },
+          "nextAction": {
+            "const": "await_illustration_review"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "chapter_illustration"
+          },
+          "automatedResult": {
+            "enum": [
+              "pass",
+              "warning"
+            ]
+          },
+          "humanGate": {
+            "properties": {
+              "status": {
+                "const": "approved"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult",
+          "humanGate"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "approved"
+          },
+          "nextAction": {
+            "const": "produce_storybook_motion"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "chapter_illustration"
+          },
+          "humanGate": {
+            "properties": {
+              "status": {
+                "const": "rejected"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "assetType",
+          "humanGate"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "blocked"
+          },
+          "nextAction": {
+            "enum": [
+              "regenerate_illustration",
+              "reject_asset"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "chapter_illustration"
+          },
+          "automatedResult": {
+            "const": "fail"
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "blocked"
+          },
+          "nextAction": {
+            "enum": [
+              "regenerate_illustration",
+              "reject_asset"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "storybook_motion_preview"
+          },
+          "automatedResult": {
+            "enum": [
+              "pass",
+              "warning"
+            ]
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "approved"
+          },
+          "nextAction": {
+            "enum": [
+              "accept_asset",
+              "request_enhancement_approval"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "storybook_motion_preview"
+          },
+          "automatedResult": {
+            "const": "fail"
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "blocked"
+          },
+          "nextAction": {
+            "enum": [
+              "retry_generation",
+              "reject_asset"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "seedance_enhancement"
+          },
+          "automatedResult": {
+            "enum": [
+              "pass",
+              "warning"
+            ]
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "approved"
+          },
+          "nextAction": {
+            "const": "accept_asset"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assetType": {
+            "const": "seedance_enhancement"
+          },
+          "automatedResult": {
+            "const": "fail"
+          }
+        },
+        "required": [
+          "assetType",
+          "automatedResult"
+        ]
+      },
+      "then": {
+        "properties": {
+          "releaseResult": {
+            "const": "retained_previous_asset"
+          },
+          "nextAction": {
+            "const": "keep_storybook_motion_preview"
+          }
         }
       }
     }

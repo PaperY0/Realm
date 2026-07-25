@@ -1,27 +1,38 @@
 PRD consistency report - 2026-07-25
 Workspace: C:/Users/16617/Desktop/develop
-Checks: 22, Passed: 22, Failed: 0
+Checks: 34, Passed: 34, Failed: 0
 
-PASS | PRD version/date | V2.0 / 2026-07-25
-PASS | Single world only | 内耗世界 only
-PASS | Routes hidden | label/echo internal only
-PASS | All seven personalized | No fixed fallback story
-PASS | No fixed chapter slots | Causal template only
-PASS | Eight boundary frames | K0-K7
-PASS | Five-second single shot | 5s / no cuts
-PASS | Manual next chapter | User-paced reading
-PASS | Five/Thirty minute policy | 5 min open / 30 min poll
-PASS | No global video cap | Per-chapter retry only
-PASS | Media profile | 720p H.264 silent
-PASS | Exact models | All three accepted
-PASS | Environment model config | .env.example aligned
-PASS | Example key empty | No real key in example
-PASS | Context names aligned | Canonical terms present
-PASS | Schemas parse | 8/8 JSON files
-PASS | Schema has no chapterSlots | story-template schema flexible
-PASS | Chapter schema constants | duration=5 / noInternalCuts=true
-PASS | No human approval | Automated media gate
-PASS | Old PRD conflicts removed | none found
-PASS | ADR numbering | 1-31 continuous; missing=
-PASS | No obvious API secret | none found
-
+PASS | PRD version/date | V2.1 / 2026-07-25
+PASS | Single world only | Only 内耗世界 is user-visible
+PASS | Routes hidden | Label/echo remain internal
+PASS | All seven personalized | Story, copy, illustration and motion are personalized
+PASS | Default media path | Reviewed illustration -> local 2.5D preview
+PASS | Optional enhancement | Seedance is per-chapter and non-blocking
+PASS | Seven illustrations | Exactly seven primary chapter illustrations
+PASS | Human illustration review | Review precedes motion
+PASS | Open-book gate | All seven previews required
+PASS | Portrait media profile | 9:16 / 720x1280
+PASS | Duration profile | 5-8 seconds per chapter
+PASS | Controlled motion | 1 camera move / 2-3 layers / 2 micro-motions
+PASS | No 3D pipeline | Explicitly prohibited
+PASS | Five-minute demo ceiling | No partial or fake book at deadline
+PASS | Enhancement background deadline | Only approved Seedance tasks
+PASS | Exact models | Text, image and optional video models pinned
+PASS | Gateway config | Configured relay endpoints retained
+PASS | Example key empty | No real API key in .env.example
+PASS | Schema JSON parse | 9/9 files parsed
+PASS | Schema metaschema validation | 9/9 Draft 2020-12 schemas valid
+PASS | Schema IDs unique | 9 unique $id values
+PASS | Old schema removed | Legacy boundary schema absent
+PASS | New planning schemas present | ChapterIllustrationPlan + StorybookStyleGuide
+PASS | ChapterCard old fields removed | Illustration/motion/enhancement contracts only
+PASS | ChapterCard identity mapping | Chapter 1-7 map to I1-I7
+PASS | Media asset types | Illustration, local preview, optional enhancement
+PASS | Media human gates | Review and per-chapter approval represented
+PASS | Enhancement failure retention | Failed enhancement retains local preview
+PASS | ADR 0032 accepted | New media architecture is normative
+PASS | Legacy media ADRs superseded | 11/11 point to ADR 0032
+PASS | ADR numbering | 1-32 continuous
+PASS | No legacy media contract in active docs | 0 hits; historical and superseded files excluded
+PASS | No obvious API secret | 0 suspicious files
+PASS | Git whitespace check | git diff --check clean

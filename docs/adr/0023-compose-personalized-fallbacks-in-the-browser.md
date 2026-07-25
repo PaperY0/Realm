@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # 个性化降级版本由边界关键帧和网页轻动效组成
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 V0 的个性化降级版本使用本章真实的起始与结束边界关键帧，在约五秒内通过网页端的缓慢推拉、横移、呼吸、光影、粒子和交叉渐变表现章节动作，最后停留在结束关键帧。它不调用第二个视频模型，也不使用与用户经历无关的通用占位片。
 

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/chapter-illustration-plan.schema.json",
+  "title": "ChapterIllustrationPlan",
+  "description": "One immutable plan containing exactly one primary storybook illustration contract for each of the seven chapters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "planId",
+    "bookId",
+    "storyBibleVersion",
+    "styleGuideVersion",
+    "templateVersion",
+    "ipReferenceSetId",
+    "outputProfile",
+    "globalVisualInvariants",
+    "illustrations"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "planId": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "storyBibleVersion": { "type": "string", "minLength": 1 },
+    "styleGuideVersion": { "type": "string", "minLength": 1 },
+    "templateVersion": { "type": "string", "minLength": 1 },
+    "ipReferenceSetId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The approved gatekeeper IP reference set supplied to every illustration generation task."
+    },
+    "outputProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["orientation", "aspectRatio", "width", "height"],
+      "properties": {
+        "orientation": { "const": "portrait" },
+        "aspectRatio": { "const": "9:16" },
+        "width": { "const": 720 },
+        "height": { "const": 1280 }
+      }
+    },
+    "globalVisualInvariants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "illustrations": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "prefixItems": [
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I1" }, "chapterNumber": { "const": 1 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I2" }, "chapterNumber": { "const": 2 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I3" }, "chapterNumber": { "const": 3 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I4" }, "chapterNumber": { "const": 4 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I5" }, "chapterNumber": { "const": 5 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I6" }, "chapterNumber": { "const": 6 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/illustration" }, { "properties": { "illustrationId": { "const": "I7" }, "chapterNumber": { "const": 7 } } }] }
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "illustration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "illustrationId",
+        "chapterId",
+        "chapterNumber",
+        "narrativeMoment",
+        "protagonistState",
+        "setting",
+        "composition",
+        "requiredProps",
+        "recurringSymbols",
+        "palette",
+        "lighting",
+        "continuityFromPrevious",
+        "continuityToNext",
+        "generationContract",
+        "validationContract"
+      ],
+      "properties": {
+        "illustrationId": { "type": "string", "pattern": "^I[1-7]$" },
+        "chapterId": { "type": "string", "minLength": 1 },
+        "chapterNumber": { "type": "integer", "minimum": 1, "maximum": 7 },
+        "narrativeMoment": { "type": "string", "minLength": 1 },
+        "protagonistState": { "type": "string", "minLength": 1 },
+        "setting": { "type": "string", "minLength": 1 },
+        "composition": { "type": "string", "minLength": 1 },
+        "requiredProps": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "recurringSymbols": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "palette": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "lighting": { "type": "string", "minLength": 1 },
+        "continuityFromPrevious": { "type": ["string", "null"] },
+        "continuityToNext": { "type": ["string", "null"] },
+        "generationContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["referenceAssetIds", "requiredElements", "prohibitedElements", "preserveStorybookTexture", "noEmbeddedText"],
+          "properties": {
+            "referenceAssetIds": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "requiredElements": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "prohibitedElements": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "preserveStorybookTexture": { "const": true },
+            "noEmbeddedText": { "const": true }
+          }
+        },
+        "validationContract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mustShow", "mustNotShow", "ipChecks", "continuityChecks"],
+          "properties": {
+            "mustShow": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "mustNotShow": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "ipChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+            "continuityChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+          }
+        }
+      }
+    }
+  }
+}

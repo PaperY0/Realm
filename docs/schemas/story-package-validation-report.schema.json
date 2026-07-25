@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://cangmeng.local/schemas/story-package-validation-report.schema.json",
   "title": "StoryPackageValidationReport",
-  "description": "A read-only aggregate report for deterministic structural validation and independent narrative-semantic validation before any media generation starts.",
+  "description": "A read-only aggregate report for deterministic structural validation and independent narrative-semantic validation before chapter illustration generation starts.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -87,7 +87,8 @@
             "StoryTemplateMatch",
             "StoryTemplate",
             "StoryBible",
-            "BoundaryKeyframePlan",
+            "StorybookStyleGuide",
+            "ChapterIllustrationPlan",
             "ChapterCard"
           ]
         },

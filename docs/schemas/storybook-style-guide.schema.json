@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cangmeng.local/schemas/storybook-style-guide.schema.json",
+  "title": "StorybookStyleGuide",
+  "description": "The immutable per-book visual style contract shared by all seven illustration and motion tasks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "bookId",
+    "styleGuideVersion",
+    "outputProfile",
+    "referenceAssets",
+    "mediumContract",
+    "characterContract",
+    "environmentContract",
+    "colorAndLightContract",
+    "motionPreservationContract",
+    "globalNegativeConstraints"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "minLength": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "styleGuideVersion": { "type": "string", "minLength": 1 },
+    "outputProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["orientation", "aspectRatio", "width", "height"],
+      "properties": {
+        "orientation": { "const": "portrait" },
+        "aspectRatio": { "const": "9:16" },
+        "width": { "const": 720 },
+        "height": { "const": 1280 }
+      }
+    },
+    "referenceAssets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assetId", "role", "requiredForEveryChapter"],
+        "properties": {
+          "assetId": { "type": "string", "minLength": 1 },
+          "role": {
+            "type": "string",
+            "enum": ["gatekeeper_ip", "storybook_style", "costume", "keepsake", "environment", "palette"]
+          },
+          "requiredForEveryChapter": { "type": "boolean" }
+        }
+      }
+    },
+    "mediumContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["medium", "texture", "brushwork", "linework", "depthTreatment", "preserveReferenceTexture"],
+      "properties": {
+        "medium": { "type": "string", "minLength": 1 },
+        "texture": { "type": "string", "minLength": 1 },
+        "brushwork": { "type": "string", "minLength": 1 },
+        "linework": { "type": "string", "minLength": 1 },
+        "depthTreatment": { "const": "layerable_2_5d_storybook" },
+        "preserveReferenceTexture": { "const": true }
+      }
+    },
+    "characterContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipReferenceSetId", "fixedTraits", "allowedVariations", "forbiddenChanges"],
+      "properties": {
+        "ipReferenceSetId": { "type": "string", "minLength": 1 },
+        "fixedTraits": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "allowedVariations": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "forbiddenChanges": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "environmentContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worldTexture", "spatialLanguage", "recurringMaterials", "continuityRules"],
+      "properties": {
+        "worldTexture": { "type": "string", "minLength": 1 },
+        "spatialLanguage": { "type": "string", "minLength": 1 },
+        "recurringMaterials": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "continuityRules": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "colorAndLightContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basePalette", "accentPalette", "contrast", "lightingLanguage", "chapterProgression"],
+      "properties": {
+        "basePalette": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "accentPalette": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "contrast": { "type": "string", "minLength": 1 },
+        "lightingLanguage": { "type": "string", "minLength": 1 },
+        "chapterProgression": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "motionPreservationContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxPrimaryCameraMoves",
+        "maxMicroMotions",
+        "minParallaxLayers",
+        "maxParallaxLayers",
+        "allowedCameraMoves",
+        "allowedMicroMotions",
+        "forbiddenMotions"
+      ],
+      "properties": {
+        "maxPrimaryCameraMoves": { "const": 1 },
+        "maxMicroMotions": { "const": 2 },
+        "minParallaxLayers": { "const": 2 },
+        "maxParallaxLayers": { "const": 3 },
+        "allowedCameraMoves": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["none", "slow_push_in", "slow_pull_out", "slow_pan_left", "slow_pan_right", "slow_pan_up", "slow_pan_down"]
+          },
+          "uniqueItems": true
+        },
+        "allowedMicroMotions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["breathing", "hair_sway", "cloth_sway", "keepsake_sway", "light_flow", "fog_flow", "ambient_particles", "rain", "snow"]
+          },
+          "uniqueItems": true
+        },
+        "forbiddenMotions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "globalNegativeConstraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}

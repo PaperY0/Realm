@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # 正式章节视频模型必须支持首尾帧约束
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 V0 的正式章节视频模型必须原生接收一张起始关键帧和一张结束关键帧，并在两者之间生成章节动作和镜头运动。七章分别使用 K0→K1、K1→K2，直至 K6→K7；不允许用仅支持首帧的自由图生视频替代这一约束。
 

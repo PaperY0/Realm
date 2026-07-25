@@ -2,128 +2,741 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://cangmeng.local/schemas/chapter-card.schema.json",
   "title": "ChapterCard",
+  "description": "The immutable execution contract for one chapter illustration, local 2.5D preview, and optional approved real-motion enhancement.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "identity",
     "userVisibleCopy",
     "narrativeContract",
-    "boundaryContract",
-    "visualContract",
-    "shotContract",
+    "illustrationContract",
+    "motionContract",
+    "enhancementContract",
     "promptContract",
-    "fallbackPlan",
     "validationContract"
   ],
   "properties": {
     "identity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schemaVersion", "bookId", "chapterId", "chapterNumber", "storyBibleVersion", "templateVersion"],
+      "required": [
+        "schemaVersion",
+        "bookId",
+        "chapterId",
+        "chapterNumber",
+        "storyBibleVersion",
+        "styleGuideVersion",
+        "illustrationPlanId",
+        "templateVersion"
+      ],
       "properties": {
-        "schemaVersion": { "type": "string", "minLength": 1 },
-        "bookId": { "type": "string", "minLength": 1 },
-        "chapterId": { "type": "string", "minLength": 1 },
-        "chapterNumber": { "type": "integer", "minimum": 1, "maximum": 7 },
-        "storyBibleVersion": { "type": "string", "minLength": 1 },
-        "templateVersion": { "type": "string", "minLength": 1 }
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bookId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        },
+        "storyBibleVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "styleGuideVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "illustrationPlanId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "templateVersion": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "userVisibleCopy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["chapterTitle", "chapterText", "optionalCaption"],
+      "required": [
+        "chapterTitle",
+        "chapterText",
+        "optionalCaption"
+      ],
       "properties": {
-        "chapterTitle": { "type": "string", "minLength": 1 },
-        "chapterText": { "type": "string", "minLength": 1 },
-        "optionalCaption": { "type": ["string", "null"] }
+        "chapterTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "optionalCaption": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "narrativeContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["narrativeFunction", "visibleBeat", "startState", "endState", "factsThatMustNotChange"],
+      "required": [
+        "narrativeFunction",
+        "visibleBeat",
+        "startState",
+        "endState",
+        "factsThatMustNotChange"
+      ],
       "properties": {
-        "narrativeFunction": { "type": "string", "minLength": 1 },
-        "visibleBeat": { "type": "string", "minLength": 1 },
-        "startState": { "type": "string", "minLength": 1 },
-        "endState": { "type": "string", "minLength": 1 },
-        "factsThatMustNotChange": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        "narrativeFunction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "visibleBeat": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startState": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endState": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factsThatMustNotChange": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     },
-    "boundaryContract": {
+    "illustrationContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["startKeyframeId", "endKeyframeId", "startStateDescription", "endStateDescription"],
+      "required": [
+        "illustrationId",
+        "ipReferenceSetId",
+        "narrativeMoment",
+        "protagonistAppearance",
+        "protagonistExpression",
+        "setting",
+        "composition",
+        "requiredProps",
+        "recurringSymbols",
+        "palette",
+        "lighting",
+        "continuityFromPrevious",
+        "continuityToNext",
+        "requiresHumanApproval"
+      ],
       "properties": {
-        "startKeyframeId": { "type": "string", "minLength": 1 },
-        "endKeyframeId": { "type": "string", "minLength": 1 },
-        "startStateDescription": { "type": "string", "minLength": 1 },
-        "endStateDescription": { "type": "string", "minLength": 1 }
+        "illustrationId": {
+          "type": "string",
+          "pattern": "^I[1-7]$"
+        },
+        "ipReferenceSetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "narrativeMoment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protagonistAppearance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protagonistExpression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "setting": {
+          "type": "string",
+          "minLength": 1
+        },
+        "composition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requiredProps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "recurringSymbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "palette": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "lighting": {
+          "type": "string",
+          "minLength": 1
+        },
+        "continuityFromPrevious": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "continuityToNext": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requiresHumanApproval": {
+          "const": true
+        }
       }
     },
-    "visualContract": {
+    "motionContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["setting", "protagonistAppearance", "protagonistExpression", "requiredProps", "recurringSymbols", "palette", "lighting", "forbiddenVisualChanges"],
+      "required": [
+        "assetType",
+        "durationSeconds",
+        "outputProfile",
+        "primaryCameraMovement",
+        "parallaxLayerCount",
+        "microMotions",
+        "environmentalEffects",
+        "preserveOriginalComposition",
+        "noInternalCuts",
+        "forbiddenMotions"
+      ],
       "properties": {
-        "setting": { "type": "string", "minLength": 1 },
-        "protagonistAppearance": { "type": "string", "minLength": 1 },
-        "protagonistExpression": { "type": "string", "minLength": 1 },
-        "requiredProps": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "recurringSymbols": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "palette": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
-        "lighting": { "type": "string", "minLength": 1 },
-        "forbiddenVisualChanges": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        "assetType": {
+          "const": "storybook_motion_preview"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 8
+        },
+        "outputProfile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "orientation",
+            "aspectRatio",
+            "width",
+            "height"
+          ],
+          "properties": {
+            "orientation": {
+              "const": "portrait"
+            },
+            "aspectRatio": {
+              "const": "9:16"
+            },
+            "width": {
+              "const": 720
+            },
+            "height": {
+              "const": 1280
+            }
+          }
+        },
+        "primaryCameraMovement": {
+          "type": "string",
+          "enum": [
+            "none",
+            "slow_push_in",
+            "slow_pull_out",
+            "slow_pan_left",
+            "slow_pan_right",
+            "slow_pan_up",
+            "slow_pan_down"
+          ]
+        },
+        "parallaxLayerCount": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 3
+        },
+        "microMotions": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "target",
+              "description",
+              "amplitude"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "breathing",
+                  "hair_sway",
+                  "cloth_sway",
+                  "keepsake_sway",
+                  "light_flow",
+                  "fog_flow",
+                  "ambient_particles",
+                  "rain",
+                  "snow"
+                ]
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amplitude": {
+                "type": "string",
+                "enum": [
+                  "very_subtle",
+                  "subtle"
+                ]
+              }
+            }
+          }
+        },
+        "environmentalEffects": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "preserveOriginalComposition": {
+          "const": true
+        },
+        "noInternalCuts": {
+          "const": true
+        },
+        "forbiddenMotions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     },
-    "shotContract": {
+    "enhancementContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["durationSeconds", "shotSize", "cameraMovement", "primaryAction", "environmentalMotion", "motionIntensity", "noInternalCuts"],
+      "required": [
+        "eligible",
+        "requiresPerChapterApproval",
+        "referenceIllustrationId",
+        "requestedMotion",
+        "failureBehavior"
+      ],
       "properties": {
-        "durationSeconds": { "type": "number", "const": 5 },
-        "shotSize": { "type": "string", "minLength": 1 },
-        "cameraMovement": { "type": "string", "minLength": 1 },
-        "primaryAction": { "type": "string", "minLength": 1 },
-        "environmentalMotion": { "type": "string", "minLength": 1 },
-        "motionIntensity": { "type": "string", "minLength": 1 },
-        "noInternalCuts": { "type": "boolean", "const": true }
+        "eligible": {
+          "type": "boolean"
+        },
+        "requiresPerChapterApproval": {
+          "const": true
+        },
+        "referenceIllustrationId": {
+          "type": "string",
+          "pattern": "^I[1-7]$"
+        },
+        "requestedMotion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failureBehavior": {
+          "const": "keep_storybook_motion_preview"
+        }
       }
     },
     "promptContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["requiredElements", "prohibitedElements", "continuityReminder", "providerPromptHints"],
+      "required": [
+        "imagePromptRequirements",
+        "motionInstructions",
+        "prohibitedElements",
+        "continuityReminder"
+      ],
       "properties": {
-        "requiredElements": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "prohibitedElements": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "continuityReminder": { "type": "string", "minLength": 1 },
-        "providerPromptHints": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
-      }
-    },
-    "fallbackPlan": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["startFrameMotion", "transitionStyle", "endFrameMotion", "environmentalEffects"],
-      "properties": {
-        "startFrameMotion": { "type": "string", "minLength": 1 },
-        "transitionStyle": { "type": "string", "minLength": 1 },
-        "endFrameMotion": { "type": "string", "minLength": 1 },
-        "environmentalEffects": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        "imagePromptRequirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "motionInstructions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "prohibitedElements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "continuityReminder": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "validationContract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mustShow", "mustNotShow", "startFrameChecks", "endFrameChecks", "continuityChecks"],
+      "required": [
+        "illustrationChecks",
+        "motionChecks",
+        "continuityChecks",
+        "enhancementChecks"
+      ],
       "properties": {
-        "mustShow": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "mustNotShow": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-        "startFrameChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
-        "endFrameChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
-        "continuityChecks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+        "illustrationChecks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "motionChecks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "continuityChecks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "enhancementChecks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 1
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I1"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I1"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 2
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I2"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I2"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 3
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I3"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I3"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 4
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I4"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 5
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I5"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I5"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 6
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I6"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I6"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "identity": {
+            "properties": {
+              "chapterNumber": {
+                "const": 7
+              }
+            },
+            "required": [
+              "chapterNumber"
+            ]
+          }
+        },
+        "required": [
+          "identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "illustrationContract": {
+            "properties": {
+              "illustrationId": {
+                "const": "I7"
+              }
+            }
+          },
+          "enhancementContract": {
+            "properties": {
+              "referenceIllustrationId": {
+                "const": "I7"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # 正式关键帧图像模型必须支持固定 IP 参考
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 V0 的正式关键帧图像模型必须支持参考图生成或图片编辑。生成 K0–K7 中的每一张边界关键帧时，都重新提供同一套内耗守门 IP 标准图和角色设定；画风参考与相邻状态图可以作为附加输入，但不能取代固定 IP 锚点。
 

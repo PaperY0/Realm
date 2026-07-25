@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # 单张关键帧失败后使用组合关键帧并降级相邻章节
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 K0–K7 中任意一张边界关键帧生成失败时，只重试该张一次，不重新生成全部关键帧。第二次仍失败，则使用预先验收的透明背景守门 IP 素材、对应模板场景以及本次故事的颜色、信物和象征元素，确定性地合成 `composed_keyframe`。
 

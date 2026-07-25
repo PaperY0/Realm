@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # 在部分章节就绪后渐进式开书
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 系统不等待七章完整视频全部生成。完整七章故事规划冻结、第一章完整视频或经过验证的个性化降级版本可播放、第二章至少存在个性化降级版本且其余章节任务均已启动后，即允许用户打开绘本。
 

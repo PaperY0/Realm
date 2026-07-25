@@ -1,8 +1,12 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0032-use-reviewed-illustrations-and-local-2-5d-motion.md
 ---
 
 # V0 每章使用一个约五秒的连续镜头
+
+> 本决策已由 [ADR 0032](0032-use-reviewed-illustrations-and-local-2-5d-motion.md) 取代。以下内容仅保留为历史背景，不再作为 V0 实现合同。
+
 
 V0 将一章定义为一个约五秒的连续电影镜头，章内不切镜，只承载一个主要动作和一次主要镜头运动。七章共同构成七个连续分镜；每章结束后停留在稳定尾帧，等待用户主动点击“下一章”。
 
