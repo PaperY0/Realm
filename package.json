@@ -10,4 +10,3 @@
     "demo:check": "npm test && node -r ./src/services/image-generation.js scripts/demo-preflight.js && node --check src/app.js && node --check server.js && node --check src/services/image-generation.js"
   }
 }
-
