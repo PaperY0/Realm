@@ -100,6 +100,18 @@ assert.doesNotMatch(requestStoryPackage, /rawText|followUpAnswers|userConfirmedS
 assert.match(requestStoryPackage, /fetch\(\s*['"]\/api\/images\/generate-book['"]\s*,/);
 assert.doesNotMatch(requestStoryPackage, /requestRealImage|generatedImage|new\s+Image\s*\(/);
 
+// Story-package and chapter-image failures must keep their own response/payload
+// so a 413 or image-generation failure cannot be reported with the story response.
+assert.match(app, /function\s+friendlyStoryPackageError\s*\(/);
+assert.match(app, /function\s+friendlyStorybookImageError\s*\(/);
+assert.match(requestStoryPackage, /let\s+imageResponse\s*=\s*null/);
+assert.match(requestStoryPackage, /let\s+imagePayload\s*=\s*null/);
+assert.match(requestStoryPackage, /imageResponse\s*=\s*await\s+fetch\(\s*['"]\/api\/images\/generate-book['"]/);
+assert.match(requestStoryPackage, /friendlyStorybookImageError\s*\(\s*imagePayload\s*,\s*imageResponse\s*\)/);
+assert.match(requestStoryPackage, /friendlyStoryPackageError\s*\(\s*payload\s*,\s*response\s*\)/);
+assert.match(app, /friendlyStorybookImageError[\s\S]*response\?\.status\s*===\s*413/);
+assert.match(app, /friendlyStorybookImageError[\s\S]*payload\?\.message/);
+
 // Browser wiring must use the strict seven-chapter ReaderState API for new and restored books.
 assert.match(app, /window\.DreamBookReader/);
 const chapterAdapter = functionSource(app, 'readerChaptersFrom');
@@ -140,21 +152,18 @@ assert.match(app, /storybookBook\.dataset\.currentChapter\s*=\s*String\(snapshot
 // Animated page turns are single-flight: a rapid second click cannot skip a chapter.
 const beginPageTurn = functionSource(app, 'beginStorybookPageTurn');
 assert.match(beginPageTurn, /state\.storybook\.turning/);
-assert.match(beginPageTurn, /state\.reduceMotion/);
 assert.match(beginPageTurn, /setTimeout/);
 assert.match(previousChapter, /beginStorybookPageTurn\s*\(\s*\)/);
 assert.match(nextChapter, /beginStorybookPageTurn\s*\(\s*\)/);
 assert.match(closeBook, /beginStorybookPageTurn\s*\(\s*\)/);
 
-function runNextChapterHarness(reduceMotion) {
+function runNextChapterHarness() {
   let chapter = 1;
   let timerCount = 0;
   const harness = new Function(
-    'reduceMotion',
     `
       const STORYBOOK_PAGE_TURN_MS = 560;
       const state = {
-        reduceMotion,
         storybook: {
           turning: false,
           turnTimer: null,
@@ -182,18 +191,13 @@ function runNextChapterHarness(reduceMotion) {
       return { chapter, turning: state.storybook.turning, timerCount };
     `,
   );
-  return harness(reduceMotion);
+  return harness();
 }
 
 assert.deepEqual(
-  runNextChapterHarness(false),
+  runNextChapterHarness(),
   { chapter: 2, turning: true, timerCount: 1 },
   'animated rapid double-click must advance only one chapter while the lock is active',
-);
-assert.deepEqual(
-  runNextChapterHarness(true),
-  { chapter: 3, turning: false, timerCount: 0 },
-  'reduced motion must navigate immediately without a timer or sticky lock',
 );
 
 // Long chapter copy owns an internal scroll area and preserves authored line breaks.
@@ -248,14 +252,8 @@ assert.match(css, /\.storybook-turn-sheet--next\s*\{[\s\S]*?transform-origin\s*:
 assert.match(css, /\.storybook-turn-sheet--previous\s*\{[\s\S]*?transform-origin\s*:\s*right\s+center/);
 assert.match(css, /\.storybook-turn-sheet__front\.storybook-page\s*,[\s\S]*?\.storybook-turn-sheet__back\.storybook-page\s*\{[\s\S]*?transform\s*:\s*none/);
 
-// Reduced motion removes storybook page-turn animation without changing navigation semantics.
-const reducedMotionBlocks = balancedBlocks(css, /@media\s*\(prefers-reduced-motion\s*:\s*reduce\)/g);
-assert.ok(reducedMotionBlocks.length > 0, 'a reduced-motion media query must exist');
-assert.ok(
-  reducedMotionBlocks.some((block) => /storybook/i.test(block)
-    && /(?:animation|transition)\s*:\s*none\s*!important/i.test(block)),
-  'reduced-motion CSS must disable storybook page-turn animation/transition',
-);
+// The product intentionally has one consistent motion language; no reduced-motion mode is exposed.
+assert.doesNotMatch(css, /prefers-reduced-motion|body\.reduce-motion|motion-toggle/);
 
 const syntax = spawnSync(process.execPath, ['--check', path.join(root, 'src', 'app.js')], { encoding: 'utf8' });
 assert.equal(syntax.status, 0, syntax.stderr || syntax.stdout);

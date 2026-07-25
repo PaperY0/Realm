@@ -10,13 +10,19 @@ const {
   ImageGenerationError,
   DEFAULT_MODEL,
 } = require('./src/services/image-generation');
-const { createStoryPackage, assertStoryPackage } = require('./src/domain/story-package');
+const { createStoryPackage, assertStoryPackage, applyGeneratedChapterScript } = require('./src/domain/story-package');
+const { DEMO_SEVEN_CHAPTER_TEMPLATE } = require('./src/features/story/demo-seven-chapter-template');
+const { generateTextStoryPackage, textGatewayConfigured, TextGenerationError } = require('./src/services/text-generation');
 const { generateChapterIllustrations } = require('./src/services/chapter-image-generation');
 const { SQLiteStore } = require('./src/storage/sqlite-store');
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3000;
 const MAX_JSON_BODY_BYTES = 64 * 1024;
+// A frozen seven-chapter story package contains the validated chapter prompts
+// needed by the image worker, so it needs a larger route-specific limit. Keep
+// the general JSON limit unchanged for the smaller APIs.
+const MAX_STORY_PACKAGE_BODY_BYTES = 128 * 1024;
 const MAX_STORYBOOK_STATE_BYTES = 256 * 1024;
 const ROOT_DIR = __dirname;
 const SRC_DIR = path.join(ROOT_DIR, 'src');
@@ -36,12 +42,32 @@ const ASSETS = new Map([
   ['/app.js', { file: 'app.js', contentType: 'text/javascript; charset=utf-8' }],
   ['/reader-state.js', { file: 'features/reader/reader-state.js', contentType: 'text/javascript; charset=utf-8' }],
   ['/assets/world-gate-reference.png', { file: 'assets/world-gate-reference.png', contentType: 'image/png' }],
+  ['/assets/expression-watercolor-reference.png', { file: 'assets/expression-watercolor-reference.png', contentType: 'image/png' }],
+  ['/assets/expression-watercolor-wash.png', { file: 'assets/expression-watercolor-wash.png', contentType: 'image/png' }],
   ['/assets/emotion-hall.png', { file: 'assets/emotion-hall.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/background.png', { file: 'assets/emotion-hall/layers/background.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/door-overthinking.png', { file: 'assets/emotion-hall/layers/door-overthinking.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/door-sadness.png', { file: 'assets/emotion-hall/layers/door-sadness.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/door-anxiety.png', { file: 'assets/emotion-hall/layers/door-anxiety.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/door-anger.png', { file: 'assets/emotion-hall/layers/door-anger.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/door-joy.png', { file: 'assets/emotion-hall/layers/door-joy.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/guardian-overthinking.png', { file: 'assets/emotion-hall/layers/guardian-overthinking.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/guardian-sadness.png', { file: 'assets/emotion-hall/layers/guardian-sadness.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/guardian-anxiety.png', { file: 'assets/emotion-hall/layers/guardian-anxiety.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/guardian-anger.png', { file: 'assets/emotion-hall/layers/guardian-anger.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall/layers/guardian-joy.png', { file: 'assets/emotion-hall/layers/guardian-joy.png', contentType: 'image/png' }],
   ['/assets/guardians/wanxian.png', { file: 'assets/guardians/wanxian.png', contentType: 'image/png' }],
   ['/assets/guardians/tingyu.png', { file: 'assets/guardians/tingyu.png', contentType: 'image/png' }],
   ['/assets/guardians/xibai.png', { file: 'assets/guardians/xibai.png', contentType: 'image/png' }],
   ['/assets/guardians/cangjin.png', { file: 'assets/guardians/cangjin.png', contentType: 'image/png' }],
   ['/assets/guardians/lingya.png', { file: 'assets/guardians/lingya.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-1.png', { file: 'assets/fallback/chapter-1.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-2.png', { file: 'assets/fallback/chapter-2.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-3.png', { file: 'assets/fallback/chapter-3.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-4.png', { file: 'assets/fallback/chapter-4.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-5.png', { file: 'assets/fallback/chapter-5.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-6.png', { file: 'assets/fallback/chapter-6.png', contentType: 'image/png' }],
+  ['/assets/fallback/chapter-7.png', { file: 'assets/fallback/chapter-7.png', contentType: 'image/png' }],
   ['/assets/world-entry.mp4', { file: 'assets/world-entry.mp4', contentType: 'video/mp4' }],
   ['/assets/paper-boat.mp4', { file: 'assets/paper-boat.mp4', contentType: 'video/mp4' }],
 ]);
@@ -289,10 +315,41 @@ function sanitizeChapterIllustration(value) {
     chapterNumber: value.chapterNumber,
     chapterId: value.chapterId,
     state: value.state,
-    image: value.image ? sanitizeGeneratedImage(value.image) : null,
+    image: value.source === 'approved_template' ? sanitizeFallbackImage(value.image) : value.image ? sanitizeGeneratedImage(value.image) : null,
+    source: value.source === 'approved_template' ? 'approved_template' : 'generated',
+    fallbackReason: value.source === 'approved_template' && typeof value.image?.fallbackReason === 'string'
+      ? value.image.fallbackReason.replace(/[^A-Z0-9_]/g, '').slice(0, 64)
+      : null,
     error: value.error && typeof value.error.code === 'string'
       ? { code: value.error.code.replace(/[^A-Z0-9_]/g, '').slice(0, 64) }
       : null,
+  });
+}
+
+function sanitizeFallbackImage(value) {
+  assertPlainObject(value);
+  if (
+    value.source !== 'approved_template'
+    || typeof value.fileName !== 'string'
+    || !/^chapter-[1-7]\.png$/.test(value.fileName)
+    || value.url !== '/assets/fallback/' + value.fileName
+    || value.relativePath !== 'assets/fallback/' + value.fileName
+    || value.mediaType !== 'image/png'
+  ) throw new Error('unsafe fallback image');
+  return Object.freeze({
+    url: value.url,
+    relativePath: value.relativePath,
+    fileName: value.fileName,
+    mediaType: value.mediaType,
+    bytes: value.bytes,
+    model: 'approved-template',
+    size: value.size,
+    quality: 'approved',
+    outputFormat: 'png',
+    requestMode: 'fallback',
+    referenceCount: 0,
+    width: value.width,
+    height: value.height,
   });
 }
 
@@ -372,6 +429,7 @@ function sanitizeGeneratedImage(value) {
 
 function createRequestHandler(options = {}) {
   const generateImageImpl = options.generateImageImpl || defaultGenerateImage;
+  const textFetchImpl = options.textFetchImpl || globalThis.fetch;
   const env = options.env || process.env;
   const generatedDir = path.resolve(options.generatedDir || DEFAULT_GENERATED_DIR);
   const storybookStore = options.enablePersistence
@@ -444,10 +502,57 @@ function createRequestHandler(options = {}) {
         return;
       }
 
+      let storyPackage;
       try {
-        const storyPackage = createStoryPackage(safeStoryBrief);
+        try {
+          storyPackage = createStoryPackage(safeStoryBrief);
+        } catch {
+          storyPackage = createStoryPackage({
+            schemaVersion: 'story-safe-fallback-v1',
+            briefId: safeStoryBrief.briefId || 'demo-fallback',
+            safetyStatus: 'story_safe',
+            coreTension: typeof safeStoryBrief.coreTension === 'string' && safeStoryBrief.coreTension.trim()
+              ? safeStoryBrief.coreTension
+              : '旅人背着一份还没有被命名的重量',
+            emotionalDirection: typeof safeStoryBrief.emotionalDirection === 'string' && safeStoryBrief.emotionalDirection.trim()
+              ? safeStoryBrief.emotionalDirection
+              : '允许自己先停下来，找到可以呼吸的下一步',
+            desiredDirection: typeof safeStoryBrief.desiredDirection === 'string' && safeStoryBrief.desiredDirection.trim()
+              ? safeStoryBrief.desiredDirection
+              : '先走好今天的一步',
+            storyUsableFacts: [],
+            missingStoryInformation: ['未补写现实人物、关系与结局'],
+          });
+        }
+        if (textGatewayConfigured(env)) {
+          storyPackage = await generateTextStoryPackage({
+            safeStoryBrief,
+            baseStoryPackage: storyPackage,
+            apiKey: env.AI_GATEWAY_API_KEY,
+            baseUrl: env.TEXT_BASE_URL,
+            model: env.TEXT_MODEL,
+            fetchImpl: textFetchImpl,
+          });
+        }
         sendJson(request, response, 201, { ok: true, storyPackage });
-      } catch {
+      } catch (error) {
+        if (storyPackage) {
+          try {
+            const fallbackStoryPackage = applyGeneratedChapterScript(storyPackage, {
+              chapters: DEMO_SEVEN_CHAPTER_TEMPLATE,
+            }, { forbiddenSourceTexts: [] });
+            sendJson(request, response, 201, {
+              ok: true,
+              textSource: 'approved_template',
+              textFallbackReason: typeof error?.code === 'string' ? error.code : 'TEXT_GENERATION_FAILED',
+              storyPackage: fallbackStoryPackage,
+            });
+            return;
+          } catch {
+            // Fall through to the safe client-visible error when even the
+            // approved fixed story template cannot be applied.
+          }
+        }
         sendJson(request, response, 400, {
           ok: false,
           error: 'invalid_story_brief',
@@ -520,7 +625,7 @@ function createRequestHandler(options = {}) {
       }
       let body;
       try {
-        body = await readJsonBody(request);
+        body = await readJsonBody(request, MAX_STORY_PACKAGE_BODY_BYTES);
       } catch (error) {
         sendJson(request, response, error.code === 'REQUEST_TOO_LARGE' ? 413 : 400, {
           ok: false,
@@ -547,6 +652,7 @@ function createRequestHandler(options = {}) {
           referenceImages: input.referenceImages,
           generatedDir,
           generateImageImpl,
+          concurrency: env.IMAGE_GENERATION_CONCURRENCY,
         });
         sendJson(request, response, result.status === 'succeeded' ? 201 : 207, {
           ok: result.status === 'succeeded',
@@ -728,6 +834,7 @@ module.exports = {
   HOST,
   DEFAULT_PORT,
   MAX_JSON_BODY_BYTES,
+  MAX_STORY_PACKAGE_BODY_BYTES,
   REFERENCE_ASSET,
   createAppServer,
   createRequestHandler,

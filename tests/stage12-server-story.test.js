@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const {
   createAppServer,
   MAX_JSON_BODY_BYTES,
+  MAX_STORY_PACKAGE_BODY_BYTES,
 } = require('../server');
 
 function safeStoryBrief(overrides = {}) {
@@ -78,6 +79,28 @@ async function run() {
     );
     assert.equal(imageGenerationCalls, 0);
 
+    const storyPackageForLargeBody = structuredClone(successPayload.storyPackage);
+    const baseStoryPackageBody = JSON.stringify({ storyPackage: storyPackageForLargeBody });
+    const paddingLength = Math.max(
+      0,
+      MAX_JSON_BODY_BYTES - Buffer.byteLength(baseStoryPackageBody) + 1024,
+    );
+    storyPackageForLargeBody.safeStoryBrief.feltPressure.push('x'.repeat(paddingLength));
+    const fullStoryPackageBody = JSON.stringify({ storyPackage: storyPackageForLargeBody });
+    assert.ok(Buffer.byteLength(fullStoryPackageBody) > MAX_JSON_BODY_BYTES);
+    assert.ok(Buffer.byteLength(fullStoryPackageBody) < MAX_STORY_PACKAGE_BODY_BYTES);
+    const illustrations = await fetch(baseUrl + '/api/images/generate-book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: fullStoryPackageBody,
+    });
+    assert.equal(illustrations.status, 201);
+    const illustrationsPayload = await illustrations.json();
+    assert.equal(illustrationsPayload.error, undefined);
+    assert.equal(illustrationsPayload.illustrations.length, 7);
+    assert.ok(illustrationsPayload.illustrations.every((illustration) => illustration.state === 'fallback'));
+    assert.equal(imageGenerationCalls, 7);
+
     const sensitive = await postJson(baseUrl, {
       safeStoryBrief: safeStoryBrief({ safetyStatus: 'high_risk' }),
     });
@@ -118,6 +141,17 @@ async function run() {
     assert.equal(oversized.status, 413);
     assert.equal((await oversized.json()).error, 'request_too_large');
 
+    const oversizedStoryPackage = await fetch(baseUrl + '/api/images/generate-book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        storyPackage: successPayload.storyPackage,
+        padding: 'x'.repeat(MAX_STORY_PACKAGE_BODY_BYTES),
+      }),
+    });
+    assert.equal(oversizedStoryPackage.status, 413);
+    assert.equal((await oversizedStoryPackage.json()).error, 'request_too_large');
+
     for (const method of ['GET', 'PUT', 'DELETE']) {
       const rejected = await fetch(baseUrl + '/api/story-package', { method });
       assert.equal(rejected.status, 405, method);
@@ -135,7 +169,7 @@ async function run() {
     assert.match(readerState.headers.get('content-type'), /^text\/javascript/);
     assert.match(await readerState.text(), /class ReaderStateError/);
 
-    assert.equal(imageGenerationCalls, 0);
+    assert.equal(imageGenerationCalls, 7);
     console.log('stage12 server story tests passed');
   } finally {
     await close(server);

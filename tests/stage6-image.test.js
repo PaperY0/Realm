@@ -139,7 +139,32 @@ async function run() {
     assert.match(prompt, /UNIFIED NEGATIVE — DREAMBOOK REALM V3\.3/);
     assert.match(prompt, /重新取回自己的声音/);
     assert.match(prompt, /不要出现任何文字、字幕、标识、水印/);
+    assert.match(prompt, /输出规格：720x1280 像素，宽高比 9:16，PNG 格式，单幅画面/);
     assert.equal(prompt.trim().endsWith('No text, letters, pseudo-writing, logo, signature, account name or watermark inside the generated image.'), true);
+    const customPrompt = buildImagePrompt(safeStoryBrief(), undefined, {
+      size: '1024x1024',
+      outputFormat: 'webp',
+    });
+    assert.match(customPrompt, /输出规格：1024x1024 像素，宽高比 1:1，WEBP 格式，单幅画面/);
+    const chapterPrompt = buildImagePrompt(safeStoryBrief(), undefined, {
+      size: '720x1280',
+      outputFormat: 'png',
+      chapterIllustration: {
+        narrativeMoment: '灯火前停靠',
+        protagonistExpression: '疲惫后松开肩膀',
+        setting: '刻度藤爬满山坡的黄昏',
+        composition: '旅人位于前景左侧，暖灯位于中景',
+        requiredProps: ['星纹线轴袋', '慢一拍的小钟'],
+        recurringSymbols: ['银线', '暖灯'],
+        palette: ['苔绿', '暖金'],
+        lighting: '从冷光转向暖光',
+        continuityFromPrevious: '延续上一章的行囊位置',
+        continuityToNext: '保留暖灯作为下一章信物',
+      },
+    });
+    assert.match(chapterPrompt, /本章叙事时刻：灯火前停靠/);
+    assert.match(chapterPrompt, /场景：刻度藤爬满山坡的黄昏/);
+    assert.match(chapterPrompt, /必须出现的道具：星纹线轴袋；慢一拍的小钟/);
     assert.throws(() => buildImagePrompt(safeStoryBrief(), 'arbitrary style'), /styleGuide overrides are forbidden/i);
 
     const envFile = path.join(tempRoot, '.env.local');
@@ -214,6 +239,53 @@ async function run() {
     });
     assert.deepEqual(fs.readFileSync(path.join(generatedDir, 'chapter-1.png')), PNG_720_1280);
     assert.equal(fs.readdirSync(generatedDir).some((name) => name.includes('.tmp-')), false);
+
+    const urlFetchCalls = [];
+    const urlSuccessFetch = async (url, options) => {
+      urlFetchCalls.push(url);
+      if (url.endsWith('/images/generations')) {
+        return response({ body: { data: [{ url: 'https://media.example.test/generated/chapter-url.png' }] } });
+      }
+      return {
+        ok: true,
+        status: 200,
+        async arrayBuffer() {
+          return PNG_720_1280.buffer.slice(
+            PNG_720_1280.byteOffset,
+            PNG_720_1280.byteOffset + PNG_720_1280.byteLength,
+          );
+        },
+      };
+    };
+    const urlResult = await generateImage({
+      safeStoryBrief: safeStoryBrief(),
+      apiKey: 'stage6-api-key',
+      baseUrl: 'https://media.example.test/v1',
+      fetchImpl: urlSuccessFetch,
+      generatedDir,
+      fileName: 'chapter-url.png',
+    });
+    assert.deepEqual(urlFetchCalls, [
+      'https://media.example.test/v1/images/generations',
+      'https://media.example.test/generated/chapter-url.png',
+    ]);
+    assert.equal(urlResult.width, 720);
+    assert.equal(urlResult.height, 1280);
+    assert.deepEqual(fs.readFileSync(path.join(generatedDir, 'chapter-url.png')), PNG_720_1280);
+
+    let unsafeUrlFetchCalls = 0;
+    await expectPublicError(() => generateImage({
+      safeStoryBrief: safeStoryBrief(),
+      apiKey: 'stage6-api-key',
+      baseUrl: 'https://media.example.test/v1',
+      fetchImpl: async () => {
+        unsafeUrlFetchCalls += 1;
+        return response({ body: { data: [{ url: 'http://unsafe.example.test/image.png' }] } });
+      },
+      generatedDir,
+      fileName: 'unsafe-url.png',
+    }), 'IMAGE_RESPONSE_ERROR');
+    assert.equal(unsafeUrlFetchCalls, 1, 'unsafe image URL must not be fetched');
 
     const editResult = await generateImage({
       safeStoryBrief: safeStoryBrief(),

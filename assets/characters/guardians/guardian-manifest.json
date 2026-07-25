@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "style_authority": "assets/bible/STYLE-BIBLE.md V3.3",
+  "family": "书境造物家族",
+  "characters": [
+    {
+      "id": "wanxian",
+      "name": "绾线",
+      "emotion": "内耗",
+      "slot": 1,
+      "primary": "warm paper apricot",
+      "secondary": "dusty violet",
+      "accent": "olive green and a tiny coral knot",
+      "silhouette": "soft folded-page spool seed with one low inward fold, a loose thread loop around one side and a short thread tail behind; no ears",
+      "prop": "one loose chest knot and a single thread end",
+      "actions": [
+        "protects the loose chest knot",
+        "hides the knot behind the body while leaving one thread end visible",
+        "offers the thread and walks two steps forward, then looks back"
+      ]
+    },
+    {
+      "id": "tingyu",
+      "name": "听雨",
+      "emotion": "悲伤",
+      "slot": 2,
+      "primary": "mist blue",
+      "secondary": "gray violet",
+      "accent": "sage green, muted rose and moon-cream",
+      "silhouette": "rounded folded-page rain vessel, slightly wider above, with one broad downward-curving leaf eave and a shallow water-color patch on the belly; no hat or ears",
+      "prop": "one small leaf dish",
+      "actions": [
+        "listens to one drop on the leaf eave",
+        "catches one drop in the leaf dish",
+        "pours the drop into a tiny puddle where one flower opens"
+      ]
+    },
+    {
+      "id": "xibai",
+      "name": "息摆",
+      "emotion": "焦虑",
+      "slot": 3,
+      "primary": "gray teal",
+      "secondary": "soft lavender",
+      "accent": "pale apricot paper tabs and one coral pendulum bead",
+      "silhouette": "compact body made from several rounded paper tabs leaning together, one short soft wind vane on top, three small tabs hanging on one side; no antenna or ears",
+      "prop": "one tiny round pendulum bead",
+      "actions": [
+        "paper tabs sway at different rhythms",
+        "cups the pendulum bead so the tabs gradually synchronize",
+        "takes one slow breath and the tabs stop in sequence before opening the way"
+      ]
+    },
+    {
+      "id": "cangjin",
+      "name": "藏烬",
+      "emotion": "愤怒",
+      "slot": 4,
+      "primary": "caramel brown",
+      "secondary": "brick red",
+      "accent": "cocoa brown, warm orange and a little gold",
+      "silhouette": "low stable rounded ember-seed shell, wider at the base, with one soft curved opening at the top and one small translucent chest window; no horns",
+      "prop": "one contained ember inside the chest window",
+      "actions": [
+        "covers the chest window with both hands",
+        "opens one narrow vent so the ember becomes steady",
+        "turns the chest window toward the doorway and makes a warm path of light"
+      ]
+    },
+    {
+      "id": "lingya",
+      "name": "铃芽",
+      "emotion": "喜悦",
+      "slot": 5,
+      "primary": "honey yellow",
+      "secondary": "sprout green",
+      "accent": "berry pink, cream white and a little apricot",
+      "silhouette": "rounded bell-flower seed body with one curved sprout on top and one tiny hanging bell flower on the side; no ear or wing reading",
+      "prop": "one small bell flower and one luminous seed",
+      "actions": [
+        "holds a closed bell flower",
+        "the flower opens slowly and rings once",
+        "places one luminous seed in the ground and quietly invites the traveler forward"
+      ]
+    }
+  ]
+}

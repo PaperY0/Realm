@@ -6,7 +6,7 @@
 
 ## 结构
 
-- `src/services/chapter-image-generation.js` 负责七章任务编排、并发上限、逐章状态和 `Promise.allSettled` 结果汇总。
+- `src/services/chapter-image-generation.js` 负责七章任务编排、并发上限、逐章状态和 `Promise.allSettled` 结果汇总；默认并发 3，确认网关稳定后可提升到 7。
 - `src/services/image-generation.js` 保持单图生成职责，并接收每章 `illustrationContract` 生成章节专属提示词。
 - `POST /api/images/generate-book` 接收冻结故事包，返回七章插画结果；单章文件直接写入现有生成目录，避免破坏静态资源契约。
 - 前端在故事包完成后调用整本接口，展示七章进度；只有七章都成功才允许进入阅读态。

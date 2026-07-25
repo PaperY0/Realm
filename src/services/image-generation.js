@@ -17,7 +17,7 @@ const DEFAULT_MAX_REFERENCE_BYTES = 10 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 4;
 const DEFAULT_GENERATED_DIR = path.join(PROJECT_ROOT, 'runtime', 'generated');
 const RELATIVE_OUTPUT_DIR = 'runtime/generated';
-const STYLE_BIBLE_PATH = path.join(PROJECT_ROOT, 'STYLE-BIBLE.md');
+const STYLE_BIBLE_PATH = path.join(PROJECT_ROOT, 'assets', 'bible', 'STYLE-BIBLE.md');
 const SAFE_STORY_SCHEMA_PATH = path.join(PROJECT_ROOT, 'docs', 'schemas', 'safe-story-brief.schema.json');
 const ALLOWED_REFERENCE_DIRS = Object.freeze([
   path.join(PROJECT_ROOT, 'src', 'assets'),
@@ -230,13 +230,48 @@ function promptValue(value) {
   return value;
 }
 
-function buildImagePrompt(safeStoryBrief, forbiddenStyleGuide) {
+function imageAspectRatio(size) {
+  const match = /^(\d+)x(\d+)$/.exec(size);
+  if (!match || Number(match[1]) <= 0 || Number(match[2]) <= 0) {
+    throw publicError('IMAGE_CONFIG_ERROR', 'Image size is invalid');
+  }
+
+  let width = Number(match[1]);
+  let height = Number(match[2]);
+  while (height !== 0) {
+    const remainder = width % height;
+    width = height;
+    height = remainder;
+  }
+  return `${Number(match[1]) / width}:${Number(match[2]) / width}`;
+}
+
+function promptRenderSpec(options = {}) {
+  const size = normalizeConfigText(
+    options.size ?? process.env.IMAGE_SIZE ?? DEFAULT_SIZE,
+    'size',
+    64,
+  );
+  const outputFormat = normalizeConfigText(
+    options.outputFormat ?? process.env.IMAGE_OUTPUT_FORMAT ?? DEFAULT_OUTPUT_FORMAT,
+    'output format',
+    32,
+  );
+  return Object.freeze({
+    size,
+    aspectRatio: imageAspectRatio(size),
+    outputFormat: outputFormat.toUpperCase(),
+  });
+}
+
+function buildImagePrompt(safeStoryBrief, forbiddenStyleGuide, renderOptions) {
   if (arguments.length > 1 && forbiddenStyleGuide !== undefined && forbiddenStyleGuide !== null) {
     throw publicError('IMAGE_INPUT_ERROR', 'styleGuide overrides are forbidden; STYLE-BIBLE.md is authoritative');
   }
 
   const brief = validateSafeStoryBrief(safeStoryBrief);
   const styleAuthority = readStyleAuthority();
+  const renderSpec = promptRenderSpec(renderOptions);
 
   const authoritySegment = [
     '[1/5 风格权威声明]',
@@ -263,11 +298,21 @@ function buildImagePrompt(safeStoryBrief, forbiddenStyleGuide) {
     '禁止解释：' + promptValue(brief.prohibitedInterpretations) + '。',
     '未知信息：' + promptValue(brief.missingStoryInformation) + '。',
     '构图：单幅竖屏，一项主要动作、一种主要情绪、一个象征物；主体清晰，环境只服务于情绪时刻。',
+    ...(renderOptions?.chapterIllustration ? [
+      '本章叙事时刻：' + promptValue(renderOptions.chapterIllustration.narrativeMoment) + '。',
+      '本章主角表情与动作：' + promptValue(renderOptions.chapterIllustration.protagonistExpression) + '。',
+      '场景：' + promptValue(renderOptions.chapterIllustration.setting) + '。',
+      '章节构图：' + promptValue(renderOptions.chapterIllustration.composition) + '。',
+      '必须出现的道具：' + promptValue(renderOptions.chapterIllustration.requiredProps) + '。',
+      '反复象征物：' + promptValue(renderOptions.chapterIllustration.recurringSymbols) + '。',
+      '本章色板：' + promptValue(renderOptions.chapterIllustration.palette) + '；本章光线：' + promptValue(renderOptions.chapterIllustration.lighting) + '。',
+      '与上一章连续性：' + promptValue(renderOptions.chapterIllustration.continuityFromPrevious) + '；与下一章连续性：' + promptValue(renderOptions.chapterIllustration.continuityToNext) + '。',
+    ] : []),
   ].join('\n');
 
   const technicalSegment = [
     '[4/5 渲染模式与技术要求]',
-    '输出 720x1280 竖屏 PNG；保持完整连续轮廓、正确角色结构与空间关系；不要出现任何文字、字幕、标识、水印、拼贴、多格漫画、书封排版或横屏画面。',
+    `输出规格：${renderSpec.size} 像素，宽高比 ${renderSpec.aspectRatio}，${renderSpec.outputFormat} 格式，单幅画面；保持完整连续轮廓、正确角色结构与空间关系；不要出现任何文字、字幕、标识、水印、拼贴、多格漫画、书封排版或横屏画面。`,
     '使用童话隐喻和非临床表达；参考图只用于保持守门 IP 与绘本世界的一致性，不得复制其中的界面、文字或可识别版式。',
   ].join('\n');
 
@@ -557,15 +602,21 @@ function readConfiguration(options) {
   if (outputFormat !== DEFAULT_OUTPUT_FORMAT) {
     throw publicError('IMAGE_CONFIG_ERROR', 'The V0 image output format must be png');
   }
+  const size = normalizeConfigText(options.size ?? process.env.IMAGE_SIZE ?? DEFAULT_SIZE, 'size', 64);
+  const quality = normalizeConfigText(options.quality ?? process.env.IMAGE_QUALITY ?? DEFAULT_QUALITY, 'quality', 64);
 
   return Object.freeze({
     apiKey: apiKey.trim(),
     endpoint: buildEndpoint(baseUrl, referenceImages.length > 0 ? 'edits' : 'generations'),
     fetchImpl,
-    prompt: buildImagePrompt(options.safeStoryBrief),
+    prompt: buildImagePrompt(options.safeStoryBrief, undefined, {
+      size,
+      outputFormat,
+      chapterIllustration: options.illustrationContract,
+    }),
     model,
-    size: normalizeConfigText(options.size ?? process.env.IMAGE_SIZE ?? DEFAULT_SIZE, 'size', 64),
-    quality: normalizeConfigText(options.quality ?? process.env.IMAGE_QUALITY ?? DEFAULT_QUALITY, 'quality', 64),
+    size,
+    quality,
     outputFormat,
     timeoutMs: normalizePositiveInteger(options.timeoutMs ?? process.env.IMAGE_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, 'timeout', 15 * 60_000),
     maxDecodedBytes: normalizePositiveInteger(options.maxDecodedBytes, DEFAULT_MAX_DECODED_BYTES, 'decoded byte limit', 100 * 1024 * 1024),
@@ -680,6 +731,64 @@ async function requestProviderPayload(config, references, signal) {
   }
 }
 
+async function readImageResponseBytes(payload, config, signal) {
+  const item = payload && Array.isArray(payload.data) && payload.data[0]
+    ? payload.data[0]
+    : null;
+  const encoded = item && typeof item.b64_json === 'string' ? item.b64_json : null;
+  if (encoded) return decodeImagePayload(encoded, config.maxDecodedBytes);
+
+  const imageUrl = item && typeof item.url === 'string' ? item.url.trim() : '';
+  if (!imageUrl) {
+    throw publicError('IMAGE_RESPONSE_ERROR', 'Image provider returned an invalid image payload');
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(imageUrl);
+  } catch {
+    throw publicError('IMAGE_RESPONSE_ERROR', 'Image provider returned an invalid image URL');
+  }
+  if (parsedUrl.protocol !== 'https:' || parsedUrl.username || parsedUrl.password) {
+    throw publicError('IMAGE_RESPONSE_ERROR', 'Image provider returned an unsafe image URL');
+  }
+
+  let response;
+  try {
+    response = await config.fetchImpl(parsedUrl.toString(), {
+      method: 'GET',
+      headers: { Accept: 'image/png,image/*' },
+      signal,
+    });
+  } catch {
+    if (signal.aborted) throw publicError('IMAGE_TIMEOUT', 'Image generation timed out');
+    throw publicError('IMAGE_PROVIDER_ERROR', 'Image provider image URL could not be fetched');
+  }
+  if (!response || response.ok !== true || typeof response.arrayBuffer !== 'function') {
+    throw publicError('IMAGE_PROVIDER_ERROR', 'Image provider image URL could not be fetched');
+  }
+
+  const contentLength = Number(response.headers && response.headers.get
+    ? response.headers.get('content-length')
+    : 0);
+  if (Number.isSafeInteger(contentLength) && contentLength > config.maxDecodedBytes) {
+    throw publicError('IMAGE_TOO_LARGE', 'Generated image exceeded the configured size limit');
+  }
+
+  let arrayBuffer;
+  try {
+    arrayBuffer = await response.arrayBuffer();
+  } catch {
+    if (signal.aborted) throw publicError('IMAGE_TIMEOUT', 'Image generation timed out');
+    throw publicError('IMAGE_RESPONSE_ERROR', 'Image provider returned an unreadable image');
+  }
+  const bytes = Buffer.from(arrayBuffer);
+  if (bytes.length > config.maxDecodedBytes) {
+    throw publicError('IMAGE_TOO_LARGE', 'Generated image exceeded the configured size limit');
+  }
+  return bytes;
+}
+
 async function executeGeneration(config) {
   const references = await loadReferenceImages(config.referenceImages, config.maxReferenceBytes);
   const controller = new AbortController();
@@ -701,10 +810,7 @@ async function executeGeneration(config) {
     clearTimeout(timeout);
   }
 
-  const encoded = payload && Array.isArray(payload.data) && payload.data[0]
-    ? payload.data[0].b64_json
-    : null;
-  const bytes = decodeImagePayload(encoded, config.maxDecodedBytes);
+  const bytes = await readImageResponseBytes(payload, config, controller.signal);
   const mediaType = detectImageMediaType(
     bytes,
     'IMAGE_RESPONSE_ERROR',

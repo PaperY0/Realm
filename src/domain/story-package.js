@@ -5,6 +5,7 @@ const {
   shouldUseMianmianFallback,
   createMianmianFallbackBeats,
 } = require('../features/story/mianmian-fallback');
+const { buildFrameworkPrompt, selectStoryFramework } = require('../features/story/story-frameworks');
 
 const FIXED_GATEKEEPER = Object.freeze({
   ipId: 'inner-friction-gatekeeper-v1',
@@ -363,11 +364,12 @@ function createEchoBeats(safeBrief) {
   ];
 }
 
-function createStoryPrompt({ useMianmianFallback, struggle, direction, symbol }) {
+function createStoryPrompt({ framework, useMianmianFallback, struggle, direction, symbol }) {
   if (useMianmianFallback) {
-    return '七章安全绘本《绵绵和没有写完的名字》：以绾线守门人、纸签、名字抽屉与风向桥为连续意象，讲述保留未知、辨认重量并走向下一步的温柔旅程；手绘童话绘本、纸张纹理、9:16竖幅、无画面文字与水印。';
+    return buildFrameworkPrompt(framework) + '\n七章安全绘本《绵绵和没有写完的名字》：以绾线守门人、纸签、名字抽屉与风向桥为连续意象，讲述保留未知、辨认重量并走向下一步的温柔旅程；手绘童话绘本、纸张纹理、9:16竖幅、无画面文字与水印。';
   }
   return [
+    buildFrameworkPrompt(framework),
     '七章安全绘本：',
     '核心拉扯是“' + struggle.title + '”',
     '方向是“' + direction.title + '”',
@@ -381,6 +383,54 @@ function shortenChapterText(text) {
   const normalized = String(text || '').replace(/\s+/g, ' ').trim();
   if (normalized.length <= MAX_VISIBLE_CHAPTER_TEXT) return normalized;
   return normalized.slice(0, MAX_VISIBLE_CHAPTER_TEXT - 1) + '…';
+}
+
+function normalizeGeneratedText(value, fallback, maximum) {
+  const normalized = String(value || '')
+    .replace(/[\u0000-\u001f\u007f<>`{}\[\]\\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return (normalized || fallback).slice(0, maximum);
+}
+
+function applyGeneratedChapterScript(storyPackage, generatedScript, options = {}) {
+  if (!storyPackage || !Array.isArray(storyPackage.chapterCards) || storyPackage.chapterCards.length !== 7) {
+    throw new TypeError('storyPackage must contain seven chapter cards');
+  }
+  if (!generatedScript || !Array.isArray(generatedScript.chapters) || generatedScript.chapters.length !== 7) {
+    throw new TypeError('generatedScript must contain seven chapters');
+  }
+  const sourceTexts = Array.isArray(options.forbiddenSourceTexts)
+    ? options.forbiddenSourceTexts.filter((item) => typeof item === 'string' && item)
+    : [];
+  const next = clone(storyPackage);
+  next.chapterCards = next.chapterCards.map((card, index) => {
+    const generated = generatedScript.chapters[index];
+    if (Number(generated.chapterNumber) !== index + 1) throw new TypeError('generated chapter sequence is invalid');
+    const title = normalizeGeneratedText(generated.title, card.userVisibleCopy.chapterTitle, 48);
+    const text = normalizeGeneratedText(generated.chapterText, card.userVisibleCopy.chapterText, MAX_VISIBLE_CHAPTER_TEXT);
+    const imagePrompt = normalizeGeneratedText(
+      generated.imagePrompt,
+      card.illustrationContract.promptContract.imagePrompt,
+      2_400,
+    );
+    const serialized = JSON.stringify({ title, text, imagePrompt });
+    if (sourceTexts.some((source) => serialized.includes(source))) throw new TypeError('generated chapter contains forbidden source text');
+    return {
+      ...card,
+      userVisibleCopy: { ...card.userVisibleCopy, chapterTitle: title, chapterText: text },
+      narrativeContract: {
+        ...card.narrativeContract,
+        visibleBeat: normalizeGeneratedText(generated.narrativeBeat, card.narrativeContract.visibleBeat, 360),
+      },
+      illustrationContract: {
+        ...card.illustrationContract,
+        promptContract: { ...card.illustrationContract.promptContract, imagePrompt },
+      },
+    };
+  });
+  assertStoryPackage(next, options);
+  return deepFreeze(next);
 }
 
 function createImagePrompt({ beat, chapterNumber, chapterId, continuityFromPrevious, continuityToNext }) {
@@ -404,6 +454,7 @@ function createImagePrompt({ beat, chapterNumber, chapterId, continuityFromPrevi
 function createStoryPackage(safeStoryBrief, options = {}) {
   const useMianmianFallback = assertSafeBrief(safeStoryBrief);
   const safeBrief = clone(safeStoryBrief);
+  const framework = selectStoryFramework(safeBrief, useMianmianFallback);
   const bookId = stableId('book', safeBrief.briefId);
   const planId = stableId('plan', safeBrief.briefId);
   const templateVersion = useMianmianFallback
@@ -500,7 +551,14 @@ function createStoryPackage(safeStoryBrief, options = {}) {
       : '《绾线与' + echoSymbolProfile.title + '》',
     frozen: true,
     safeStoryBrief: safeBrief,
+    storyFramework: {
+      id: framework.id,
+      name: framework.name,
+      sourceTemplateId: framework.sourceTemplateId,
+      chapterArc: clone(framework.chapterArc),
+    },
     storyPrompt: createStoryPrompt({
+      framework,
       useMianmianFallback,
       struggle: echoStruggleProfile,
       direction: echoDirectionProfile,
@@ -685,6 +743,7 @@ function assertStoryPackage(value, options = {}) {
 module.exports = {
   FIXED_GATEKEEPER,
   StoryPackageValidationError,
+  applyGeneratedChapterScript,
   createStoryPackage,
   validateStoryPackage,
   assertStoryPackage,

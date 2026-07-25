@@ -147,6 +147,14 @@ class SQLiteStore {
         created_at TEXT NOT NULL
       );
       CREATE INDEX IF NOT EXISTS idx_events_book_id ON events(book_id);
+
+      CREATE TABLE IF NOT EXISTS storybook_state (
+        state_id INTEGER PRIMARY KEY CHECK (state_id = 1),
+        story_package_json TEXT NOT NULL,
+        reader_snapshot_json TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
     `);
   }
 
@@ -321,6 +329,34 @@ class SQLiteStore {
       ? this.db.prepare('SELECT * FROM events ORDER BY id ASC').all()
       : this.db.prepare('SELECT * FROM events WHERE book_id = ? ORDER BY id ASC').all(bookId);
     return rows.map(rowToEvent);
+  }
+
+  saveStorybookState({ storyPackage, readerSnapshot }) {
+    const storyPackageJson = encodeJson(storyPackage, 'story package');
+    const readerSnapshotJson = encodeJson(readerSnapshot, 'reader snapshot');
+    const timestamp = now();
+    this.db.prepare(
+      `INSERT INTO storybook_state (state_id, story_package_json, reader_snapshot_json, created_at, updated_at)
+       VALUES (1, ?, ?, ?, ?)
+       ON CONFLICT(state_id) DO UPDATE SET
+         story_package_json = excluded.story_package_json,
+         reader_snapshot_json = excluded.reader_snapshot_json,
+         updated_at = excluded.updated_at`
+    ).run(storyPackageJson, readerSnapshotJson, timestamp, timestamp);
+    return this.getStorybookState();
+  }
+
+  getStorybookState() {
+    const row = this.db.prepare('SELECT * FROM storybook_state WHERE state_id = 1').get();
+    if (!row) return null;
+    return {
+      storyPackage: decodeJson(row.story_package_json),
+      readerSnapshot: decodeJson(row.reader_snapshot_json),
+    };
+  }
+
+  resetStorybookState() {
+    this.db.prepare('DELETE FROM storybook_state WHERE state_id = 1').run();
   }
 
   mediaPathFor(bookId, relativePath) {

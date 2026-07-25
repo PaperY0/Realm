@@ -21,7 +21,7 @@ function shouldUseMianmianFallback(safeStoryBrief) {
 const CHAPTER_PRESENTATION = Object.freeze([
   Object.freeze({
     title: '写满名字的小镇',
-    end: '理线人与绵绵看见，轻柔和刺痛的纸签正在一起贴满她的羊毛。',
+    end: '绾线与绵绵看见，轻柔和刺痛的纸签正在一起贴满她的羊毛。',
     setting: '纸签如雪飘落的名字抽屉小镇',
     expression: '担心而温和',
     requiredProps: Object.freeze(['星纹线轴袋', '名字抽屉', '月亮饰物', '写有评价的纸签']),
@@ -120,7 +120,7 @@ function createMianmianFallbackBeats() {
     return {
       ...presentation,
       text: [
-        `理线人轻轻翻开${MIANMIAN_UNFINISHED_NAME_TEMPLATE.title}，不替绵绵解释，只陪她把这一章完整读下去。`,
+        `绾线轻轻翻开${MIANMIAN_UNFINISHED_NAME_TEMPLATE.title}，不替绵绵解释，只陪她把这一章完整读下去。`,
         ...templateSpreads.map(formatSpread),
       ].join('\n\n'),
       composition: templateVisualDirections

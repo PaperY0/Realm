@@ -1,0 +1,32 @@
+USE CASE
+A finished, original, text-free background illustration for an 80 × 200 cm vertical roll-up banner. Exact canvas ratio 2:5. Theme concept: “扣藏梦书境”, but render absolutely no title or lettering inside the image.
+
+REFERENCE ROLE
+Image 1 is a STYLE REFERENCE ONLY. Do not edit, extend, trace, reproduce, or preserve its people, creatures, objects, title, layout, or recognizable composition. Create a completely new scene. Extract only these broad visual qualities: charming hand-painted picture-book warmth, layered watercolor color fields, continuous colored-pencil contours, slight crayon grain, subtle paper tooth, dark organic foliage framing a luminous center, simplified organic silhouettes, and playful but controlled color contrast.
+
+SCENE
+A secret dream realm hidden inside books, shown as an empty enchanted landscape with no living beings. A gentle pink-to-lavender twilight sky opens behind soft blue-violet clouds. A single creamy crescent moon hangs in the upper third, softly glowing without lens flare. Three to five floating flower islands drift at different heights in the distance, each shaped as a simple rounded garden silhouette with trailing roots, tiny flowers, and softened blue-violet undersides. On only one or two distant islands, place a very small open book lying naturally as an environmental object; nearby, a few loose pages curve through the air like pale leaves. The books and pages must be tiny, non-anthropomorphic, contain no visible writing, and never become the main subject.
+
+COMPOSITION
+Exact portrait ratio 2:5 for a roll-up banner. Build a dark fairy-forest arch around the edges: deep indigo-blue, blue-green, muted plum, and wine-red tree trunks rise from the lower left and lower right, bend inward near the top, and frame the scene without closing it. Use broad simplified branches and clusters of leaves rather than realistic botanical detail. Keep all important objects inside a 3% trim-safe margin and keep the lowest 5% free of critical motifs.
+
+From the center of the bottom edge, a warm golden stepping-stone path curves gently upward through low mist toward a softly glowing opening in the middle distance. The path guides the eye from bottom to center, then toward the moon and floating islands. Surround the bottom and side edges with rich but organized clusters of fantasy flowers in berry pink, coral red, apricot, golden yellow, lavender, and small sky-blue accents, plus elongated teal and fresh-green leaves. Add a few golden falling leaves, very sparse tiny stars, and thin translucent mist.
+
+NEGATIVE SPACE FOR LAYOUT
+The central approximately 55 percent of the banner must remain bright, calm, low-detail, and low-contrast for later title, logo, and event information. Preserve a large uninterrupted cream-gold and pale lavender atmospheric field from roughly 20% to 70% of canvas height. Keep flower clusters, strong branches, books, floating islands, high-contrast edges, and detailed texture mostly around the outer 20–24% side zones, the bottom zone, and the top perimeter. Do not place a large object in the center. The center must be practical editorial negative space, not an empty white rectangle.
+
+COLOR AND LIGHT
+Use medium-saturation multi-hue color layers: lavender violet, coral pink, apricot orange, golden yellow, yellow-green, leaf green, blue-violet, teal, berry pink, and creamy moonlight. Keep the sky pink-purple but balance it with coral, gold, green, and blue; do not apply a monochrome purple filter. Let the center glow with warm cream, pale gold, and a touch of soft mint. Reserve strongest saturation for small flower centers, a few leaves, and tiny stars. Light is gentle and locally magical, not cinematic, dramatic, volumetric, or photorealistic.
+
+DRAWING AND MATERIAL
+Create an original adult/children's fairy-tale picture-book illustration with broad translucent watercolor washes and fine, even, low-contrast watercolor grain. Every visible primary silhouette uses one smooth, flowing, continuous warm dark-brown colored-pencil contour with gentle pressure variation. Keep contours complete and unbroken except where objects truly overlap. Corners are rounded and organic. Use clear simplified silhouettes, one to three broad color shapes per object, and only a few internal marks. Perspective is softly flattened like a hand-painted storybook page; depth comes from overlap, value, temperature, and scale, not dramatic vanishing-point perspective.
+
+Large sky, cloud, path, island, and foliage surfaces remain calm coherent watercolor fields with gentle tonal variation. Confine visible colored-pencil hatching and soft wax-crayon accents to small areas such as flower centers, grass tips, stars, and selected edges. Paper texture is subtle and natural, never coarse. The final image should feel handmade, tender, luminous, colorful, dreamy, and polished enough for professional large-format event printing.
+
+STRICT EXCLUSIONS
+No people. No human figures. No characters. No children. No animals, birds, insects, faces, eyes, hands, silhouettes of living beings, statues, dolls, scarecrows, robots, or anthropomorphic plants/books/clouds/moon. No text, Chinese characters, English letters, numbers, pseudo-writing, book-page writing, logo, signature, account name, watermark, label, border caption, or title. No castle, palace, cottage, building, game portal, archway object, magic circle, fantasy user interface, or signage. No recognizable Wizard of Oz imagery. No copied pose, figure arrangement, title placement, or composition from Image 1.
+
+No anime, Disney-like acting, glossy eyes, mascot style, generic preschool vector cartoon, photorealism, 3D CGI, plastic, resin, clay, felt, plush, fabric stitching, thick paper sculpture, boxed diorama, cinematic concept art, dramatic wide angle, photographic depth of field, bokeh, lens flare, hard volumetric beams, neon gradients, all-over particle fields, or synthetic rainbow bands. No pure-black thick outlines, broken contours, jagged edges, scratchy bristles, coarse pigment crust, harsh granulation, splatter fields, repeated texture stamps, global sepia, faded beige wash, dull gray-green palette, pale monochrome pastel, or uniformly maximum saturation.
+
+OUTPUT INTENT
+One complete edge-to-edge opaque background illustration, exact 2:5 vertical composition, no blank border, no frame mockup, no roll-up hardware, no typography, no people or animals. It must work both as a beautiful standalone dream-book landscape and as a practical background with central copy space.

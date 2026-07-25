@@ -10,6 +10,7 @@ const {
   REFERENCE_ASSET,
 } = require('../server');
 const { ImageGenerationError } = require('../src/services/image-generation');
+const { createStoryPackage } = require('../src/domain/story-package');
 
 function safeStoryBrief(overrides = {}) {
   return {
@@ -149,6 +150,34 @@ async function run() {
         style: REFERENCE_ASSET,
       });
       assert.deepEqual(capturedOptions.safeStoryBrief.feltPressure, safeStoryBrief().feltPressure);
+    });
+
+    // A frozen seven-chapter story submits one isolated image task per chapter.
+    let chapterCalls = 0;
+    await withServer({
+      env: {},
+      generatedDir,
+      generateImageImpl: async (options) => {
+        chapterCalls += 1;
+        return successfulImage({
+          fileName: options.fileName,
+          url: '/runtime/generated/' + options.fileName,
+          relativePath: 'runtime/generated/' + options.fileName,
+        });
+      },
+    }, async (baseUrl) => {
+      const response = await fetch(baseUrl + '/api/images/generate-book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyPackage: createStoryPackage(safeStoryBrief()) }),
+      });
+      assert.equal(response.status, 201);
+      const payload = await response.json();
+      assert.equal(payload.ok, true);
+      assert.equal(payload.status, 'succeeded');
+      assert.equal(payload.illustrations.length, 7);
+      assert.equal(payload.illustrations.filter((item) => item.state === 'succeeded').length, 7);
+      assert.equal(chapterCalls, 7);
     });
 
     // Optional references are aliases, never caller-controlled filesystem paths.

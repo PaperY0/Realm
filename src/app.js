@@ -1,6 +1,5 @@
 'use strict';
 
-const MOTION_KEY = 'dream-book-world.reduce-motion.v0';
 const STORYBOOK_STORAGE_KEY = 'dream-book-world.storybook.v0';
 const STORYBOOK_PAGE_TURN_MS = 840;
 const SCENE_ORDER = ['door', 'foyer', 'expression', 'storybook'];
@@ -71,7 +70,6 @@ const state = {
   scene: 'door',
   doorOpened: false,
   foyerDoor: 'overthinking',
-  reduceMotion: false,
   expression: {
     mode: null,
     rawText: null,
@@ -113,7 +111,6 @@ const emotionDoorEmotion = document.querySelector('#emotion-door-emotion');
 const emotionDoorCopy = document.querySelector('#emotion-door-copy');
 const emotionDoorStatus = document.querySelector('#emotion-door-status');
 const restartDemo = document.querySelector('#restart-demo');
-const reduceMotionToggle = document.querySelector('#reduce-motion');
 const journeyProgress = document.querySelector('#journey-progress');
 const liveStatus = document.querySelector('#live-status');
 const privacyNote = document.querySelector('.privacy-note');
@@ -192,14 +189,6 @@ function announce(message) {
   }, 20);
 }
 
-function loadPreferences() {
-  const systemPrefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-  const savedMotion = safeStorageGet(MOTION_KEY);
-  state.reduceMotion = savedMotion === null ? systemPrefersReduced : savedMotion === 'true';
-  reduceMotionToggle.checked = state.reduceMotion;
-  body.classList.toggle('reduce-motion', state.reduceMotion);
-}
-
 function selectEmotionDoor(doorId) {
   const door = FOYER_DOORS[doorId] || FOYER_DOORS.overthinking;
   state.foyerDoor = doorId in FOYER_DOORS ? doorId : 'overthinking';
@@ -246,7 +235,7 @@ function goToScene(sceneName, { focus = true } = {}) {
     const heading = document.querySelector('[data-scene="' + sceneName + '"] h1, [data-scene="' + sceneName + '"] h2');
     if (heading) {
       heading.setAttribute('tabindex', '-1');
-      window.setTimeout(() => heading.focus({ preventScroll: true }), state.reduceMotion ? 0 : 350);
+      window.setTimeout(() => heading.focus({ preventScroll: true }), 350);
     }
   }
 }
@@ -257,10 +246,6 @@ function finishOpeningDoor() {
   doorScene.classList.add('is-playing');
   doorHandle.disabled = true;
   announce('世界大门正在打开');
-  if (state.reduceMotion) {
-    completeWorldEntry();
-    return;
-  }
   const playPromise = worldEntryVideo.play();
   if (playPromise?.catch) playPromise.catch(() => completeWorldEntry());
 }
@@ -268,7 +253,7 @@ function finishOpeningDoor() {
 function completeWorldEntry() {
   if (doorScene.classList.contains('is-transitioning')) return;
   doorScene.classList.add('is-transitioning');
-  window.setTimeout(() => goToScene('foyer'), state.reduceMotion ? 0 : 900);
+  window.setTimeout(() => goToScene('foyer'), 900);
 }
 
 function normalizeExpression(value, maximum = MAX_EXPRESSION_LENGTH) {
@@ -495,8 +480,36 @@ function setPaperBoatState(nextState, message = null) {
   clearPaperBoatWait();
   state.paperBoat.state = nextState;
   paperBoatSequence.dataset.paperBoatState = nextState;
-  if (paperBoatRetry) paperBoatRetry.hidden = true;
+  paperBoatSequence.hidden = nextState === 'idle';
+  document.body.dataset.paperBoatWaiting = nextState === 'idle' ? 'false' : 'true';
+  paperBoatSequence.setAttribute('aria-hidden', nextState === 'idle' ? 'true' : 'false');
+  if (paperBoatRetry) paperBoatRetry.hidden = nextState !== 'error';
   if (paperBoatStatus && message) paperBoatStatus.textContent = message;
+}
+
+function startPaperBoatWait() {
+  if (!paperBoatSequence) return;
+  clearPaperBoatWait();
+  state.paperBoat.state = 'folding';
+  paperBoatSequence.dataset.paperBoatState = 'folding';
+  paperBoatSequence.hidden = false;
+  paperBoatSequence.setAttribute('aria-hidden', 'false');
+  if (paperBoatRetry) paperBoatRetry.hidden = true;
+  let messageIndex = 0;
+  if (paperBoatStatus) paperBoatStatus.textContent = PAPER_BOAT_MESSAGES[messageIndex];
+  if (paperBoatVideo) {
+    paperBoatVideo.currentTime = 0;
+    const playback = paperBoatVideo.play();
+    if (playback?.catch) playback.catch(() => {});
+  }
+  state.paperBoat.messageTimer = window.setInterval(() => {
+    messageIndex = (messageIndex + 1) % PAPER_BOAT_MESSAGES.length;
+    if (paperBoatStatus) paperBoatStatus.textContent = PAPER_BOAT_MESSAGES[messageIndex];
+  }, 3600);
+  state.paperBoat.transitionTimer = window.setTimeout(() => {
+    state.paperBoat.state = 'floating';
+    paperBoatSequence.dataset.paperBoatState = 'floating';
+  }, 1800);
 }
 
 function resetExpressionFlow({ focus = false, preserveStorybook = false } = {}) {
@@ -511,7 +524,7 @@ function resetExpressionFlow({ focus = false, preserveStorybook = false } = {}) 
   safeSummary.replaceChildren();
   setExpressionStep('entry');
   privacyNote.textContent = '原始心事只在当前页面临时处理，形成安全故事线后立即清除';
-  if (focus) window.setTimeout(() => expressionText.focus(), state.reduceMotion ? 0 : 180);
+  if (focus) window.setTimeout(() => expressionText.focus(), 180);
 }
 
 function blockUnsafeExpression() {
@@ -524,7 +537,7 @@ function blockUnsafeExpression() {
   expressionInlineError.hidden = false;
   privacyNote.textContent = '高风险内容已在当前页面拦截并清除，未发送到图像服务';
   announce('这段内容不会进入生图流程，请先寻求现实中的即时支持');
-  window.setTimeout(() => expressionText.focus(), state.reduceMotion ? 0 : 180);
+  window.setTimeout(() => expressionText.focus(), 180);
 }
 
 function showFollowUp() {
@@ -537,7 +550,7 @@ function showFollowUp() {
   followupStep.textContent = '绾线的第 ' + (state.expression.followUpIndex + 1) + ' 个问题 / 最多 2 个';
   followupQuestion.textContent = followUp.prompt;
   followupAnswer.value = '';
-  window.setTimeout(() => followupAnswer.focus(), state.reduceMotion ? 0 : 180);
+  window.setTimeout(() => followupAnswer.focus(), 180);
   announce(followupQuestion.textContent);
 }
 
@@ -611,7 +624,7 @@ function finishExpressionBrief() {
   setExpressionStep('brief');
   privacyNote.textContent = '原始心事已从页面与临时内存清除；服务端只接收安全故事线';
   announce('故事线已经整理好，原始心事已清除');
-  window.setTimeout(() => generateStory.focus(), state.reduceMotion ? 0 : 180);
+  window.setTimeout(() => generateStory.focus(), 180);
 }
 
 function clearStorybookStorage() {
@@ -699,7 +712,6 @@ function releaseStorybookPageTurn() {
 }
 
 function beginStorybookPageTurn() {
-  if (state.reduceMotion) return true;
   if (state.storybook.turning) return false;
   state.storybook.turning = true;
   syncStorybookControls();
@@ -717,7 +729,7 @@ function clearTurnSheets() {
 }
 
 function animatePageTurn(direction, oldPage) {
-  if (!storybookBook || state.reduceMotion || !oldPage) return;
+  if (!storybookBook || !oldPage) return;
   clearTurnSheets();
 
   const pageClass = direction === 'previous' ? 'storybook-page--illustration' : 'storybook-page--copy';
@@ -789,7 +801,9 @@ function renderStoryChapter({ animate = false } = {}) {
   storybookChapterText.textContent = card.userVisibleCopy.chapterText;
   storybookIllustrationState.replaceChildren();
   const illustration = storyPackage.chapterIllustrations?.find(
-    (item) => item.chapterNumber === snapshot.currentChapter && item.state === 'succeeded' && item.image?.url,
+    (item) => item.chapterNumber === snapshot.currentChapter
+      && (item.state === 'succeeded' || item.state === 'fallback')
+      && item.image?.url,
   );
   if (illustration) {
     const illustrationImage = document.createElement('img');
@@ -800,6 +814,12 @@ function renderStoryChapter({ animate = false } = {}) {
     illustrationImage.height = 1280;
     illustrationImage.loading = 'eager';
     storybookIllustrationState.append(illustrationImage);
+    if (illustration.state === 'fallback') {
+      const fallbackNote = document.createElement('small');
+      fallbackNote.className = 'storybook-fallback-note';
+      fallbackNote.textContent = '本章使用已审核模板画面';
+      storybookIllustrationState.append(fallbackNote);
+    }
   } else {
     const illustrationGlyph = document.createElement('span');
     illustrationGlyph.className = 'storybook-empty-glyph';
@@ -888,6 +908,7 @@ async function requestStoryPackage() {
   state.storybook.loading = true;
   generateStory.disabled = true;
   generateStory.textContent = '正在寄出…';
+  startPaperBoatWait();
   storybookStatus.textContent = '绾线正在整理七章故事';
   setGenerationView('progress');
   setStoryGenerationStage('prompting');
@@ -920,7 +941,7 @@ async function requestStoryPackage() {
       chapterNumber: card.identity?.chapterNumber,
       title: card.userVisibleCopy?.chapterTitle,
       chapterText: card.userVisibleCopy?.chapterText,
-      imagePrompt: card.promptContract?.imagePrompt,
+      imagePrompt: card.illustrationContract?.promptContract?.imagePrompt,
       statusLabel: '短剧本与 Image Prompt 已生成',
       state: 'written',
     }));
@@ -942,7 +963,7 @@ async function requestStoryPackage() {
     } catch {
       imagePayload = null;
     }
-    if (!imageResponse.ok || imagePayload?.ok !== true || imagePayload.status !== 'succeeded') {
+    if (!imageResponse.ok || imagePayload?.ok !== true || !['succeeded', 'partial_failure'].includes(imagePayload.status)) {
       throw new Error('chapter_image_generation_failed');
     }
     const storyPackage = {
@@ -960,8 +981,8 @@ async function requestStoryPackage() {
           chapterNumber: card.identity.chapterNumber,
           title: card.userVisibleCopy.chapterTitle,
           chapterText: card.userVisibleCopy.chapterText,
-          imagePrompt: card.promptContract?.imagePrompt,
-          statusLabel: illustration?.state === 'succeeded' ? '插画已完成' : '插画未完成',
+          imagePrompt: card.illustrationContract?.promptContract?.imagePrompt,
+          statusLabel: illustration?.state === 'fallback' ? '使用审核模板' : illustration?.state === 'succeeded' ? '插画已完成' : '插画未完成',
           state: illustration?.state || 'failed',
         };
       }),
@@ -1098,7 +1119,10 @@ function startGenerationProgress() {
 
 function validateGeneratedImageUrl(value) {
   const url = new URL(String(value || ''), window.location.href);
-  if (url.origin !== window.location.origin || !url.pathname.startsWith('/runtime/generated/')) {
+  if (
+    url.origin !== window.location.origin
+    || (!url.pathname.startsWith('/runtime/generated/') && !url.pathname.startsWith('/assets/fallback/'))
+  ) {
     throw new Error('invalid_image_url');
   }
   return url.pathname + url.search;
@@ -1186,7 +1210,7 @@ function bindPressFeedback(element) {
   const release = () => element.classList.remove('is-pressed');
 
   element.addEventListener('pointerdown', (event) => {
-    if (event.button > 0 || state.reduceMotion) return;
+    if (event.button > 0) return;
     element.classList.add('is-pressed');
   });
   element.addEventListener('pointerup', release);
@@ -1194,7 +1218,7 @@ function bindPressFeedback(element) {
   element.addEventListener('pointerleave', release);
   element.addEventListener('blur', release);
   element.addEventListener('keydown', (event) => {
-    if (state.reduceMotion || (event.key !== 'Enter' && event.key !== ' ')) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
     element.classList.add('is-pressed');
   });
   element.addEventListener('keyup', release);
@@ -1208,7 +1232,7 @@ function resetEntry() {
   worldEntryVideo.currentTime = 0;
   worldEntryVideo.pause();
   goToScene('door');
-  window.setTimeout(() => doorHandle.focus(), state.reduceMotion ? 0 : 350);
+  window.setTimeout(() => doorHandle.focus(), 350);
 }
 
 expressionPressTargets.forEach(bindPressFeedback);
@@ -1259,17 +1283,6 @@ storybookReopen.addEventListener('click', reopenStorybook);
 storybookReturn.addEventListener('click', returnToExpression);
 newExpression.addEventListener('click', () => resetExpressionFlow({ focus: true }));
 
-reduceMotionToggle.addEventListener('change', () => {
-  state.reduceMotion = reduceMotionToggle.checked;
-  body.classList.toggle('reduce-motion', state.reduceMotion);
-  if (state.reduceMotion) {
-    releaseStorybookPageTurn();
-    storybookBook.classList.remove('is-turning-next', 'is-turning-previous');
-  }
-  safeStorageSet(MOTION_KEY, String(state.reduceMotion));
-  announce(state.reduceMotion ? '已开启减少动态效果' : '已恢复完整动态效果');
-});
-
 brandHome.addEventListener('click', (event) => {
   event.preventDefault();
   resetEntry();
@@ -1286,7 +1299,6 @@ window.__REALM_STAGE8__ = Object.freeze({
   normalizeExpression,
 });
 
-loadPreferences();
 selectEmotionDoor('overthinking');
 resetExpressionFlow({ preserveStorybook: true });
 if (restoreStorybookPreview()) {

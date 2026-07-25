@@ -1,0 +1,609 @@
+{
+  "version": "1.0",
+  "style_authority": "assets/bible/STYLE-BIBLE.md V3.3",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "2048x1152",
+  "format": "png",
+  "anchors": [
+    {
+      "id": "anchor-world-guide",
+      "filename": "world-guide.png",
+      "status": "pending",
+      "selected_file": null
+    },
+    {
+      "id": "anchor-wanxian",
+      "filename": "wanxian.png",
+      "status": "pending",
+      "selected_file": null
+    },
+    {
+      "id": "anchor-miannian",
+      "filename": "miannian.png",
+      "status": "pending",
+      "selected_file": null
+    },
+    {
+      "id": "anchor-tuantuan",
+      "filename": "tuantuan.png",
+      "status": "pending",
+      "selected_file": null
+    }
+  ],
+  "scenes": [
+    {
+      "id": 1,
+      "filename": "01-world-gate-closed.png",
+      "group": "entrance",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "left or upper-left 30% low-detail sky/grass for entrance copy",
+      "scene": "closed fairy-tale world gate with a clearly readable handle; no broad light leaking from behind",
+      "action": "world guide waits quietly beside the gate",
+      "symbol": "closed gate and readable handle",
+      "references": [
+        "style target",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 2,
+      "filename": "02-world-gate-opening.png",
+      "group": "entrance",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "upper-left 30% low-detail sky for interface copy",
+      "scene": "same gate beginning to open; only a narrow warm door-gap light",
+      "action": "world guide has crossed the threshold and looks back while extending one hand",
+      "symbol": "one restrained warm door-gap light",
+      "references": [
+        "scene 01",
+        "style target",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 3,
+      "filename": "03-traveler-path-threshold.png",
+      "group": "public journey",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "upper-right low-detail sky and distant slope",
+      "scene": "view through a small amount of foreground doorframe onto the same path narrowing gently into the world",
+      "action": "world guide walks ahead with the green satchel visible from behind",
+      "symbol": "threshold and winding road",
+      "references": [
+        "scene 02",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 4,
+      "filename": "04-name-tree-and-blank-leaf.png",
+      "group": "public journey",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "right-side low-detail path and sky",
+      "scene": "a name tree stands beside the road; every leaf is blank and one blank leaf drifts toward the road",
+      "action": "world guide continues at a calm walking pace",
+      "symbol": "one completely blank falling leaf",
+      "references": [
+        "scene 02",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 5,
+      "filename": "05-blank-leaf-on-satchel.png",
+      "group": "public journey",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "upper-left low-detail sky",
+      "scene": "same road; the blank leaf is near or lightly caught on the fixed green satchel",
+      "action": "world guide keeps walking without comic chasing",
+      "symbol": "blank leaf touching the satchel",
+      "references": [
+        "scene 02",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 6,
+      "filename": "06-pocket-stone-shore.png",
+      "group": "public journey",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "upper-right low-detail water and sky",
+      "scene": "quiet pocket-stone shore beside the same route; exactly five separate stones carry only simple pictorial marks",
+      "action": "world guide pauses near the stones",
+      "symbol": "five symbols only: star, raindrop, blue line, paper boat, leaf",
+      "references": [
+        "scene 02",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 7,
+      "filename": "07-emotion-hall-arrival.png",
+      "group": "public journey",
+      "mode": "explorable world",
+      "characters": "world guide",
+      "safe_area": "upper-left low-detail hall air and wall",
+      "scene": "the emotion hall grows from distant view to a readable middle view at the end of the road",
+      "action": "world guide reaches the entrance side and turns toward the traveler for handoff",
+      "symbol": "emotion hall threshold",
+      "references": [
+        "scene 02",
+        "world guide anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 8,
+      "filename": "08-emotion-hall-overview.png",
+      "group": "emotion hall",
+      "mode": "explorable world",
+      "characters": "Wanxian, Tingyu, Xibai, Cangjin and Lingya from guardian final assets",
+      "safe_area": "upper-center 25% to 30% low-detail warm hall wall",
+      "scene": "exactly five front-facing doors in one straight horizontal row, each parallel to the screen; one final guardian stands front-facing before its corresponding door",
+      "action": "five guardians hold quiet neutral poses; only the inner-consumption door has a narrow open seam",
+      "symbol": "five guardian-door pairs, one restrained inner-consumption focal opening",
+      "references": [
+        "scene 07",
+        "assets/characters/guardians/final/img_v3_0213u_4cb2e9c7-a467-479e-9149-a13daf7e323g.png",
+        "five individual guardian final sheets"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 9,
+      "filename": "09-wanxian-hide-thread.png",
+      "group": "emotion hall",
+      "mode": "explorable world",
+      "characters": "Wanxian and secondary world guide",
+      "safe_area": "upper-right low-detail hall wall",
+      "scene": "same inner-consumption door area",
+      "action": "Wanxian hides the chest knot behind the body while exactly one thread end remains visible; guide recedes",
+      "symbol": "single visible thread end",
+      "references": [
+        "corrected scene 08",
+        "assets/characters/guardians/final/img_v3_0213u_4f29eab0-c37c-4940-ab61-f43a6b69888g.png"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 10,
+      "filename": "10-wanxian-offers-thread.png",
+      "group": "emotion hall",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "upper-left low-detail hall wall",
+      "scene": "same door opened by only a narrow seam of warm light",
+      "action": "Wanxian offers the thread, walks along it into the doorway and looks back waiting",
+      "symbol": "one continuous guiding thread and one door-seam light",
+      "references": [
+        "corrected scene 08",
+        "assets/characters/guardians/final/img_v3_0213u_4f29eab0-c37c-4940-ab61-f43a6b69888g.png"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 11,
+      "filename": "11-inner-world-panorama.png",
+      "group": "inner world",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "upper-right calm sky/mist for copy",
+      "scene": "one coherent intimate inner world where silent wind chimes, story lake, artifact tree and echo shelf can all be recognized without becoming a game map",
+      "action": "Wanxian leads along one continuous gentle path",
+      "symbol": "four connected landmarks in one quiet world",
+      "references": [
+        "scene 10",
+        "Wanxian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 12,
+      "filename": "12-silent-wind-chimes.png",
+      "group": "inner world",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "right or center 35% low-detail mist/wall input area",
+      "scene": "silent wind-chime expression entrance in the same inner world",
+      "action": "Wanxian quietly invites beside the chimes",
+      "symbol": "one set of silent wind chimes",
+      "references": [
+        "scene 11",
+        "Wanxian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 13,
+      "filename": "13-session-need-and-followup.png",
+      "group": "inner world",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "one side 35% low-detail conversational area",
+      "scene": "same expression place with exactly four completely blank paper choices arranged as physical story objects, never a form or chat UI",
+      "action": "Wanxian waits without pointing aggressively",
+      "symbol": "exactly four blank paper slips",
+      "references": [
+        "scene 12",
+        "Wanxian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 14,
+      "filename": "14-paper-boat-story-lake.png",
+      "group": "inner world",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "upper-left low-detail mist over water",
+      "scene": "same story lake; one folded paper boat enters thin mist and one restrained story silhouette appears far away",
+      "action": "Wanxian releases exactly one paper boat made from the confession",
+      "symbol": "one paper boat",
+      "references": [
+        "scene 11",
+        "Wanxian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 15,
+      "filename": "15-labels-ch01-small-anomaly.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "right-side 35% low-detail sky/page air",
+      "scene": "gentle grass slope in the labels story; a tiny local breeze or flower anomaly appears once",
+      "action": "Miannian pins the fixed moon ornament beside the horn",
+      "symbol": "moon ornament and one small anomaly",
+      "references": [
+        "Miannian anchor",
+        "style target"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 16,
+      "filename": "16-labels-ch02-paper-label.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "upper-left 35% low-detail air",
+      "scene": "same grass-world continuity; one blank dark paper label falls beside Miannian; surrounding attention is shown only through subtle directional relationships, no judging crowd",
+      "action": "Miannian pauses and looks toward the blank label",
+      "symbol": "one completely blank dark paper label",
+      "references": [
+        "scene 15",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 17,
+      "filename": "17-labels-ch03-name-drawer.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "right-side 35% low-detail alley wall",
+      "scene": "label alley with one simple name drawer, all surfaces blank",
+      "action": "Miannian places the moon ornament into the open drawer",
+      "symbol": "moon ornament entering one blank drawer",
+      "references": [
+        "scene 15",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 18,
+      "filename": "18-labels-ch04-deeper-into-alley.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "upper-right 30% low-detail wall/air",
+      "scene": "same label alley deepens gently without cinematic perspective; several blank paper labels hang from Miannian",
+      "action": "Miannian walks farther in the wrong direction with restrained posture",
+      "symbol": "increasing blank labels",
+      "references": [
+        "scene 17",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 19,
+      "filename": "19-labels-ch05-windless-bridge.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "upper-left 35% low-detail pale sky",
+      "scene": "same wind-direction bridge and distant grass slope lose only part of their color; labels hang vertically because the wind has stopped",
+      "action": "Miannian stops on the windless bridge",
+      "symbol": "still labels and partially muted bridge",
+      "references": [
+        "scene 18",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 20,
+      "filename": "20-labels-ch06-moon-returns.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "right-side 35% low-detail darkened alley wall",
+      "scene": "same drawer and bridge language; moonlight emerges only from the drawer seam and touches one blank label, transforming it into a black-paper-label kite",
+      "action": "Miannian shields then recognizes the returning ornament light",
+      "symbol": "one local moonlight and one transforming kite",
+      "references": [
+        "scene 19",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 21,
+      "filename": "21-labels-ch07-blue-kite-memory.png",
+      "group": "labels volume",
+      "mode": "storybook narrative",
+      "characters": "Miannian",
+      "safe_area": "upper-right 35% low-detail sky",
+      "scene": "same wind-direction bridge restored with selective color; the black paper-label kite has a blank reverse and leaves a moonlight-blue kite shape in the sky",
+      "action": "Miannian crosses the bridge carrying the kite and wearing the moon ornament again",
+      "symbol": "one moonlight-blue kite memory",
+      "references": [
+        "scene 20",
+        "Miannian anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 22,
+      "filename": "22-echoes-ch01-returning-ripple.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-left 35% low-detail river mist",
+      "scene": "quiet river world with seven small docks in a stable spatial order and one distant lighthouse across the water",
+      "action": "Tuantuan notices one ripple returning instead of traveling forward",
+      "symbol": "one returning ripple",
+      "references": [
+        "Tuantuan anchor",
+        "style target"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 23,
+      "filename": "23-echoes-ch02-silver-echoes.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-right 35% low-detail mist/water",
+      "scene": "same river and dock order; a few abstract silver echo shapes overlap without resembling letters",
+      "action": "Tuantuan listens to the overlapping echoes",
+      "symbol": "abstract non-textual silver echoes",
+      "references": [
+        "scene 22",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 24,
+      "filename": "24-echoes-ch03-hidden-voice.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "right-side 35% low-detail water",
+      "scene": "same river location with exactly one closed shell or one closed blank paper box near the bank",
+      "action": "Tuantuan hides one abstract voice-shape inside the single closed container",
+      "symbol": "one closed container and one abstract voice shape",
+      "references": [
+        "scene 23",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 25,
+      "filename": "25-echoes-ch04-seven-docks-checking.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-left 30% low-detail mist",
+      "scene": "all seven docks remain visible in the same order; repeated checking is conveyed by Tuantuan's path and posture, never cloned characters",
+      "action": "Tuantuan looks back across the seven docks",
+      "symbol": "seven docks and one continuous checking path",
+      "references": [
+        "scene 22",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 26,
+      "filename": "26-echoes-ch05-river-loses-order.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-right 35% low-detail dim mist",
+      "scene": "same seven-dock river; only the seventh dock and its aligned lighthouse lose their light while the rest remain gently ordered",
+      "action": "Tuantuan notices the specific missing light",
+      "symbol": "one dim seventh dock and lighthouse",
+      "references": [
+        "scene 25",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 27,
+      "filename": "27-echoes-ch06-silver-fish.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-left 35% low-detail water/mist",
+      "scene": "same river; exactly one small softly luminous silver fish emerges from overlapping abstract echoes",
+      "action": "Tuantuan follows as the single fish guides one ripple forward",
+      "symbol": "one silver fish",
+      "references": [
+        "scene 26",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 28,
+      "filename": "28-echoes-ch07-seventh-dock-light.png",
+      "group": "echoes volume",
+      "mode": "storybook narrative",
+      "characters": "Tuantuan",
+      "safe_area": "upper-right 35% low-detail sky/mist",
+      "scene": "same dock and lighthouse positions; the seventh dock and lighthouse restore exactly one warm lamp",
+      "action": "Tuantuan wears the same small silver-fish pin and looks across the river",
+      "symbol": "same silver-fish pin and one restored warm light",
+      "references": [
+        "scene 27",
+        "Tuantuan anchor"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 29,
+      "filename": "29-closing-book-and-artifact.png",
+      "group": "closing",
+      "mode": "storybook narrative",
+      "characters": "Wanxian",
+      "safe_area": "upper-left 35% low-detail warm page air",
+      "scene": "an open picture book gently closes with completely blank cover and pages; approved story artifact appearances remain consistent",
+      "action": "Wanxian returns from the story edge carrying the corresponding artifact",
+      "symbol": "closing blank book and one returned artifact",
+      "references": [
+        "Wanxian anchor",
+        "approved story artifacts"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    },
+    {
+      "id": 30,
+      "filename": "30-echo-shelf-revisit.png",
+      "group": "memory",
+      "mode": "explorable world",
+      "characters": "Wanxian",
+      "safe_area": "upper-left 35% low-detail shelf wall/air",
+      "scene": "same inner world and echo shelf with completed blank book spines, two stored artifacts, a distant moonlight-blue kite and the seventh-dock warm light",
+      "action": "Wanxian quietly stands near the revisitable shelf",
+      "symbol": "blank books, two artifacts, blue kite, seventh-dock light",
+      "references": [
+        "scene 11",
+        "Wanxian anchor",
+        "scenes 21 and 28"
+      ],
+      "status": "pending",
+      "selected_file": null,
+      "score": null,
+      "fatal_deviations": null
+    }
+  ]
+}

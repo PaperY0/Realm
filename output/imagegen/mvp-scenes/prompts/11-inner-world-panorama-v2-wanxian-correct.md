@@ -1,0 +1,7 @@
+IDENTITY-CORRECTION EDIT FOR SCENE 11
+
+Input 1 is the approved scene composition. Input 2 is the user-approved, highest-authority Wanxian model sheet. Preserve the entire environment from input 1: the intimate purple-wisteria inner world, silent wind chimes, story lake, artifact tree, echo shelf, one continuous path, framing, palette, lighting, perspective, safe sky area, and all landmark positions.
+
+Replace only the main character with the exact Wanxian identity from input 2. Wanxian must read as a soft warm-cream cocoon/seed completely wrapped in many overlapping dusty-violet thread loops from head to feet, with the same rounded tall silhouette, same small feet, same low restrained worried face, tiny black dot eyes, tiny mouth, subtle blush, visible olive-green clasp/accessory, and small coral-red bead/knot points. The multiple thread loops are structural identity and must remain clearly visible across the whole body. Do not simplify Wanxian into an unwrapped paper-page body, satchel character, generic mascot, animal, or human clothing. Pose Wanxian gently leading along the path while looking back, without changing identity.
+
+No new characters, boats, castles, buildings, portals, particles, text, pseudo-text, logo, signature, watermark, or UI. Full 2048 x 1152 PNG in the established adult fairy-tale watercolor picture-book style. Change only Wanxian identity; keep everything else unchanged.

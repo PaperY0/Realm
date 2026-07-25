@@ -20,10 +20,11 @@ function sourceBetween(source, startText, endText) {
   return source.slice(start, end);
 }
 
-// Approved scenes remain present; this step only replaces the expression placeholder.
+// The world-gate video entry remains the first intentional action before expression.
 assert.match(html, /src="\/assets\/world-gate-reference\.png"/);
 assert.match(html, /id="door-handle"/);
-assert.match(html, /id="traveler-form"/);
+assert.match(html, /id="world-entry-video"/);
+assert.match(html, /src="\/assets\/world-entry\.mp4"/);
 assert.match(html, /id="inner-door"/);
 
 // Required Web-only live-generation controls and copy.
@@ -31,7 +32,7 @@ assert.match(html, /我总担心自己做得不够好，明明很累，却还是
 assert.match(html, /id="expression-text"[^>]*maxlength="800"/);
 assert.match(html, /id="expression-not-sure"[^>]*>我还不知道怎么说</);
 assert.match(html, /id="followup-skip"/);
-assert.match(html, /id="generate-image"[^>]*>生成真实第一章插画</);
+assert.match(html, /id="generate-image"[^>]*>单独生成插画</);
 assert.match(html, /真实 AI · gpt-image-2/);
 assert.match(html, /正在整理故事线/);
 assert.match(html, /正在调色/);
@@ -147,7 +148,7 @@ assert.match(app, /expressionPressTargets\.forEach\(bindPressFeedback\)/);
 assert.match(app, /element\.addEventListener\('pointerdown'/);
 assert.match(css, /\.expression-action\.is-pressed\s*\{[^}]*scale\(0\.97\)/s);
 assert.match(css, /cubic-bezier\(0\.2, 1\.42, 0\.32, 1\)/);
-assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.expression-action[\s\S]*?transform: none !important/);
+assert.doesNotMatch(css, /prefers-reduced-motion|body\.reduce-motion|motion-toggle/);
 assert.doesNotMatch(app, /bindPressFeedback\(doorHandle\)/);
 
 // Explicit desktop-height compaction covers the 1366x768 demo target; fluid grid covers 1920x1080.

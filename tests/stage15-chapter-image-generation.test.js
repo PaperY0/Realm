@@ -71,8 +71,11 @@ async function run() {
       return { fileName: input.fileName, url: '/runtime/generated/' + input.fileName };
     },
   });
-  assert.equal(partial.status, 'partial_failure');
-  assert.equal(partial.illustrations[2].state, 'failed');
+  assert.equal(partial.status, 'succeeded');
+  assert.equal(partial.illustrations[2].state, 'fallback');
+  assert.equal(partial.illustrations[2].source, 'approved_template');
+  assert.equal(partial.illustrations[2].image.url, '/assets/fallback/chapter-3.png');
+  assert.equal(partial.illustrations[2].error.code, 'IMAGE_PROVIDER_ERROR');
   assert.equal(partial.illustrations.filter((item) => item.state === 'succeeded').length, 6);
 
   console.log('stage15 chapter image generation tests passed');
