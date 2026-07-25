@@ -97,7 +97,8 @@ assert.match(
   /body\s*:\s*JSON\.stringify\(\s*\{\s*safeStoryBrief\s*:\s*state\.expression\.safeBrief\s*,?\s*\}\s*\)/,
 );
 assert.doesNotMatch(requestStoryPackage, /rawText|followUpAnswers|userConfirmedSentence\s*:/);
-assert.doesNotMatch(requestStoryPackage, /\/api\/images\/generate|requestRealImage|generatedImage|new\s+Image\s*\(/);
+assert.match(requestStoryPackage, /fetch\(\s*['"]\/api\/images\/generate-book['"]\s*,/);
+assert.doesNotMatch(requestStoryPackage, /requestRealImage|generatedImage|new\s+Image\s*\(/);
 
 // Browser wiring must use the strict seven-chapter ReaderState API for new and restored books.
 assert.match(app, /window\.DreamBookReader/);
@@ -233,8 +234,19 @@ const storybookFunctions = [
   closeBook,
   functionSource(app, 'reopenStorybook'),
 ].join('\n');
-assert.doesNotMatch(storybookFunctions, /\/api\/images\/generate|requestRealImage|generatedImage\.src|\.createObjectURL\s*\(|data:image|base64|https?:\/\//i);
+assert.doesNotMatch(storybookFunctions, /\/api\/images\/generate(?!-book)|requestRealImage|generatedImage\.src|\.createObjectURL\s*\(|data:image|base64|https?:\/\//i);
 assert.match(storybookFunctions, /章节插画尚未生成/);
+
+// The turn layer is a two-sided paper sheet, isolated from ordinary page transforms.
+assert.match(css, /\.storybook-turn-sheet\s*\{/);
+assert.match(css, /\.storybook-turn-sheet__front\s*,\s*\n?\s*\.storybook-turn-sheet__back\s*\{/);
+assert.match(css, /\.storybook-turn-shadow\s*\{/);
+assert.match(css, /@keyframes\s+storybook-turn-next\s*\{[\s\S]*?14%[\s\S]*?54%[\s\S]*?100%/);
+assert.match(css, /@keyframes\s+storybook-turn-previous\s*\{[\s\S]*?14%[\s\S]*?54%[\s\S]*?100%/);
+assert.match(css, /\.storybook-turn-sheet\.is-active\s*\{[\s\S]*?animation-duration\s*:\s*840ms\s*;/);
+assert.match(css, /\.storybook-turn-sheet--next\s*\{[\s\S]*?transform-origin\s*:\s*left\s+center/);
+assert.match(css, /\.storybook-turn-sheet--previous\s*\{[\s\S]*?transform-origin\s*:\s*right\s+center/);
+assert.match(css, /\.storybook-turn-sheet__front\.storybook-page\s*,[\s\S]*?\.storybook-turn-sheet__back\.storybook-page\s*\{[\s\S]*?transform\s*:\s*none/);
 
 // Reduced motion removes storybook page-turn animation without changing navigation semantics.
 const reducedMotionBlocks = balancedBlocks(css, /@media\s*\(prefers-reduced-motion\s*:\s*reduce\)/g);
