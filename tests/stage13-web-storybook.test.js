@@ -70,15 +70,18 @@ const requiredIds = [
   'storybook-next',
   'storybook-close',
   'storybook-reopen',
+  'storybook-archive',
   'storybook-return',
   'storybook-progress',
   'storybook-keepsake',
+  'storybook-cover-title',
 ];
 
 for (const id of requiredIds) {
   assert.match(scene, new RegExp(`id=["']${id}["']`), `storybook scene must include #${id}`);
 }
 assert.match(scene, /章节插画尚未生成/);
+assert.doesNotMatch(scene, /本机纪念页|你已经亲手读完这本书|故事停在第七章。只有你主动选择/);
 
 // Reader state must be available before the application initializes.
 const readerScriptIndex = html.search(/<script[^>]+src=["']\/reader-state\.js["']/);
@@ -148,6 +151,9 @@ assert.match(app, /canGoNext\s*\(\)/);
 assert.match(app, /canCloseBook\s*\(\)/);
 
 assert.match(app, /storybookBook\.dataset\.currentChapter\s*=\s*String\(snapshot\.currentChapter\)/);
+assert.match(app, /storybookCoverTitle\.textContent\s*=\s*bookTitle/);
+assert.match(app, /storybookArchive\.addEventListener\(\s*['"]click['"]\s*,\s*archiveStorybook\s*\)/);
+assert.match(app, /function\s+archiveStorybook\s*\([\s\S]*?saveStorybookSnapshot\s*\(\)/);
 
 // Animated page turns are single-flight: a rapid second click cannot skip a chapter.
 const beginPageTurn = functionSource(app, 'beginStorybookPageTurn');

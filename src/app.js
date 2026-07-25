@@ -157,6 +157,7 @@ const paperBoatFoldCopy = document.querySelector('#paper-boat-fold-copy');
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
 const storybookTitle = document.querySelector('#storybook-title');
 const brandTitle = document.querySelector('#brand-home strong');
+const storybookCoverTitle = document.querySelector('#storybook-cover-title');
 const storybookStatus = document.querySelector('#storybook-status');
 const storybookBook = document.querySelector('#storybook-book');
 const storybookChapterKicker = document.querySelector('#storybook-chapter-kicker');
@@ -167,10 +168,11 @@ const storybookPrevious = document.querySelector('#storybook-prev');
 const storybookNext = document.querySelector('#storybook-next');
 const storybookClose = document.querySelector('#storybook-close');
 const storybookReopen = document.querySelector('#storybook-reopen');
+const storybookArchive = document.querySelector('#storybook-archive');
 const storybookReturn = document.querySelector('#storybook-return');
 const storybookProgress = document.querySelector('#storybook-progress');
 const storybookKeepsake = document.querySelector('#storybook-keepsake');
-const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookReturn].filter(Boolean);
+const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookArchive, storybookReturn].filter(Boolean);
 
 function safeStorageGet(key) {
   try {
@@ -872,6 +874,7 @@ function renderStoryChapter({ animate = false } = {}) {
   const bookTitle = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '绾线与旅人的七章童话';
   storybookTitle.textContent = bookTitle;
   if (brandTitle) brandTitle.textContent = bookTitle;
+  if (storybookCoverTitle) storybookCoverTitle.textContent = bookTitle;
   storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
   storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
   storybookChapterText.textContent = card.userVisibleCopy.chapterText;
@@ -1110,6 +1113,14 @@ function reopenStorybook() {
   announce('故事重新从第一章打开');
 }
 
+function archiveStorybook() {
+  if (!state.storybook.storyPackage || !state.storybook.reader) return;
+  saveStorybookSnapshot();
+  storybookArchive.textContent = '已存入书架';
+  storybookArchive.disabled = true;
+  announce('这本童话已存入书架');
+}
+
 function returnToExpression() {
   goToScene('expression');
   announce('已回到安全故事线，当前七章故事仍保留在本机');
@@ -1336,6 +1347,7 @@ storybookPrevious.addEventListener('click', goPreviousChapter);
 storybookNext.addEventListener('click', goNextChapter);
 storybookClose.addEventListener('click', closeStorybook);
 storybookReopen.addEventListener('click', reopenStorybook);
+storybookArchive.addEventListener('click', archiveStorybook);
 storybookReturn.addEventListener('click', returnToExpression);
 newExpression.addEventListener('click', () => resetExpressionFlow({ focus: true }));
 
