@@ -57,6 +57,7 @@ const state = {
     followUpAnswers: [],
     safeBrief: null,
     generating: false,
+    generationAttempted: false,
     requestToken: 0,
     requestController: null,
     progressTimers: [],
@@ -105,7 +106,6 @@ const generationProgress = document.querySelector('#generation-progress');
 const generationStatus = document.querySelector('#generation-status');
 const generationError = document.querySelector('#generation-error');
 const generationErrorMessage = document.querySelector('#generation-error-message');
-const retryGeneration = document.querySelector('#retry-generation');
 const generatedFigure = document.querySelector('#generated-figure');
 const generatedImage = document.querySelector('#generated-image');
 const generatedCaption = document.querySelector('#generated-caption');
@@ -495,7 +495,9 @@ function resetGenerationView() {
   state.expression.generating = false;
   state.expression.requestToken += 1;
   generatedImage.removeAttribute('src');
-  generationErrorMessage.textContent = '请检查服务端配置后重试。';
+  state.expression.generationAttempted = false;
+  generateStory.disabled = false;
+  generationErrorMessage.textContent = '本次请求已安全结束，不会在页面内重试。';
   generationSteps.forEach((step) => step.classList.remove('is-active', 'is-complete'));
   setGenerationView('idle');
 }
@@ -652,21 +654,22 @@ function preloadGeneratedImage(url) {
 
 function friendlyGenerationError(payload, response) {
   if (payload?.message && typeof payload.message === 'string') return payload.message;
-  if (response?.status === 409) return '上一幅童话插画仍在绘制，请稍后再试。';
+  if (response?.status === 409) return '上一幅童话插画仍在绘制，本次请求没有再次发送。';
   if (response?.status === 503) return 'Image 2 服务尚未配置，请检查服务端 .env.local。';
   if (response?.status === 504) return '这次绘制等待太久，已安全结束，没有生成替代图片。';
-  return '真实生成未完成，请确认服务端和网络状态后再试。';
+  return '真实生成未完成，本次请求已结束；请在演示后检查服务端和网络状态。';
 }
 
 async function requestRealImage() {
   if (
     state.expression.generating
+    || state.expression.generationAttempted
     || !state.expression.safeBrief
     || state.expression.safeBrief.safetyStatus !== 'story_safe'
   ) return;
   state.expression.generating = true;
+  state.expression.generationAttempted = true;
   generateStory.disabled = true;
-  retryGeneration.disabled = true;
   clearTransientExpression();
   startGenerationProgress();
 
@@ -712,8 +715,7 @@ async function requestRealImage() {
     if (requestToken === state.expression.requestToken) {
       state.expression.generating = false;
       state.expression.requestController = null;
-      generateStory.disabled = false;
-      retryGeneration.disabled = false;
+      generateStory.disabled = true;
     }
   }
 }
@@ -812,7 +814,6 @@ expressionNotSure.addEventListener('click', () => startExpression('not_sure_how_
 followupSubmit.addEventListener('click', () => completeFollowUp('answered'));
 followupSkip.addEventListener('click', () => completeFollowUp('skipped'));
 generateStory.addEventListener('click', requestRealImage);
-retryGeneration.addEventListener('click', requestRealImage);
 newExpression.addEventListener('click', () => resetExpressionFlow({ focus: true }));
 
 reduceMotionToggle.addEventListener('change', () => {

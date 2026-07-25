@@ -3146,8 +3146,10 @@ body[data-stage="expression"] .arrival-badge {
   font-size: 27px;
 }
 
-.generation-error .expression-primary {
-  margin-top: 20px;
+.generation-no-retry {
+  padding-top: 8px;
+  font-size: 11px !important;
+  color: #9a6b67 !important;
 }
 
 .generated-figure {

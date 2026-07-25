@@ -38,6 +38,8 @@ assert.match(html, /正在调色/);
 assert.match(html, /gpt-image-2 正在绘制/);
 assert.match(html, /真实生成未完成/);
 assert.match(html, /没有用预制图片替代这次结果/);
+assert.doesNotMatch(html, /retry-generation|重新请求真实生成/);
+assert.match(html, /不会在页面内重试/);
 const imageTag = html.match(/<img id="generated-image"[^>]*>/)?.[0] || '';
 assert.ok(imageTag && !/\ssrc=/.test(imageTag), 'result image must start without a placeholder src');
 
@@ -53,6 +55,9 @@ assert.doesNotMatch(app, /safeStorageSet\([^\n]*(expression|brief|raw)/i);
 assert.match(app, /url\.origin !== window\.location\.origin/);
 assert.match(app, /url\.pathname\.startsWith\('\/runtime\/generated\/'\)/);
 assert.match(app, /generatedImage\.removeAttribute\('src'\)/);
+assert.match(requestSource, /state\.expression\.generationAttempted/);
+assert.match(requestSource, /generateStory\.disabled = true/);
+assert.doesNotMatch(app, /retryGeneration/);
 
 // Evaluate the pure Stage 8 logic in isolation.
 const constants = sourceBetween(app, 'const DEMO_SENTENCE', '\nconst state =');
