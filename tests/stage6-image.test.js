@@ -176,6 +176,17 @@ async function run() {
       fileName: 'chapter-1.png',
     });
     assert.equal(capturedUrl, 'https://media.example.test/v1/images/generations');
+
+    const rootBaseResult = await generateImage({
+      safeStoryBrief: safeStoryBrief(),
+      apiKey: 'stage6-api-key',
+      baseUrl: 'https://media-root.example.test',
+      fetchImpl: successFetch,
+      generatedDir,
+      fileName: 'root-base.png',
+    });
+    assert.equal(capturedUrl, 'https://media-root.example.test/v1/images/generations');
+    assert.equal(rootBaseResult.fileName, 'root-base.png');
     assert.equal(capturedOptions.headers.Authorization, 'Bearer stage6-api-key');
     assert.equal(capturedOptions.headers['Content-Type'], 'application/json');
     assert.deepEqual(JSON.parse(capturedOptions.body), {

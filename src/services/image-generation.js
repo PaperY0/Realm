@@ -516,7 +516,8 @@ function buildEndpoint(baseUrl, mode) {
     throw publicError('IMAGE_CONFIG_ERROR', 'Remote image gateways must use HTTPS');
   }
 
-  parsed.pathname = parsed.pathname.replace(/\/+$/, '') + '/images/' + mode;
+  const basePath = parsed.pathname.replace(/\/+$/, '');
+  parsed.pathname = (basePath && basePath !== '/' ? basePath : '/v1') + '/images/' + mode;
   return parsed.toString();
 }
 
