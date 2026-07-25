@@ -2969,6 +2969,7 @@ body[data-stage="expression"] .arrival-badge {
 }
 
 .storybook-keepsake-copy {
+  position: relative;
   max-width: 520px;
 }
 
@@ -2988,6 +2989,25 @@ body[data-stage="expression"] .arrival-badge {
   color: #706472;
   font-size: 13px;
   line-height: 1.85;
+}
+
+.storybook-keepsake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.storybook-archive-note {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin: 15px 0 0;
+  color: #8a694a;
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  line-height: 1.7;
 }
 
 .storybook-turn-sheet {
@@ -4339,7 +4359,7 @@ body[data-stage="expression"] .paper-boat-lake video {
    presenting it as a separate framed image. */
 body[data-stage="storybook"] .world-shell,
 body[data-stage="storybook"] .scene--storybook {
-  background: #f2dcd0 url("/assets/storybook-watercolor-background.png") center / cover no-repeat;
+  background: #eadfc9 url("/assets/expression-watercolor-wash.png?v=20260726c") center / cover no-repeat;
 }
 
 body[data-stage="storybook"] .brand-mark,
@@ -4392,6 +4412,137 @@ body[data-stage="storybook"] .storybook-chapter-illustration {
   border-radius: inherit;
   box-shadow: none;
   object-fit: cover;
+}
+
+/* Completed book: supplied watercolor cover with live title text. */
+body[data-stage="storybook"] .storybook-closed-book {
+  display: block;
+  width: min(100%, 390px);
+  aspect-ratio: 1164 / 1352;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: url('/assets/storybook-keepsake-cover.png') center / contain no-repeat;
+  box-shadow: none;
+  color: #5b4252;
+  transform: none;
+}
+
+body[data-stage="storybook"] .storybook-closed-book::before,
+body[data-stage="storybook"] .storybook-closed-book::after {
+  display: none;
+}
+
+body[data-stage="storybook"] .storybook-closed-book > :not(.storybook-closed-spine) {
+  z-index: 1;
+}
+
+body[data-stage="storybook"] .storybook-closed-spine,
+body[data-stage="storybook"] .storybook-cover-star {
+  display: none;
+}
+
+body[data-stage="storybook"] .storybook-closed-book strong {
+  position: absolute;
+  top: 47%;
+  right: 15%;
+  left: 21%;
+  max-width: none;
+  color: #553d50;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.32;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 249, 220, 0.7);
+}
+
+body[data-stage="storybook"] .storybook-closed-book small {
+  position: absolute;
+  top: 61%;
+  right: 15%;
+  left: 21%;
+  color: rgba(85, 61, 80, 0.82);
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 249, 220, 0.7);
+}
+
+body[data-stage="storybook"] #storybook-cover-title {
+  display: none;
+}
+
+body[data-stage="storybook"] .storybook-keepsake {
+  border-color: rgba(183, 133, 67, 0.22);
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(255, 250, 210, 0.82), transparent 33%),
+    radial-gradient(ellipse at 84% 82%, rgba(240, 201, 105, 0.24), transparent 39%),
+    repeating-linear-gradient(6deg, rgba(162, 118, 72, 0.035) 0 1px, transparent 1px 9px),
+    #fff1bd;
+  box-shadow: 0 28px 60px rgba(122, 88, 48, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+@media (min-width: 821px) {
+  body[data-stage="storybook"] .storybook-closed-book {
+    transform: translateY(70px);
+  }
+}
+
+body[data-stage="storybook"] .storybook-control--primary {
+  border-color: rgba(105, 76, 112, 0.52);
+  background: linear-gradient(112deg, #7164aa 0%, #a970a4 33%, #d2857b 63%, #d9ad61 100%);
+  color: #fffdf6;
+  box-shadow: 0 10px 23px rgba(105, 71, 103, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.33);
+}
+
+body[data-stage="storybook"] .storybook-control--primary:hover:not(:disabled) {
+  border-color: rgba(92, 63, 105, 0.7);
+  background: linear-gradient(112deg, #665ca2 0%, #9c629a 33%, #c87170 63%, #ca9b4f 100%);
+}
+
+body[data-stage="storybook"] .storybook-control--primary:disabled {
+  border-color: rgba(111, 93, 138, 0.16);
+  background: linear-gradient(112deg, rgba(137, 124, 175, 0.31), rgba(202, 142, 167, 0.28), rgba(221, 178, 117, 0.25));
+  color: rgba(255, 253, 246, 0.76);
+}
+
+body[data-stage="storybook"] .storybook-control--quiet:not(:disabled),
+body[data-stage="storybook"] .storybook-control--page:not(:disabled) {
+  border-color: rgba(138, 109, 163, 0.32);
+  background: linear-gradient(112deg, rgba(228, 220, 245, 0.88), rgba(246, 219, 222, 0.84), rgba(251, 232, 194, 0.85));
+  color: #665272;
+}
+
+body[data-stage="storybook"] .storybook-keepsake-actions .storybook-control--page:disabled {
+  border-color: rgba(138, 109, 163, 0.18);
+  background: rgba(231, 222, 241, 0.68);
+  color: rgba(102, 82, 114, 0.62);
+}
+
+body[data-stage="storybook"] .storybook-chapter-rail,
+body[data-stage="storybook"] .storybook-progress {
+  background: rgba(235, 226, 245, 0.72);
+}
+
+body[data-stage="storybook"] .storybook-progress li {
+  color: #80728e;
+}
+
+body[data-stage="storybook"] .storybook-progress li > span {
+  border-color: rgba(132, 109, 158, 0.25);
+  background: rgba(250, 246, 255, 0.76);
+  color: #857092;
+}
+
+body[data-stage="storybook"] .storybook-progress li.is-current,
+body[data-stage="storybook"] .storybook-progress li[aria-current="step"] {
+  border-color: rgba(122, 91, 153, 0.22);
+  background: rgba(214, 194, 232, 0.82);
+  color: #5f4d73;
+}
+
+body[data-stage="storybook"] .storybook-progress li.is-current > span,
+body[data-stage="storybook"] .storybook-progress li[aria-current="step"] > span {
+  border-color: #80669a;
+  background: #80669a;
+  color: #fffaff;
 }
 body[data-stage="expression"] .paper-boat-lake__veil {
   position: absolute;

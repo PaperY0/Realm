@@ -44,6 +44,7 @@ const ASSETS = new Map([
   ['/assets/world-gate-reference.png', { file: 'assets/world-gate-reference.png', contentType: 'image/png' }],
   ['/assets/expression-watercolor-reference.png', { file: 'assets/expression-watercolor-reference.png', contentType: 'image/png' }],
   ['/assets/expression-watercolor-wash.png', { file: 'assets/expression-watercolor-wash.png', contentType: 'image/png' }],
+  ['/assets/storybook-keepsake-cover.png', { file: 'assets/storybook-keepsake-cover.png', contentType: 'image/png' }],
   ['/assets/emotion-hall.png', { file: 'assets/emotion-hall.png', contentType: 'image/png' }],
   ['/assets/emotion-hall/layers/background.png', { file: 'assets/emotion-hall/layers/background.png', contentType: 'image/png' }],
   ['/assets/emotion-hall/layers/door-overthinking.png', { file: 'assets/emotion-hall/layers/door-overthinking.png', contentType: 'image/png' }],

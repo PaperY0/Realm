@@ -70,15 +70,19 @@ const requiredIds = [
   'storybook-next',
   'storybook-close',
   'storybook-reopen',
+  'storybook-archive',
+  'storybook-archive-note',
   'storybook-return',
   'storybook-progress',
   'storybook-keepsake',
+  'storybook-cover-title',
 ];
 
 for (const id of requiredIds) {
   assert.match(scene, new RegExp(`id=["']${id}["']`), `storybook scene must include #${id}`);
 }
 assert.match(scene, /章节插画尚未生成/);
+assert.doesNotMatch(scene, /本机纪念页|你已经亲手读完这本书|故事停在第七章。只有你主动选择/);
 
 // Reader state must be available before the application initializes.
 const readerScriptIndex = html.search(/<script[^>]+src=["']\/reader-state\.js["']/);
@@ -148,6 +152,11 @@ assert.match(app, /canGoNext\s*\(\)/);
 assert.match(app, /canCloseBook\s*\(\)/);
 
 assert.match(app, /storybookBook\.dataset\.currentChapter\s*=\s*String\(snapshot\.currentChapter\)/);
+assert.match(app, /storybookCoverTitle\.textContent\s*=\s*bookTitle/);
+assert.match(app, /storybookArchive\.addEventListener\(\s*['"]click['"]\s*,\s*archiveStorybook\s*\)/);
+assert.match(app, /function\s+archiveStorybook\s*\([\s\S]*?saveStorybookSnapshot\s*\(\)/);
+assert.match(app, /storybookArchiveNote\.hidden\s*=\s*false/);
+assert.match(css, /storybook-keepsake-cover\.png/);
 
 // Animated page turns are single-flight: a rapid second click cannot skip a chapter.
 const beginPageTurn = functionSource(app, 'beginStorybookPageTurn');
@@ -242,6 +251,11 @@ assert.doesNotMatch(storybookFunctions, /\/api\/images\/generate(?!-book)|reques
 assert.match(storybookFunctions, /章节插画尚未生成/);
 
 // The turn layer is a two-sided paper sheet, isolated from ordinary page transforms.
+const animatePageTurn = functionSource(app, 'animatePageTurn');
+assert.match(animatePageTurn, /function\s+animatePageTurn\s*\(\s*direction\s*,\s*frontPage\s*,\s*backPage\s*\)/);
+assert.match(animatePageTurn, /makeFace\(frontPage,\s*'storybook-turn-sheet__front'\)/);
+assert.match(animatePageTurn, /makeFace\(backPage,\s*'storybook-turn-sheet__back'\)/);
+assert.doesNotMatch(animatePageTurn, /storybook-page--copy/);
 assert.match(css, /\.storybook-turn-sheet\s*\{/);
 assert.match(css, /\.storybook-turn-sheet__front\s*,\s*\n?\s*\.storybook-turn-sheet__back\s*\{/);
 assert.match(css, /\.storybook-turn-shadow\s*\{/);

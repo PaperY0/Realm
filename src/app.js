@@ -157,6 +157,7 @@ const paperBoatFoldCopy = document.querySelector('#paper-boat-fold-copy');
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
 const storybookTitle = document.querySelector('#storybook-title');
 const brandTitle = document.querySelector('#brand-home strong');
+const storybookCoverTitle = document.querySelector('#storybook-cover-title');
 const storybookStatus = document.querySelector('#storybook-status');
 const storybookBook = document.querySelector('#storybook-book');
 const storybookChapterKicker = document.querySelector('#storybook-chapter-kicker');
@@ -167,10 +168,12 @@ const storybookPrevious = document.querySelector('#storybook-prev');
 const storybookNext = document.querySelector('#storybook-next');
 const storybookClose = document.querySelector('#storybook-close');
 const storybookReopen = document.querySelector('#storybook-reopen');
+const storybookArchive = document.querySelector('#storybook-archive');
+const storybookArchiveNote = document.querySelector('#storybook-archive-note');
 const storybookReturn = document.querySelector('#storybook-return');
 const storybookProgress = document.querySelector('#storybook-progress');
 const storybookKeepsake = document.querySelector('#storybook-keepsake');
-const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookReturn].filter(Boolean);
+const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookArchive, storybookReturn].filter(Boolean);
 
 function safeStorageGet(key) {
   try {
@@ -764,12 +767,10 @@ function clearTurnSheets() {
   storybookBook.querySelectorAll('.storybook-turn-sheet').forEach((sheet) => sheet.remove());
 }
 
-function animatePageTurn(direction, oldPage, currentPageOverride = null) {
-  if (!storybookBook || !oldPage) return;
+function animatePageTurn(direction, frontPage, backPage) {
+  if (!storybookBook || !frontPage || !backPage) return;
   clearTurnSheets();
 
-  const pageClass = direction === 'previous' ? 'storybook-page--illustration' : 'storybook-page--copy';
-  const currentPage = currentPageOverride || storybookBook.querySelector('.' + pageClass);
   const makeFace = (page, faceClass) => {
     const face = page.cloneNode(true);
     const isIllustration = page.classList.contains('storybook-page--illustration');
@@ -786,8 +787,8 @@ function animatePageTurn(direction, oldPage, currentPageOverride = null) {
     : 'storybook-turn-sheet--next');
   sheet.setAttribute('aria-hidden', 'true');
   sheet.append(
-    makeFace(oldPage, 'storybook-turn-sheet__front'),
-    makeFace(currentPage || oldPage, 'storybook-turn-sheet__back'),
+    makeFace(frontPage, 'storybook-turn-sheet__front'),
+    makeFace(backPage, 'storybook-turn-sheet__back'),
   );
   const shadow = document.createElement('span');
   shadow.className = 'storybook-turn-shadow';
@@ -851,17 +852,16 @@ function renderStoryChapter({ animate = false } = {}) {
   const reader = state.storybook.reader;
   if (!storyPackage || !reader) return;
 
-  const oldPage = animate === 'previous'
-    ? storybookBook.querySelector('.storybook-page--illustration')
-    : storybookBook.querySelector('.storybook-page--copy');
-  const oldPageSnapshot = oldPage?.cloneNode(true);
   const snapshot = reader.snapshot();
   const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
   const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
-  let turnPageOverride = null;
+  let turnFrontPage = null;
+  let turnBackPage = null;
   if (animate) {
-    turnPageOverride = storybookBook.querySelector('.storybook-page--illustration')?.cloneNode(true);
-    const turnIllustrationState = turnPageOverride?.querySelector('.storybook-illustration-state');
+    const illustrationPage = storybookBook.querySelector('.storybook-page--illustration');
+    turnFrontPage = illustrationPage?.cloneNode(true);
+    turnBackPage = illustrationPage?.cloneNode(true);
+    const turnIllustrationState = turnBackPage?.querySelector('.storybook-illustration-state');
     if (turnIllustrationState) renderStoryIllustration(storyPackage, snapshot, card, turnIllustrationState);
   }
   storybookBook.classList.toggle('is-closed', closed);
@@ -872,6 +872,7 @@ function renderStoryChapter({ animate = false } = {}) {
   const bookTitle = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '绾线与旅人的七章童话';
   storybookTitle.textContent = bookTitle;
   if (brandTitle) brandTitle.textContent = bookTitle;
+  if (storybookCoverTitle) storybookCoverTitle.textContent = bookTitle;
   storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
   storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
   storybookChapterText.textContent = card.userVisibleCopy.chapterText;
@@ -880,7 +881,7 @@ function renderStoryChapter({ animate = false } = {}) {
   storybookStatus.textContent = closed ? '书已合上，故事停在第七章' : '请由你亲手翻动每一章';
   syncStorybookControls(snapshot);
   if (animate) {
-    animatePageTurn(animate, oldPageSnapshot, turnPageOverride);
+    animatePageTurn(animate, turnFrontPage, turnBackPage);
     state.storybook.illustrationTimer = window.setTimeout(() => {
       state.storybook.illustrationTimer = null;
       const latestSnapshot = state.storybook.reader?.snapshot();
@@ -1106,8 +1107,20 @@ function closeStorybook() {
 
 function reopenStorybook() {
   if (!state.storybook.storyPackage) return;
+  storybookArchive.textContent = '存入书架';
+  storybookArchive.disabled = false;
+  storybookArchiveNote.hidden = true;
   initializeStoryReader(state.storybook.storyPackage);
   announce('故事重新从第一章打开');
+}
+
+function archiveStorybook() {
+  if (!state.storybook.storyPackage || !state.storybook.reader) return;
+  saveStorybookSnapshot();
+  storybookArchive.textContent = '已存入书架';
+  storybookArchive.disabled = true;
+  storybookArchiveNote.hidden = false;
+  announce('风把它送进书架，世界已经记住了你的故事');
 }
 
 function returnToExpression() {
@@ -1336,6 +1349,7 @@ storybookPrevious.addEventListener('click', goPreviousChapter);
 storybookNext.addEventListener('click', goNextChapter);
 storybookClose.addEventListener('click', closeStorybook);
 storybookReopen.addEventListener('click', reopenStorybook);
+storybookArchive.addEventListener('click', archiveStorybook);
 storybookReturn.addEventListener('click', returnToExpression);
 newExpression.addEventListener('click', () => resetExpressionFlow({ focus: true }));
 
