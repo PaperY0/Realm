@@ -8,12 +8,14 @@ const {
 
 const FIXED_GATEKEEPER = Object.freeze({
   ipId: 'inner-friction-gatekeeper-v1',
-  name: '理线人',
+  name: '绾线',
   visualReferenceSetId: 'world-gate-reference-v1',
   appearance: '披着苔绿色短斗篷、背着星纹线轴袋的白色小守门人',
 });
 
 const RAW_FIELD_PATTERN = /(?:raw|original|verbatim|source)(?:_|-)?(?:input|text|expression|answer|content)/i;
+const PROMPT_CONTRACT_KEYS = Object.freeze(['schemaVersion', 'imagePrompt']);
+const MAX_VISIBLE_CHAPTER_TEXT = 120;
 
 class StoryPackageValidationError extends Error {
   constructor(report) {
@@ -131,7 +133,7 @@ function selectStruggleProfile(signal) {
     title: '尚未解开的结',
     echo: '未名回声',
     weight: '尚未辨认的重线',
-    setting: '薄雾覆盖的理线坡',
+    setting: '薄雾覆盖的绾线坡',
     opening: '旅人带来的线索还没有现成名字，线结却已经真实地压在行囊一角',
     discovery: '不知道全部答案时，也可以先辨认眼前最需要被照亮的一根线',
   };
@@ -253,7 +255,7 @@ function selectSymbolProfile(signal) {
   return {
     key: 'custom-safe-symbol',
     title: customTitle,
-    object: '一件由旅人选定、被理线人称作“' + customTitle + '”的安全信物',
+    object: '一件由旅人选定、被绾线称作“' + customTitle + '”的安全信物',
     behavior: '这件信物只承载已经进入安全故事摘要的象征，不补写现实人物、原因或结局',
     props: ['星纹线轴袋', customTitle, '银线'],
     recurring: [customTitle, '银线', '暖光'],
@@ -283,8 +285,8 @@ function createEchoBeats(safeBrief) {
   return [
     {
       title: struggle.title + '里的' + symbol.title,
-      text: '理线人在' + struggle.setting + '遇见旅人。' + struggle.opening + '。旅人没有被要求重述现实细节；理线人只把安全线索“' + coreSignal + '”系在' + symbol.object + '旁，请它先替这份拉扯发出可以被看见的微光。',
-      end: '理线人与旅人借' + symbol.title + '看见了“' + struggle.title + '”正在怎样收紧脚步。',
+      text: '绾线在' + struggle.setting + '遇见旅人。' + struggle.opening + '。旅人没有被要求重述现实细节；绾线只把安全线索“' + coreSignal + '”系在' + symbol.object + '旁，请它先替这份拉扯发出可以被看见的微光。',
+      end: '绾线与旅人借' + symbol.title + '看见了“' + struggle.title + '”正在怎样收紧脚步。',
       setting: struggle.setting,
       expression: '警觉而温和',
       narrativeFunction: '个性化显影核心拉扯',
@@ -294,8 +296,8 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: symbol.title + '听见的' + struggle.echo,
-      text: '理线人沿着信物边缘找到一根反复打结的银线。' + symbol.behavior + '。当' + struggle.echo + '再次出现，他们不再立刻服从，而是分辨它究竟在保护什么、又让什么变得越来越窄。',
-      end: '理线人与旅人确认' + struggle.echo + '只是机制的回声，不是旅人全部的名字。',
+      text: '绾线沿着信物边缘找到一根反复打结的银线。' + symbol.behavior + '。当' + struggle.echo + '再次出现，他们不再立刻服从，而是分辨它究竟在保护什么、又让什么变得越来越窄。',
+      end: '绾线与旅人确认' + struggle.echo + '只是机制的回声，不是旅人全部的名字。',
       setting: '通往' + struggle.setting + '深处的回声小径',
       expression: '专注',
       narrativeFunction: '追踪个性化反复机制',
@@ -305,7 +307,7 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: struggle.discovery,
-      text: '理线人把银线举到柔光下，让旅人同时看见它想保护的部分和它造成的重量。原来，' + struggle.discovery + '。' + symbol.object + '没有给出评判，只让这份发现保持在能够靠近、也能够退后一步的位置。',
+      text: '绾线把银线举到柔光下，让旅人同时看见它想保护的部分和它造成的重量。原来，' + struggle.discovery + '。' + symbol.object + '没有给出评判，只让这份发现保持在能够靠近、也能够退后一步的位置。',
       end: '旅人不再把' + struggle.title + '误认成唯一真相，并为下一次尝试留出位置。',
       setting: '能把线结投成双重影子的旧灯塔',
       expression: '若有所思',
@@ -316,7 +318,7 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: direction.title + '之桥',
-      text: '桥面只在旅人说出愿意靠近的方向时显出下一块木纹。理线人没有把愿望改写成命令，而是把安全方向“' + directionSignal + '”转成一次小小尝试：' + direction.trial + '。桥没有立刻变得笔直，却出现了可以踩稳的一步。',
+      text: '桥面只在旅人说出愿意靠近的方向时显出下一块木纹。绾线没有把愿望改写成命令，而是把安全方向“' + directionSignal + '”转成一次小小尝试：' + direction.trial + '。桥没有立刻变得笔直，却出现了可以踩稳的一步。',
       end: '旅人把“' + direction.title + '”从远方答案变成眼前一次可观察的尝试。',
       setting: '随着选择浮现木纹的留白桥',
       expression: '安静而坚定',
@@ -327,7 +329,7 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: symbol.title + '的第一次回应',
-      text: '理线人陪旅人真正做了一次刚才约定的小尝试。' + symbol.behavior + '，也记录下身体、脚步与周围光线的细小变化。' + direction.result + '。这不是胜利宣言，而是一份能够继续验证的新经验。',
+      text: '绾线陪旅人真正做了一次刚才约定的小尝试。' + symbol.behavior + '，也记录下身体、脚步与周围光线的细小变化。' + direction.result + '。这不是胜利宣言，而是一份能够继续验证的新经验。',
       end: '旅人从' + symbol.title + '的回应中获得一条属于自己的新证据。',
       setting: '星点缓缓升起的试行坡道',
       expression: '露出一点轻松',
@@ -338,7 +340,7 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: '把' + struggle.weight + '重新分线',
-      text: '理线人与旅人把' + struggle.weight + '从行囊里取出，分成“此刻需要照看”“可以以后再问”和“本来就不必独自承担”三束。' + symbol.object + '守在一旁，让每束线都有位置，却不再同时压在旅人身上。',
+      text: '绾线与旅人把' + struggle.weight + '从行囊里取出，分成“此刻需要照看”“可以以后再问”和“本来就不必独自承担”三束。' + symbol.object + '守在一旁，让每束线都有位置，却不再同时压在旅人身上。',
       end: '旅人重新安排了' + struggle.weight + '的距离，并把新证据编成可握住的路标。',
       setting: '有暖风经过的三格编线台',
       expression: '踏实',
@@ -349,7 +351,7 @@ function createEchoBeats(safeBrief) {
     },
     {
       title: direction.finalTitle,
-      text: '理线人陪旅人带着' + symbol.title + '回到世界门前。' + struggle.echo + '没有彻底消失，桥也仍会随风轻轻摇晃；但旅人已经知道下一次可以怎样回应。它把“' + directionSignal + '”收进自己的路标，向' + direction.title + '迈出一步，而不是等待所有声音先变得安静。',
+      text: '绾线陪旅人带着' + symbol.title + '回到世界门前。' + struggle.echo + '没有彻底消失，桥也仍会随风轻轻摇晃；但旅人已经知道下一次可以怎样回应。它把“' + directionSignal + '”收进自己的路标，向' + direction.title + '迈出一步，而不是等待所有声音先变得安静。',
       end: safeBrief.emotionalDirection,
       setting: '由' + symbol.title + '照亮的世界门前',
       expression: '温柔而明亮',
@@ -359,6 +361,44 @@ function createEchoBeats(safeBrief) {
       palette: symbol.palette,
     },
   ];
+}
+
+function createStoryPrompt({ useMianmianFallback, struggle, direction, symbol }) {
+  if (useMianmianFallback) {
+    return '七章安全绘本《绵绵和没有写完的名字》：以绾线守门人、纸签、名字抽屉与风向桥为连续意象，讲述保留未知、辨认重量并走向下一步的温柔旅程；手绘童话绘本、纸张纹理、9:16竖幅、无画面文字与水印。';
+  }
+  return [
+    '七章安全绘本：',
+    '核心拉扯是“' + struggle.title + '”',
+    '方向是“' + direction.title + '”',
+    '信物是“' + symbol.title + '”',
+    '连续场景从' + struggle.setting + '展开',
+    '绾线守门人与旅人共同前进，保持苔绿、月白、暖金的手绘纸张质感，9:16竖幅、无画面文字与水印。',
+  ].join('；');
+}
+
+function shortenChapterText(text) {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  if (normalized.length <= MAX_VISIBLE_CHAPTER_TEXT) return normalized;
+  return normalized.slice(0, MAX_VISIBLE_CHAPTER_TEXT - 1) + '…';
+}
+
+function createImagePrompt({ beat, chapterNumber, chapterId, continuityFromPrevious, continuityToNext }) {
+  return [
+    '第' + chapterNumber + '章绘本插画',
+    '叙事瞬间：' + beat.title,
+    '场景：' + beat.setting,
+    '绾线：' + FIXED_GATEKEEPER.appearance,
+    '表情与动作：' + (beat.expression || '温和专注'),
+    '构图：' + (beat.composition || '竖幅绘本主插画，前中后景分明'),
+    '必备道具：' + (beat.requiredProps || []).join('、'),
+    '连续意象：' + (beat.recurringSymbols || []).join('、'),
+    '色彩：' + (beat.palette || []).join('、'),
+    '光线：' + (beat.lighting || '冷暖交界的柔光'),
+    continuityFromPrevious ? '承接：' + chapterId + '之前的状态与道具位置' : '承接：这是故事的开场画面',
+    continuityToNext ? '保留：本章变化供下一章延续' : '收束：为开放式结尾保留呼吸感',
+    '仅使用安全故事信号，不补写现实人物、原因或结局；无画面文字、无水印。',
+  ].join('；');
 }
 
 function createStoryPackage(safeStoryBrief, options = {}) {
@@ -409,7 +449,7 @@ function createStoryPackage(safeStoryBrief, options = {}) {
       },
       userVisibleCopy: {
         chapterTitle: beat.title,
-        chapterText: beat.text,
+        chapterText: useMianmianFallback ? beat.text : shortenChapterText(beat.text),
         optionalCaption: null,
       },
       narrativeContract: {
@@ -429,7 +469,7 @@ function createStoryPackage(safeStoryBrief, options = {}) {
         protagonistAppearance: FIXED_GATEKEEPER.appearance,
         protagonistExpression: beat.expression,
         setting: beat.setting,
-        composition: beat.composition || '竖幅绘本主插画，理线人与旅人共同处于清晰的前中景关系中',
+        composition: beat.composition || '竖幅绘本主插画，绾线与旅人共同处于清晰的前中景关系中',
         ...(beat.templateVisualDirections ? { templateVisualDirections: clone(beat.templateVisualDirections) } : {}),
         requiredProps: clone(beat.requiredProps || ['星纹线轴袋', '银线', chapterNumber >= 5 ? '慢一拍的小钟' : '旅人行囊']),
         recurringSymbols: clone(beat.recurringSymbols || ['银线', '星点', '暖灯']),
@@ -437,6 +477,16 @@ function createStoryPackage(safeStoryBrief, options = {}) {
         lighting: beat.lighting || (index < 3 ? '冷暖交界的柔光' : '逐章增加的暖光'),
         continuityFromPrevious: index === 0 ? null : chapterIds[index - 1] + ': 延续上一章结束状态与道具位置',
         continuityToNext: index === 6 ? null : chapterIds[index + 1] + ': 保留本章新增的状态变化与信物',
+        promptContract: {
+          schemaVersion: 'image-prompt-contract-v1',
+          imagePrompt: createImagePrompt({
+            beat,
+            chapterNumber,
+            chapterId,
+            continuityFromPrevious: index === 0 ? null : chapterIds[index - 1],
+            continuityToNext: index === 6 ? null : chapterIds[index + 1],
+          }),
+        },
         requiresHumanApproval: true,
       },
     };
@@ -447,9 +497,15 @@ function createStoryPackage(safeStoryBrief, options = {}) {
     bookId,
     bookTitle: useMianmianFallback
       ? MIANMIAN_UNFINISHED_NAME_TEMPLATE.title
-      : '《理线人与' + echoSymbolProfile.title + '》',
+      : '《绾线与' + echoSymbolProfile.title + '》',
     frozen: true,
     safeStoryBrief: safeBrief,
+    storyPrompt: createStoryPrompt({
+      useMianmianFallback,
+      struggle: echoStruggleProfile,
+      direction: echoDirectionProfile,
+      symbol: echoSymbolProfile,
+    }),
     storyTemplateMatch: {
       schemaVersion: 'story-template-match-v1',
       route: useMianmianFallback ? 'mianmian-labels-fallback' : 'echo',
@@ -546,6 +602,20 @@ function validateStoryPackage(value, options = {}) {
       && item.chapterId === cards[index]?.identity?.chapterId);
   if (!referencesValid) fail('structure.cross_references', 'ChapterCard', value?.bookId, '/chapterCards');
 
+  const storyPromptValid = typeof value?.storyPrompt === 'string' && value.storyPrompt.trim().length > 0;
+  if (!storyPromptValid) fail('structure.prompt_contract', 'StoryPackage', value?.bookId, '/storyPrompt');
+  const promptContractsValid = cards.length === 7 && cards.every((card) => {
+    const promptContract = card?.illustrationContract?.promptContract;
+    return promptContract
+      && typeof promptContract === 'object'
+      && !Array.isArray(promptContract)
+      && Object.keys(promptContract).every((key) => PROMPT_CONTRACT_KEYS.includes(key))
+      && promptContract.schemaVersion === 'image-prompt-contract-v1'
+      && typeof promptContract.imagePrompt === 'string'
+      && promptContract.imagePrompt.trim().length > 0;
+  });
+  if (!promptContractsValid) fail('structure.prompt_contract', 'ChapterCard', value?.bookId, '/chapterCards/illustrationContract/promptContract');
+
   let rawFieldFound = false;
   walk(value, (key, _item, pointer) => {
     if (RAW_FIELD_PATTERN.test(key)) {
@@ -578,7 +648,7 @@ function validateStoryPackage(value, options = {}) {
     }
   }
 
-  const structuralIds = ['structure.chapter_count', 'structure.chapter_sequence', 'structure.cross_references'];
+  const structuralIds = ['structure.chapter_count', 'structure.chapter_sequence', 'structure.cross_references', 'structure.prompt_contract'];
   const semanticIds = ['semantic.raw_input_fields', 'semantic.source_text_leakage', 'semantic.causal_continuity'];
   const makeCheck = (checkId) => ({
     checkId,

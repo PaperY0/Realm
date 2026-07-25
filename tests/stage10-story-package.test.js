@@ -74,9 +74,14 @@ assert.equal(packageA.storyBible.protagonist.ipId, FIXED_GATEKEEPER.ipId);
 assert.equal(packageA.storyBible.protagonist.visualReferenceSetId, FIXED_GATEKEEPER.visualReferenceSetId);
 assert.equal(packageA.chapterCards.length, 7);
 assert.equal(packageA.chapterIllustrationPlan.illustrations.length, 7);
+assert.equal(typeof packageA.storyPrompt, 'string');
+assert.ok(packageA.storyPrompt.length > 0);
+assert.equal(packageA.chapterCards.filter((card) => card.userVisibleCopy.chapterText.length <= 120).length, 7);
+assert.equal(packageA.chapterCards.filter((card) => typeof card.illustrationContract.promptContract?.imagePrompt === 'string'
+  && card.illustrationContract.promptContract.imagePrompt.length > 0).length, 7);
 assert.deepEqual(packageA.chapterCards.map((card) => card.identity.chapterNumber), [1, 2, 3, 4, 5, 6, 7]);
 assert.deepEqual(packageA.chapterCards.map((card) => card.illustrationContract.illustrationId), ['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7']);
-assert.ok(packageA.chapterCards.every((card) => card.userVisibleCopy.chapterText.includes('理线')));
+assert.ok(packageA.chapterCards.every((card) => card.userVisibleCopy.chapterText.includes('绾线')));
 assert.equal(packageA.safeStoryBrief.userConfirmedSentence, null);
 assert.equal(JSON.stringify(packageA).includes(rawSensitiveText), false);
 assert.equal(Object.isFrozen(packageA), true);
@@ -259,7 +264,7 @@ assert.deepEqual(
     .map((item) => item.visualDirection),
   MIANMIAN_UNFINISHED_NAME_TEMPLATE.spreads.map((spread) => spread.visualDirection),
 );
-assert.ok(fallbackPackage.chapterCards.every((card) => card.userVisibleCopy.chapterText.includes('理线人')));
+assert.ok(fallbackPackage.chapterCards.every((card) => card.userVisibleCopy.chapterText.includes('绾线')));
 const fallbackCopy = fallbackPackage.chapterCards.map((card) => card.userVisibleCopy.chapterText).join('\n');
 for (const spread of MIANMIAN_UNFINISHED_NAME_TEMPLATE.spreads) {
   assert.ok(fallbackCopy.includes(spread.title), `missing spread title: ${spread.title}`);
@@ -374,6 +379,11 @@ assert.throws(
 const rawFieldLeak = mutableCopy(packageA);
 rawFieldLeak.chapterCards[0].rawInput = '任意原文';
 assertBlocked(rawFieldLeak, 'semantic.raw_input_fields');
+
+// Prompt metadata is structured and rejects arbitrary prompt-shaped fields.
+const arbitraryPromptField = mutableCopy(packageA);
+arbitraryPromptField.chapterCards[0].illustrationContract.promptContract.rawPrompt = '任意原文';
+assertBlocked(arbitraryPromptField, 'structure.prompt_contract');
 
 // Domain implementation stays offline and does not include paid/provider behavior.
 for (const storySourcePath of storySourcePaths) {

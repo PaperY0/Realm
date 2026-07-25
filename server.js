@@ -10,11 +10,14 @@ const {
   ImageGenerationError,
   DEFAULT_MODEL,
 } = require('./src/services/image-generation');
-const { createStoryPackage } = require('./src/domain/story-package');
+const { createStoryPackage, assertStoryPackage } = require('./src/domain/story-package');
+const { generateChapterIllustrations } = require('./src/services/chapter-image-generation');
+const { SQLiteStore } = require('./src/storage/sqlite-store');
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3000;
 const MAX_JSON_BODY_BYTES = 64 * 1024;
+const MAX_STORYBOOK_STATE_BYTES = 256 * 1024;
 const ROOT_DIR = __dirname;
 const SRC_DIR = path.join(ROOT_DIR, 'src');
 const DEFAULT_GENERATED_DIR = path.join(ROOT_DIR, 'runtime', 'generated');
@@ -33,6 +36,14 @@ const ASSETS = new Map([
   ['/app.js', { file: 'app.js', contentType: 'text/javascript; charset=utf-8' }],
   ['/reader-state.js', { file: 'features/reader/reader-state.js', contentType: 'text/javascript; charset=utf-8' }],
   ['/assets/world-gate-reference.png', { file: 'assets/world-gate-reference.png', contentType: 'image/png' }],
+  ['/assets/emotion-hall.png', { file: 'assets/emotion-hall.png', contentType: 'image/png' }],
+  ['/assets/guardians/wanxian.png', { file: 'assets/guardians/wanxian.png', contentType: 'image/png' }],
+  ['/assets/guardians/tingyu.png', { file: 'assets/guardians/tingyu.png', contentType: 'image/png' }],
+  ['/assets/guardians/xibai.png', { file: 'assets/guardians/xibai.png', contentType: 'image/png' }],
+  ['/assets/guardians/cangjin.png', { file: 'assets/guardians/cangjin.png', contentType: 'image/png' }],
+  ['/assets/guardians/lingya.png', { file: 'assets/guardians/lingya.png', contentType: 'image/png' }],
+  ['/assets/world-entry.mp4', { file: 'assets/world-entry.mp4', contentType: 'video/mp4' }],
+  ['/assets/paper-boat.mp4', { file: 'assets/paper-boat.mp4', contentType: 'video/mp4' }],
 ]);
 
 function getPort(value) {
@@ -133,10 +144,10 @@ function requestBodyError(code) {
   return Object.assign(new Error(code.toLowerCase()), { code });
 }
 
-function readJsonBody(request) {
+function readJsonBody(request, maxBytes = MAX_JSON_BODY_BYTES) {
   return new Promise((resolve, reject) => {
     const declaredLength = Number(request.headers['content-length']);
-    if (Number.isFinite(declaredLength) && declaredLength > MAX_JSON_BODY_BYTES) {
+    if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
       request.resume();
       reject(requestBodyError('REQUEST_TOO_LARGE'));
       return;
@@ -155,7 +166,7 @@ function readJsonBody(request) {
     request.on('data', (chunk) => {
       if (settled) return;
       total += chunk.length;
-      if (total > MAX_JSON_BODY_BYTES) {
+      if (total > maxBytes) {
         fail(requestBodyError('REQUEST_TOO_LARGE'));
         request.resume();
         return;
@@ -251,6 +262,57 @@ function validateStoryPackageApiBody(value) {
   }
 }
 
+function validateChapterImageBody(value) {
+  assertPlainObject(value);
+  const fields = Object.keys(value);
+  if (!Object.prototype.hasOwnProperty.call(value, 'storyPackage')) {
+    throw new Error('storyPackage is required');
+  }
+  if (fields.some((field) => field !== 'storyPackage' && field !== 'referenceImages')) {
+    throw new Error('request contains unsupported fields');
+  }
+  let storyPackage;
+  try {
+    storyPackage = assertStoryPackage(value.storyPackage);
+  } catch {
+    throw new Error('storyPackage is not a valid frozen seven-chapter package');
+  }
+  return Object.freeze({
+    storyPackage,
+    referenceImages: normalizeReferenceImages(value.referenceImages),
+  });
+}
+
+function sanitizeChapterIllustration(value) {
+  assertPlainObject(value);
+  return Object.freeze({
+    chapterNumber: value.chapterNumber,
+    chapterId: value.chapterId,
+    state: value.state,
+    image: value.image ? sanitizeGeneratedImage(value.image) : null,
+    error: value.error && typeof value.error.code === 'string'
+      ? { code: value.error.code.replace(/[^A-Z0-9_]/g, '').slice(0, 64) }
+      : null,
+  });
+}
+
+function validateStorybookStateBody(value) {
+  assertPlainObject(value);
+  if (Object.keys(value).some((field) => field !== 'storyPackage' && field !== 'readerSnapshot')) {
+    throw requestBodyError('INVALID_REQUEST');
+  }
+  if (!Object.prototype.hasOwnProperty.call(value, 'storyPackage')
+    || !Object.prototype.hasOwnProperty.call(value, 'readerSnapshot')) {
+    throw requestBodyError('INVALID_REQUEST');
+  }
+  assertPlainObject(value.storyPackage);
+  assertPlainObject(value.readerSnapshot);
+  return Object.freeze({
+    storyPackage: value.storyPackage,
+    readerSnapshot: value.readerSnapshot,
+  });
+}
+
 function publicImageError(error) {
   if (!(error instanceof ImageGenerationError)) {
     return { status: 500, error: 'image_internal_error', message: '真实生成未完成，请稍后再试。' };
@@ -312,6 +374,12 @@ function createRequestHandler(options = {}) {
   const generateImageImpl = options.generateImageImpl || defaultGenerateImage;
   const env = options.env || process.env;
   const generatedDir = path.resolve(options.generatedDir || DEFAULT_GENERATED_DIR);
+  const storybookStore = options.enablePersistence
+    ? (options.storybookStore || new SQLiteStore({
+      dbPath: options.dbPath || path.join(ROOT_DIR, 'runtime', 'dream-book.sqlite'),
+      mediaRoot: options.mediaRoot || path.join(ROOT_DIR, 'runtime', 'media'),
+    }))
+    : null;
   if (typeof generateImageImpl !== 'function') throw new TypeError('generateImageImpl must be a function');
 
   let generationInFlight = false;
@@ -385,6 +453,116 @@ function createRequestHandler(options = {}) {
           error: 'invalid_story_brief',
           message: '故事摘要无法生成安全的七章故事包。',
         });
+      }
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/storybook-state') {
+      if (!storybookStore) {
+        sendJson(request, response, 503, { ok: false, error: 'persistence_unavailable' });
+        return;
+      }
+
+      if (request.method === 'GET') {
+        sendJson(request, response, 200, { ok: true, state: storybookStore.getStorybookState() });
+        return;
+      }
+
+      if (request.method === 'DELETE') {
+        storybookStore.resetStorybookState();
+        response.writeHead(204, { 'Cache-Control': 'no-store' });
+        response.end();
+        return;
+      }
+
+      if (request.method !== 'PUT') {
+        sendJson(request, response, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'GET, PUT, DELETE' });
+        return;
+      }
+
+      let body;
+      try {
+        body = await readJsonBody(request, MAX_STORYBOOK_STATE_BYTES);
+      } catch (error) {
+        sendJson(request, response, 400, {
+          ok: false,
+          error: error.code === 'REQUEST_TOO_LARGE' ? 'request_too_large' : 'invalid_json',
+        });
+        return;
+      }
+
+      try {
+        const state = validateStorybookStateBody(body);
+        sendJson(request, response, 200, { ok: true, state: storybookStore.saveStorybookState(state) });
+      } catch {
+        sendJson(request, response, 400, { ok: false, error: 'invalid_request' });
+      }
+      return;
+    }
+
+    if (requestUrl.pathname === '/api/images/generate-book') {
+      if (request.method !== 'POST') {
+        sendJson(request, response, 405, { ok: false, error: 'method_not_allowed' }, { Allow: 'POST' });
+        return;
+      }
+      if (generationInFlight) {
+        sendJson(request, response, 409, {
+          ok: false,
+          error: 'image_generation_busy',
+          message: '七章插画仍在生成，请等待本次绘本完成。',
+        });
+        return;
+      }
+      const contentType = String(request.headers['content-type'] || '').split(';', 1)[0].trim().toLowerCase();
+      if (contentType !== 'application/json') {
+        sendJson(request, response, 415, { ok: false, error: 'unsupported_media_type', message: '请求必须使用 JSON。' });
+        return;
+      }
+      let body;
+      try {
+        body = await readJsonBody(request);
+      } catch (error) {
+        sendJson(request, response, error.code === 'REQUEST_TOO_LARGE' ? 413 : 400, {
+          ok: false,
+          error: error.code === 'REQUEST_TOO_LARGE' ? 'request_too_large' : 'invalid_json',
+        });
+        return;
+      }
+      let input;
+      try {
+        input = validateChapterImageBody(body);
+      } catch {
+        sendJson(request, response, 400, {
+          ok: false,
+          error: 'invalid_story_package',
+          message: '故事包未通过七章插画生成前的结构校验。',
+        });
+        return;
+      }
+
+      generationInFlight = true;
+      try {
+        const result = await generateChapterIllustrations({
+          storyPackage: input.storyPackage,
+          referenceImages: input.referenceImages,
+          generatedDir,
+          generateImageImpl,
+        });
+        sendJson(request, response, result.status === 'succeeded' ? 201 : 207, {
+          ok: result.status === 'succeeded',
+          status: result.status,
+          bookId: result.bookId,
+          concurrency: result.concurrency,
+          illustrations: result.illustrations.map(sanitizeChapterIllustration),
+        });
+      } catch (error) {
+        sendJson(request, response, 500, {
+          ok: false,
+          error: 'chapter_image_generation_internal_error',
+          message: '七章插画任务未能启动。',
+        });
+      } finally {
+        generationInFlight = false;
       }
       return;
     }
@@ -512,7 +690,11 @@ function createAppServer(options = {}) {
 
 function startFromCommandLine() {
   const port = getPort(process.env.PORT);
-  const server = createAppServer();
+  const storybookStore = new SQLiteStore({
+    dbPath: path.join(ROOT_DIR, 'runtime', 'dream-book.sqlite'),
+    mediaRoot: path.join(ROOT_DIR, 'runtime', 'media'),
+  });
+  const server = createAppServer({ enablePersistence: true, storybookStore });
   let isShuttingDown = false;
 
   function shutdown(signal) {
@@ -520,6 +702,7 @@ function startFromCommandLine() {
     isShuttingDown = true;
     console.log('Received ' + signal + '; shutting down.');
     server.close((error) => {
+      storybookStore.close();
       if (error) {
         console.error(error);
         process.exitCode = 1;
