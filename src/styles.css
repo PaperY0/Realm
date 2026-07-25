@@ -2029,6 +2029,71 @@ body[data-stage="expression"] .arrival-badge {
   color: #fffaf0;
 }
 
+.generation-prompt-details {
+  margin-top: 18px;
+  border-top: 1px solid rgba(102, 84, 108, 0.14);
+  color: #65586a;
+  text-align: left;
+}
+
+.generation-prompt-details summary {
+  padding: 12px 0 8px;
+  cursor: pointer;
+  color: #6e5a79;
+  font-size: 12px;
+}
+
+.generation-prompt-block {
+  padding: 10px 12px;
+  border: 1px solid rgba(102, 84, 108, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 250, 240, 0.56);
+}
+
+.generation-prompt-label {
+  margin: 0 0 6px;
+  color: #806b87;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.generation-prompt-block pre {
+  max-height: 120px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: #65586a;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.chapter-generation-status {
+  display: grid;
+  max-height: 220px;
+  margin: 12px 0 0;
+  padding: 0 3px 0 20px;
+  gap: 8px;
+  overflow: auto;
+}
+
+.chapter-generation-status li {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 250, 240, 0.46);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.chapter-generation-status li[data-chapter-state="succeeded"] { background: rgba(224, 232, 209, 0.62); }
+.chapter-generation-status li[data-chapter-state="failed"] { background: rgba(238, 218, 209, 0.68); }
+.chapter-generation-status li strong { color: #514459; }
+.chapter-generation-status li span,
+.chapter-generation-status li small { color: #796d7c; }
+.chapter-generation-status li small { overflow-wrap: anywhere; }
+
 .generation-error > span {
   display: grid;
   width: 68px;
@@ -3820,28 +3885,33 @@ body[data-stage="foyer"] .handoff-character {
 .emotion-hall-heading {
   position: absolute;
   z-index: 5;
-  top: clamp(110px, 15vh, 165px);
-  left: clamp(34px, 7vw, 132px);
-  width: min(390px, 27vw);
+  top: clamp(18px, 3vh, 40px);
+  left: clamp(24px, 4vw, 80px);
+  width: min(760px, 58vw);
   color: #403343;
   text-shadow: 0 1px rgba(255, 247, 223, 0.5);
 }
 
 .emotion-hall-heading h2 {
-  margin: 0.65rem 0 1rem;
+  margin: 0.45rem 0 0.2rem;
   font-family: Georgia, "Songti SC", serif;
-  font-size: clamp(2.5rem, 4vw, 5rem);
+  font-size: clamp(1.85rem, 2.8vw, 3.6rem);
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 0.98;
   letter-spacing: -0.06em;
 }
 
+.emotion-hall-heading h2 span {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .emotion-hall-heading > p:last-child {
-  max-width: 24rem;
-  margin: 0;
+  max-width: 16rem;
+  margin: -0.1rem 0 0;
   color: rgba(64, 51, 67, 0.78);
-  font-size: clamp(0.9rem, 1.1vw, 1.15rem);
-  line-height: 1.8;
+  font-size: clamp(0.7rem, 0.76vw, 0.84rem);
+  line-height: 1.2;
 }
 
 .emotion-door-stage {
@@ -4094,6 +4164,11 @@ body[data-stage="expression"] .motion-toggle--global {
   display: none;
 }
 
+body[data-stage="foyer"] .world-header,
+body[data-stage="foyer"] .motion-toggle--global {
+  display: none;
+}
+
 body[data-stage="expression"] .scene--expression {
   display: block;
   overflow: auto;
@@ -4227,7 +4302,7 @@ body[data-stage="expression"] .expression-primary {
 }
 body[data-stage="expression"] .expression-quiet { color: #795e6c; }
 body[data-stage="expression"] .paper-generation-card {
-  display: none;
+  display: none !important;
   width: 100%;
   min-height: 0;
   margin-top: 26px;
@@ -4235,11 +4310,6 @@ body[data-stage="expression"] .paper-generation-card {
   border: 1px solid rgba(128, 82, 67, .18);
   border-radius: 18px;
   background: rgba(255, 250, 226, .72);
-}
-body[data-stage="expression"] .paper-generation-card[data-generation-state="progress"],
-body[data-stage="expression"] .paper-generation-card[data-generation-state="error"],
-body[data-stage="expression"] .paper-generation-card[data-generation-state="success"] {
-  display: block;
 }
 
 body[data-stage="expression"] .paper-boat-sequence {
@@ -4374,3 +4444,130 @@ body[data-stage="expression"] .paper-boat-retry {
 body.reduce-motion[data-stage="expression"] .paper-world__spark,
 body.reduce-motion[data-stage="expression"] .paper-boat-fold__sheet,
 body.reduce-motion[data-stage="expression"] .paper-boat-fold__boat { animation: none; }
+
+/* Stage 18: the expression entrance is one letter, not a stack of cards. */
+body[data-stage="expression"] .scene--expression {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  place-items: center;
+  padding: clamp(76px, 9vh, 104px) clamp(18px, 4vw, 56px) clamp(48px, 6vh, 72px);
+}
+
+body[data-stage="expression"] .expression-paper {
+  display: grid;
+  width: min(1120px, 100%);
+  height: min(760px, calc(100dvh - clamp(142px, 17vh, 188px)));
+  min-height: 0;
+  margin: 0 auto;
+  grid-template-rows: minmax(0, 1fr);
+  transform: scale(clamp(0.86, 1, 1));
+  transform-origin: center;
+}
+
+body[data-stage="expression"] .paper-sheet {
+  display: grid;
+  min-height: 0;
+  padding: clamp(22px, 2.6vw, 38px);
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(125, 78, 48, 0.22);
+  border-radius: 8px 5px 10px 6px;
+  background:
+    linear-gradient(rgba(255, 250, 226, 0.97), rgba(250, 226, 174, 0.96)),
+    repeating-linear-gradient(0deg, rgba(143, 91, 58, 0.035) 0 1px, transparent 1px 5px);
+  box-shadow: 0 22px 50px rgba(77, 56, 72, 0.2), 10px 12px 0 rgba(121, 79, 55, 0.08);
+}
+
+body[data-stage="expression"] .expression-card--compose,
+body[data-stage="expression"] .paper-generation-card {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body[data-stage="expression"] .expression-card--compose {
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+  padding: clamp(8px, 1.1vw, 18px) clamp(8px, 1.4vw, 22px);
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+body[data-stage="expression"] .expression-card--compose h2 {
+  font-size: clamp(30px, 3.15vw, 48px);
+}
+
+body[data-stage="expression"] .expression-card--compose blockquote {
+  margin-top: clamp(10px, 1.4vh, 18px);
+}
+
+body[data-stage="expression"] .expression-step {
+  min-height: 0;
+  margin-top: clamp(12px, 1.6vh, 20px);
+}
+
+body[data-stage="expression"] .expression-input-wrap textarea,
+body[data-stage="expression"] .followup-panel textarea {
+  max-height: clamp(72px, 12vh, 102px);
+}
+
+body[data-stage="expression"] .expression-actions {
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: clamp(10px, 1.4vh, 16px);
+}
+
+body[data-stage="expression"] .expression-primary,
+body[data-stage="expression"] .expression-quiet {
+  min-height: clamp(40px, 5.2vh, 46px);
+  border: 1px solid rgba(81, 66, 93, 0.62);
+  border-radius: 8px 6px 9px 7px;
+  box-shadow: 0 6px 14px rgba(67, 50, 75, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+body[data-stage="expression"] .expression-quiet {
+  padding: 0 16px;
+  background: rgba(255, 250, 240, 0.44);
+  color: #57455f;
+}
+
+body[data-stage="expression"] .paper-generation-card,
+body[data-stage="expression"] .paper-boat-sequence,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"],
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="floating"],
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] {
+  display: none !important;
+}
+
+@media (max-height: 800px) and (min-width: 821px) {
+  body[data-stage="expression"] .expression-paper {
+    height: calc(100dvh - 128px);
+    transform: scale(0.9);
+  }
+
+  body[data-stage="expression"] .paper-sheet {
+    padding: 18px 28px;
+  }
+}
+
+@media (max-width: 820px) {
+  body[data-stage="expression"] .scene--expression {
+    height: 100dvh;
+    padding: 72px 10px 48px;
+  }
+
+  body[data-stage="expression"] .expression-paper {
+    height: calc(100dvh - 120px);
+    transform: none;
+  }
+
+  body[data-stage="expression"] .paper-sheet {
+    padding: 20px 16px;
+  }
+}
