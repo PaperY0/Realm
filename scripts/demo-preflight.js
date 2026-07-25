@@ -44,10 +44,16 @@ async function run() {
 
   try {
     const response = await waitForServer(baseUrl + '/health');
-    assert.deepEqual(await response.json(), {
-      ok: true,
-      service: 'dream-book-world',
-      stage: 'world-entry',
+    const health = await response.json();
+    assert.equal(health.ok, true);
+    assert.equal(health.service, 'dream-book-world');
+    assert.equal(health.stage, 'image2-gateway');
+    assert.equal(health.imageModel, 'gpt-image-2');
+    assert.equal(typeof health.imageConfigured, 'boolean');
+    assert.deepEqual(health.image2, {
+      configured: health.imageConfigured,
+      model: 'gpt-image-2',
+      referenceAsset: 'world-gate-reference.png',
     });
 
     for (const pathname of ['/', '/styles.css', '/app.js', '/assets/world-gate-reference.png']) {

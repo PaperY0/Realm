@@ -140,14 +140,102 @@
             <span class="lixian-head"></span><span class="lixian-body"></span><span class="lixian-thread"></span>
           </div>
 
-          <div class="expression-card">
-            <p class="eyebrow">风铃入口</p>
-            <h2 id="expression-title">你已经抵达可以慢慢开口的地方。</h2>
-            <blockquote>“这里的风铃只替人保管说不出口的事。今天，有哪一句话还挂在你身上？”</blockquote>
-            <p class="expression-boundary">自然表达、可跳过追问与安全分流将在第 5 步接入。本步骤只验收到达表达入口的完整路径。</p>
-            <div class="arrival-badge" id="arrival-badge"><span aria-hidden="true">❧</span><strong>旅人</strong> 已抵达</div>
-            <button class="secondary-button" id="restart-demo" type="button">重新体验入口</button>
+          <div class="expression-workbench">
+            <section class="expression-card expression-card--compose" aria-label="把心事整理成童话线索">
+              <div class="expression-card-head">
+                <div>
+                  <p class="eyebrow">风铃入口 · 真实生图</p>
+                  <h2 id="expression-title">把还挂在身上的一句话，<br />交给风铃。</h2>
+                </div>
+                <div class="arrival-badge" id="arrival-badge"><span aria-hidden="true">❧</span><strong>旅人</strong> 已抵达</div>
+              </div>
+
+              <blockquote>“不必说得完整。理线最多只问两次，每次一个问题；你随时可以跳过。”</blockquote>
+
+              <div class="expression-step" id="expression-entry">
+                <button class="demo-sentence expression-action" id="demo-sentence" type="button">
+                  <span>现场演示句</span>
+                  <strong>我总担心自己做得不够好，明明很累，却还是不敢停下来。</strong>
+                  <small>点一下填入</small>
+                </button>
+
+                <form id="expression-form" novalidate>
+                  <label class="expression-label" for="expression-text">今天，有哪一句话还挂在你身上？</label>
+                  <div class="expression-input-wrap">
+                    <textarea id="expression-text" maxlength="800" rows="4" placeholder="可以慢慢写，也可以只写一句……" aria-describedby="expression-privacy expression-count"></textarea>
+                    <span id="expression-count">0 / 800</span>
+                  </div>
+                  <p class="expression-inline-error" id="expression-inline-error" role="alert" hidden></p>
+                  <div class="expression-actions">
+                    <button class="expression-primary expression-action" id="expression-submit" type="submit">顺着这句话继续</button>
+                    <button class="expression-quiet expression-action" id="expression-not-sure" type="button">我还不知道怎么说</button>
+                  </div>
+                </form>
+                <p class="expression-privacy" id="expression-privacy">原始文字只在当前页面临时处理，不写入本地存储，也不会直接发送给图像服务。</p>
+              </div>
+
+              <div class="expression-step followup-panel" id="followup-panel" hidden>
+                <p class="followup-step" id="followup-step">理线的第 1 个问题 · 可跳过</p>
+                <h3 id="followup-question">这份重量最让你担心的，是什么？</h3>
+                <label class="sr-only" for="followup-answer">回答理线的问题</label>
+                <textarea id="followup-answer" maxlength="240" rows="3" placeholder="写一点就好，也可以直接跳过"></textarea>
+                <div class="expression-actions">
+                  <button class="expression-primary expression-action" id="followup-submit" type="button">收好这句话</button>
+                  <button class="expression-quiet expression-action" id="followup-skip" type="button">跳过这个问题</button>
+                </div>
+              </div>
+
+              <div class="expression-step brief-panel" id="brief-panel" hidden>
+                <p class="brief-ready"><span aria-hidden="true">✓</span> 故事线已经整理好</p>
+                <h3>原始心事已清除，只留下不含身份信息的童话线索。</h3>
+                <ul class="safe-summary" id="safe-summary"></ul>
+                <div class="expression-actions">
+                  <button class="expression-primary expression-action" id="generate-story" type="button">把它写成童话</button>
+                  <button class="expression-quiet expression-action" id="new-expression" type="button">换一句重新说</button>
+                </div>
+              </div>
+            </section>
+
+            <aside class="generation-card" id="generation-card" data-generation-state="idle" aria-labelledby="generation-title">
+              <div class="generation-idle" id="generation-idle">
+                <span class="generation-spark" aria-hidden="true">✦</span>
+                <p class="eyebrow">一张真实童话主插画</p>
+                <h3 id="generation-title">不是样片，也不是预制结果。</h3>
+                <p>点击“把它写成童话”后，网页会请求服务端，由 <strong>gpt-image-2</strong> 现场绘制 720 × 1280 PNG。</p>
+                <div class="real-ai-badge"><i aria-hidden="true"></i>真实 AI · gpt-image-2</div>
+              </div>
+
+              <div class="generation-progress" id="generation-progress" hidden aria-live="polite">
+                <div class="thread-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+                <p class="eyebrow">正在现场生成</p>
+                <h3 id="generation-status">正在整理故事线</h3>
+                <ol class="generation-steps">
+                  <li data-progress-step="story"><span>1</span>正在整理故事线</li>
+                  <li data-progress-step="color"><span>2</span>正在调色</li>
+                  <li data-progress-step="image"><span>3</span>gpt-image-2 正在绘制</li>
+                </ol>
+                <p class="generation-wait">真实生成通常需要一些时间，请不要关闭页面。</p>
+              </div>
+
+              <div class="generation-error" id="generation-error" hidden role="alert">
+                <span aria-hidden="true">↻</span>
+                <p class="eyebrow">真实生成未完成</p>
+                <h3>没有用预制图片替代这次结果。</h3>
+                <p id="generation-error-message">请检查服务端配置后重试。</p>
+                <button class="expression-primary expression-action" id="retry-generation" type="button">重新请求真实生成</button>
+              </div>
+
+              <figure class="generated-figure" id="generated-figure" hidden>
+                <div class="generated-image-wrap">
+                  <img id="generated-image" width="720" height="1280" alt="gpt-image-2 根据安全故事线现场生成的童话主插画" />
+                  <span class="generated-live-mark">LIVE · gpt-image-2</span>
+                </div>
+                <figcaption id="generated-caption">真实生成完成</figcaption>
+              </figure>
+            </aside>
           </div>
+
+          <button class="restart-expression expression-action" id="restart-demo" type="button">重新体验入口</button>
         </section>
       </main>
 
