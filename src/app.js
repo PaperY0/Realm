@@ -1,30 +1,14 @@
 'use strict';
 
-const PROFILE_KEY = 'dream-book-world.profile.v0';
 const MOTION_KEY = 'dream-book-world.reduce-motion.v0';
 const STORYBOOK_STORAGE_KEY = 'dream-book-world.storybook.v0';
-const STORYBOOK_PAGE_TURN_MS = 560;
-const SCENE_ORDER = ['door', 'traveler', 'foyer', 'expression', 'storybook'];
+const STORYBOOK_PAGE_TURN_MS = 840;
+const SCENE_ORDER = ['door', 'foyer', 'expression', 'storybook'];
 const SCENE_LABELS = {
   door: '世界大门',
-  traveler: '旅人初页',
   foyer: '内耗之门',
   expression: '风铃入口',
   storybook: '七章绘本',
-};
-const MARK_LABELS = {
-  star: '星星',
-  drop: '雨滴',
-  line: '蓝线',
-  boat: '纸船',
-  leaf: '叶子',
-};
-const MARK_GLYPHS = {
-  star: '✦',
-  drop: '●',
-  line: '〰',
-  boat: '△',
-  leaf: '❧',
 };
 const DEMO_SENTENCE = '我总担心自己做得不够好，明明很累，却还是不敢停下来。';
 const MAX_EXPRESSION_LENGTH = 800;
@@ -40,18 +24,53 @@ const FOLLOW_UPS = [
     prompt: '如果风能替你留下一点空间，你希望故事朝哪里走？',
   },
 ];
+const FOYER_DOORS = Object.freeze({
+  overthinking: Object.freeze({
+    guardian: '绾线',
+    emotion: '内耗',
+    asset: '/assets/guardians/wanxian.png',
+    dialogue: '先别急着把自己理顺，线头已经在这里了。',
+    status: '点击内耗之门，进入风铃入口。',
+    open: true,
+  }),
+  sadness: Object.freeze({
+    guardian: '听雨',
+    emotion: '悲伤',
+    asset: '/assets/guardians/tingyu.png',
+    dialogue: '我听见一滴雨落下来了，但这扇门还在学习怎样接住它。',
+    status: '这个故事世界还在慢慢长成，先把它留在门后。',
+    open: false,
+  }),
+  anxiety: Object.freeze({
+    guardian: '息摆',
+    emotion: '焦虑',
+    asset: '/assets/guardians/xibai.png',
+    dialogue: '先跟我一起慢一点。这里的钟摆，还没有准备好替你停下。',
+    status: '这个故事世界还在慢慢长成，先把它留在门后。',
+    open: false,
+  }),
+  anger: Object.freeze({
+    guardian: '藏烬',
+    emotion: '愤怒',
+    asset: '/assets/guardians/cangjin.png',
+    dialogue: '火没有错，只是这扇门还在学着把热量留在安全的灯里。',
+    status: '这个故事世界还在慢慢长成，先把它留在门后。',
+    open: false,
+  }),
+  joy: Object.freeze({
+    guardian: '铃芽',
+    emotion: '喜悦',
+    asset: '/assets/guardians/lingya.png',
+    dialogue: '我把一颗小种子留在门边，等它长出愿意分享的声音。',
+    status: '这个故事世界还在慢慢长成，先把它留在门后。',
+    open: false,
+  }),
+});
 
 const state = {
   scene: 'door',
-  doorProgress: 0,
-  draggingDoor: false,
-  dragStartX: 0,
-  dragStartProgress: 0,
-  dragTravel: 220,
-  dragPointerId: null,
   doorOpened: false,
-  displayName: '',
-  pocketMark: '',
+  foyerDoor: 'overthinking',
   reduceMotion: false,
   expression: {
     mode: null,
@@ -74,22 +93,25 @@ const state = {
     turning: false,
     turnTimer: null,
   },
+  paperBoat: {
+    state: 'idle',
+    messageTimer: null,
+    transitionTimer: null,
+    messageIndex: 0,
+  },
 };
 
 const scenes = Array.from(document.querySelectorAll('[data-scene]'));
 const body = document.body;
 const brandHome = document.querySelector('#brand-home');
 const doorScene = document.querySelector('[data-scene="door"]');
-const doorFrame = document.querySelector('#door-frame');
 const doorHandle = document.querySelector('#door-handle');
-const doorHint = document.querySelector('#door-hint');
-const travelerForm = document.querySelector('#traveler-form');
-const travelerName = document.querySelector('#traveler-name');
-const markOptions = Array.from(document.querySelectorAll('.mark-option'));
-const skipProfile = document.querySelector('#skip-profile');
-const innerDoor = document.querySelector('#inner-door');
-const travelerGreeting = document.querySelector('#traveler-greeting');
-const arrivalBadge = document.querySelector('#arrival-badge');
+const worldEntryVideo = document.querySelector('#world-entry-video');
+const emotionDoorButtons = Array.from(document.querySelectorAll('[data-emotion-door]'));
+const emotionDoorGuardian = document.querySelector('#emotion-door-guardian');
+const emotionDoorEmotion = document.querySelector('#emotion-door-emotion');
+const emotionDoorCopy = document.querySelector('#emotion-door-copy');
+const emotionDoorStatus = document.querySelector('#emotion-door-status');
 const restartDemo = document.querySelector('#restart-demo');
 const reduceMotionToggle = document.querySelector('#reduce-motion');
 const journeyProgress = document.querySelector('#journey-progress');
@@ -122,7 +144,14 @@ const generationErrorMessage = document.querySelector('#generation-error-message
 const generatedFigure = document.querySelector('#generated-figure');
 const generatedImage = document.querySelector('#generated-image');
 const generatedCaption = document.querySelector('#generated-caption');
-const generationSteps = Array.from(document.querySelectorAll('[data-progress-step]'));
+const generationSteps = Array.from(document.querySelectorAll('[data-generation-stage]'));
+const generationPromptDetails = document.querySelector('#generation-prompt-details');
+const storyPromptPreview = document.querySelector('#story-prompt-preview');
+const chapterGenerationStatus = document.querySelector('#chapter-generation-status');
+const paperBoatSequence = document.querySelector('#paper-boat-sequence');
+const paperBoatVideo = document.querySelector('#paper-boat-video');
+const paperBoatStatus = document.querySelector('#paper-boat-status');
+const paperBoatRetry = document.querySelector('#paper-boat-retry');
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
 const storybookTitle = document.querySelector('#storybook-title');
 const storybookStatus = document.querySelector('#storybook-status');
@@ -140,10 +169,6 @@ const storybookProgress = document.querySelector('#storybook-progress');
 const storybookKeepsake = document.querySelector('#storybook-keepsake');
 const storybookPressTargets = [storybookPrevious, storybookNext, storybookClose, storybookReopen, storybookReturn].filter(Boolean);
 
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
 function safeStorageGet(key) {
   try {
     return window.localStorage.getItem(key);
@@ -160,10 +185,6 @@ function safeStorageSet(key, value) {
   }
 }
 
-function normalizeName(value) {
-  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 16);
-}
-
 function announce(message) {
   liveStatus.textContent = '';
   window.setTimeout(() => {
@@ -171,56 +192,39 @@ function announce(message) {
   }, 20);
 }
 
-function updateProfileUI({ syncInput = true } = {}) {
-  const name = state.displayName || '旅人';
-  if (syncInput) travelerName.value = state.displayName;
-  travelerGreeting.textContent = name;
-
-  markOptions.forEach((option) => {
-    const selected = option.dataset.mark === state.pocketMark;
-    option.classList.toggle('is-selected', selected);
-    option.setAttribute('aria-pressed', String(selected));
-  });
-
-  const glyph = MARK_GLYPHS[state.pocketMark] || '❧';
-  const markText = state.pocketMark ? '，口袋里放着一枚' + MARK_LABELS[state.pocketMark] : '';
-  arrivalBadge.innerHTML = '<span aria-hidden="true">' + glyph + '</span><strong>' + escapeHtml(name) + '</strong>' + markText + '，已抵达';
-}
-
-function escapeHtml(value) {
-  return value.replace(/[&<>"]/g, (character) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-  })[character]);
-}
-
-function saveProfile() {
-  safeStorageSet(PROFILE_KEY, JSON.stringify({
-    displayName: state.displayName,
-    pocketMark: state.pocketMark,
-  }));
-}
-
 function loadPreferences() {
-  const savedProfile = safeStorageGet(PROFILE_KEY);
-  if (savedProfile) {
-    try {
-      const profile = JSON.parse(savedProfile);
-      state.displayName = normalizeName(profile.displayName);
-      state.pocketMark = Object.hasOwn(MARK_LABELS, profile.pocketMark) ? profile.pocketMark : '';
-    } catch {
-      // Ignore malformed local values and use the safe defaults.
-    }
-  }
-
   const systemPrefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
   const savedMotion = safeStorageGet(MOTION_KEY);
   state.reduceMotion = savedMotion === null ? systemPrefersReduced : savedMotion === 'true';
   reduceMotionToggle.checked = state.reduceMotion;
   body.classList.toggle('reduce-motion', state.reduceMotion);
-  updateProfileUI();
+}
+
+function selectEmotionDoor(doorId) {
+  const door = FOYER_DOORS[doorId] || FOYER_DOORS.overthinking;
+  state.foyerDoor = doorId in FOYER_DOORS ? doorId : 'overthinking';
+  emotionDoorButtons.forEach((button) => {
+    const isSelected = button.dataset.emotionDoor === state.foyerDoor;
+    button.classList.toggle('is-selected', isSelected);
+    button.setAttribute('aria-pressed', String(isSelected));
+  });
+  emotionDoorGuardian.src = door.asset;
+  emotionDoorGuardian.alt = door.guardian;
+  emotionDoorEmotion.textContent = door.emotion + ' · ' + door.guardian;
+  emotionDoorCopy.textContent = door.dialogue;
+  emotionDoorStatus.textContent = door.status;
+}
+
+function activateEmotionDoor(doorId) {
+  const door = FOYER_DOORS[doorId];
+  if (!door) return;
+  selectEmotionDoor(doorId);
+  if (!door.open) {
+    announce(door.status);
+    return;
+  }
+  resetExpressionFlow();
+  goToScene('expression');
 }
 
 function goToScene(sceneName, { focus = true } = {}) {
@@ -247,87 +251,25 @@ function goToScene(sceneName, { focus = true } = {}) {
   }
 }
 
-function setDoorProgress(nextProgress) {
-  state.doorProgress = clamp(nextProgress, 0, 1);
-  body.style.setProperty('--door-open', state.doorProgress.toFixed(3));
-  doorHandle.setAttribute('aria-valuenow', String(Math.round(state.doorProgress * 100)));
-  doorHint.classList.toggle('is-moving', state.doorProgress > 0.04);
-
-  if (state.doorProgress >= 0.92 && !state.doorOpened) {
-    finishOpeningDoor();
-  }
-}
-
-function clearDoorDrag(pointerId = state.dragPointerId) {
-  state.draggingDoor = false;
-  state.dragPointerId = null;
-  doorHandle.classList.remove('is-dragging');
-  doorScene.classList.remove('is-engaged');
-  if (pointerId !== null && pointerId !== undefined && doorHandle.hasPointerCapture?.(pointerId)) {
-    doorHandle.releasePointerCapture(pointerId);
-  }
-}
-
 function finishOpeningDoor() {
   if (state.doorOpened) return;
   state.doorOpened = true;
-  clearDoorDrag();
-  setDoorProgress(1);
-  doorHandle.setAttribute('aria-disabled', 'true');
-  doorHint.innerHTML = '<span aria-hidden="true">✦</span> 门已经醒了，拾页正带你往前走';
-  announce('童话世界大门已经打开');
-  window.setTimeout(() => goToScene('traveler'), state.reduceMotion ? 120 : 1050);
-}
-
-function handleDoorPointerDown(event) {
-  if (state.doorOpened || event.button > 0) return;
-  const frameBounds = doorFrame.getBoundingClientRect();
-  state.draggingDoor = true;
-  state.dragPointerId = event.pointerId;
-  state.dragStartX = event.clientX;
-  state.dragStartProgress = state.doorProgress;
-  const availableTravel = Math.max(80, frameBounds.right - state.dragStartX - 8);
-  state.dragTravel = Math.max(80, Math.min(frameBounds.width * 0.48, availableTravel / 0.92));
-  doorHandle.setPointerCapture?.(event.pointerId);
-  doorHandle.classList.add('is-dragging');
-  doorScene.classList.add('is-engaged');
-}
-
-function handleDoorPointerMove(event) {
-  if (!state.draggingDoor || state.doorOpened) return;
-  const delta = event.clientX - state.dragStartX;
-  setDoorProgress(state.dragStartProgress + delta / state.dragTravel);
-}
-
-function stopDoorDrag(event) {
-  if (!state.draggingDoor && state.dragPointerId === null) return;
-  const shouldOpen = !state.doorOpened && state.doorProgress > 0.68;
-  clearDoorDrag(event?.pointerId);
-  if (shouldOpen) finishOpeningDoor();
-}
-
-function handleDoorKeyboard(event) {
-  if (state.doorOpened) return;
-  const increments = {
-    ArrowRight: 0.18,
-    ArrowUp: 0.18,
-    ArrowLeft: -0.18,
-    ArrowDown: -0.18,
-    PageUp: 0.35,
-    PageDown: -0.35,
-    Home: -1,
-    End: 1,
-  };
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    finishOpeningDoor();
+  doorScene.classList.add('is-playing');
+  doorHandle.disabled = true;
+  announce('世界大门正在打开');
+  if (state.reduceMotion) {
+    completeWorldEntry();
     return;
   }
-  if (!Object.hasOwn(increments, event.key)) return;
-  event.preventDefault();
-  setDoorProgress(increments[event.key] === 1 ? 1 : increments[event.key] === -1 ? 0 : state.doorProgress + increments[event.key]);
+  const playPromise = worldEntryVideo.play();
+  if (playPromise?.catch) playPromise.catch(() => completeWorldEntry());
 }
 
+function completeWorldEntry() {
+  if (doorScene.classList.contains('is-transitioning')) return;
+  doorScene.classList.add('is-transitioning');
+  window.setTimeout(() => goToScene('foyer'), state.reduceMotion ? 0 : 900);
+}
 
 function normalizeExpression(value, maximum = MAX_EXPRESSION_LENGTH) {
   return String(value || '').replace(/\r\n?/g, '\n').trim().slice(0, maximum);
@@ -524,13 +466,41 @@ function resetGenerationView() {
   state.expression.requestToken += 1;
   generatedImage.removeAttribute('src');
   state.expression.generationAttempted = false;
-  if (generateImage) generateImage.disabled = false;
+  if (generateImage) generateImage.disabled = true;
   generationErrorMessage.textContent = '本次请求已安全结束，不会在页面内重试。';
   generationSteps.forEach((step) => step.classList.remove('is-active', 'is-complete'));
   setGenerationView('idle');
 }
 
+const PAPER_BOAT_MESSAGES = [
+  '绾线把这句话轻轻压进纸痕里。',
+  '第一道折痕，是给自己留出的空间。',
+  '纸船已经下水，故事湖正在替你保管这份重量。',
+  '七章故事正在湖面另一侧慢慢写好。',
+];
+
+function clearPaperBoatWait() {
+  if (state.paperBoat.messageTimer) window.clearInterval(state.paperBoat.messageTimer);
+  if (state.paperBoat.transitionTimer) window.clearTimeout(state.paperBoat.transitionTimer);
+  state.paperBoat.messageTimer = null;
+  state.paperBoat.transitionTimer = null;
+  if (paperBoatVideo) {
+    paperBoatVideo.pause();
+    paperBoatVideo.currentTime = 0;
+  }
+}
+
+function setPaperBoatState(nextState, message = null) {
+  if (!paperBoatSequence) return;
+  clearPaperBoatWait();
+  state.paperBoat.state = nextState;
+  paperBoatSequence.dataset.paperBoatState = nextState;
+  if (paperBoatRetry) paperBoatRetry.hidden = true;
+  if (paperBoatStatus && message) paperBoatStatus.textContent = message;
+}
+
 function resetExpressionFlow({ focus = false, preserveStorybook = false } = {}) {
+  setPaperBoatState('idle');
   resetGenerationView();
   if (!preserveStorybook) resetStorybook();
   state.expression.mode = null;
@@ -564,7 +534,7 @@ function showFollowUp() {
     return;
   }
   setExpressionStep('followup');
-  followupStep.textContent = '理线的第 ' + (state.expression.followUpIndex + 1) + ' 个问题 / 最多 2 个 · 可跳过';
+  followupStep.textContent = '绾线的第 ' + (state.expression.followUpIndex + 1) + ' 个问题 / 最多 2 个';
   followupQuestion.textContent = followUp.prompt;
   followupAnswer.value = '';
   window.setTimeout(() => followupAnswer.focus(), state.reduceMotion ? 0 : 180);
@@ -652,6 +622,14 @@ function clearStorybookStorage() {
   }
 }
 
+async function clearServerStorybookState() {
+  try {
+    await fetch('/api/storybook-state', { method: 'DELETE' });
+  } catch {
+    // The local snapshot remains available when the server is unreachable.
+  }
+}
+
 function resetStorybook() {
   releaseStorybookPageTurn();
   state.storybook.requestController?.abort();
@@ -661,11 +639,12 @@ function resetStorybook() {
   state.storybook.storyPackage = null;
   state.storybook.reader = null;
   clearStorybookStorage();
+  void clearServerStorybookState();
   if (storybookBook) storybookBook.classList.remove('is-turning-next', 'is-turning-previous', 'is-closed');
   if (storybookStatus) storybookStatus.textContent = '七章故事尚未生成';
   if (generateStory) {
     generateStory.disabled = false;
-    generateStory.textContent = '生成七章故事';
+  generateStory.textContent = '寄出这封信';
   }
 }
 
@@ -686,10 +665,18 @@ function readerChaptersFrom(storyPackage) {
 
 function saveStorybookSnapshot() {
   if (!state.storybook.storyPackage || !state.storybook.reader) return;
-  safeStorageSet(STORYBOOK_STORAGE_KEY, JSON.stringify({
+  const snapshot = {
     storyPackage: state.storybook.storyPackage,
     readerSnapshot: state.storybook.reader.snapshot(),
-  }));
+  };
+  safeStorageSet(STORYBOOK_STORAGE_KEY, JSON.stringify(snapshot));
+  void fetch('/api/storybook-state', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(snapshot),
+  }).catch(() => {
+    // The local snapshot remains the recovery path when persistence is unavailable.
+  });
 }
 
 function syncStorybookControls(snapshot = state.storybook.reader?.snapshot()) {
@@ -724,13 +711,42 @@ function beginStorybookPageTurn() {
   return true;
 }
 
-function animatePageTurn(direction) {
-  if (!storybookBook || state.reduceMotion) return;
-  const className = direction === 'previous' ? 'is-turning-previous' : 'is-turning-next';
-  storybookBook.classList.remove('is-turning-next', 'is-turning-previous');
-  void storybookBook.offsetWidth;
-  storybookBook.classList.add(className);
-  window.setTimeout(() => storybookBook.classList.remove(className), STORYBOOK_PAGE_TURN_MS);
+function clearTurnSheets() {
+  if (!storybookBook) return;
+  storybookBook.querySelectorAll('.storybook-turn-sheet').forEach((sheet) => sheet.remove());
+}
+
+function animatePageTurn(direction, oldPage) {
+  if (!storybookBook || state.reduceMotion || !oldPage) return;
+  clearTurnSheets();
+
+  const pageClass = direction === 'previous' ? 'storybook-page--illustration' : 'storybook-page--copy';
+  const currentPage = storybookBook.querySelector('.' + pageClass);
+  const makeFace = (page, faceClass) => {
+    const face = page.cloneNode(true);
+    face.classList.remove('storybook-page');
+    face.classList.add('storybook-turn-face', faceClass);
+    face.removeAttribute('aria-label');
+    face.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+    return face;
+  };
+  const sheet = document.createElement('div');
+  sheet.className = 'storybook-turn-sheet ' + (direction === 'previous'
+    ? 'storybook-turn-sheet--previous'
+    : 'storybook-turn-sheet--next');
+  sheet.setAttribute('aria-hidden', 'true');
+  sheet.append(
+    makeFace(oldPage, 'storybook-turn-sheet__front'),
+    makeFace(currentPage || oldPage, 'storybook-turn-sheet__back'),
+  );
+  const shadow = document.createElement('span');
+  shadow.className = 'storybook-turn-shadow';
+  shadow.setAttribute('aria-hidden', 'true');
+  sheet.append(shadow);
+  storybookBook.append(sheet);
+  void sheet.offsetWidth;
+  sheet.classList.add('is-active');
+  window.setTimeout(() => sheet.remove(), STORYBOOK_PAGE_TURN_MS);
 }
 
 function renderStoryProgress(storyPackage, currentChapter) {
@@ -755,6 +771,10 @@ function renderStoryChapter({ animate = false } = {}) {
   const reader = state.storybook.reader;
   if (!storyPackage || !reader) return;
 
+  const oldPage = animate === 'previous'
+    ? storybookBook.querySelector('.storybook-page--illustration')
+    : storybookBook.querySelector('.storybook-page--copy');
+  const oldPageSnapshot = oldPage?.cloneNode(true);
   const snapshot = reader.snapshot();
   const closed = snapshot.phase === window.DreamBookReader.READER_PHASES.CLOSED;
   const card = storyPackage.chapterCards[snapshot.currentChapter - 1];
@@ -763,24 +783,38 @@ function renderStoryChapter({ animate = false } = {}) {
   storybookBook.dataset.currentChapter = String(snapshot.currentChapter);
   storybookBook.hidden = closed;
   storybookKeepsake.hidden = !closed;
-  storybookTitle.textContent = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '理线人与旅人的七章童话';
+  storybookTitle.textContent = storyPackage.bookTitle || storyPackage.storyTemplateMatch?.templateTitle || storyPackage.storyBible?.title || '绾线与旅人的七章童话';
   storybookChapterKicker.textContent = '第 ' + snapshot.currentChapter + ' 章 / 共 7 章';
   storybookChapterTitle.textContent = card.userVisibleCopy.chapterTitle;
   storybookChapterText.textContent = card.userVisibleCopy.chapterText;
   storybookIllustrationState.replaceChildren();
-  const illustrationGlyph = document.createElement('span');
-  illustrationGlyph.className = 'storybook-empty-glyph';
-  illustrationGlyph.setAttribute('aria-hidden', 'true');
-  illustrationGlyph.textContent = '✧';
-  const illustrationTitle = document.createElement('strong');
-  illustrationTitle.textContent = '章节插画尚未生成';
-  const illustrationDetail = document.createElement('span');
-  illustrationDetail.textContent = '真实生成完成后才会在这里出现。';
-  storybookIllustrationState.append(illustrationGlyph, illustrationTitle, illustrationDetail);
+  const illustration = storyPackage.chapterIllustrations?.find(
+    (item) => item.chapterNumber === snapshot.currentChapter && item.state === 'succeeded' && item.image?.url,
+  );
+  if (illustration) {
+    const illustrationImage = document.createElement('img');
+    illustrationImage.className = 'storybook-chapter-illustration';
+    illustrationImage.src = validateGeneratedImageUrl(illustration.image.url);
+    illustrationImage.alt = card.userVisibleCopy.chapterTitle + '章节插画';
+    illustrationImage.width = 720;
+    illustrationImage.height = 1280;
+    illustrationImage.loading = 'eager';
+    storybookIllustrationState.append(illustrationImage);
+  } else {
+    const illustrationGlyph = document.createElement('span');
+    illustrationGlyph.className = 'storybook-empty-glyph';
+    illustrationGlyph.setAttribute('aria-hidden', 'true');
+    illustrationGlyph.textContent = '✧';
+    const illustrationTitle = document.createElement('strong');
+    illustrationTitle.textContent = '章节插画尚未生成';
+    const illustrationDetail = document.createElement('span');
+    illustrationDetail.textContent = '七章真实生成完成后才会在这里出现。';
+    storybookIllustrationState.append(illustrationGlyph, illustrationTitle, illustrationDetail);
+  }
   renderStoryProgress(storyPackage, snapshot.currentChapter);
   storybookStatus.textContent = closed ? '书已合上，故事停在第七章' : '请由你亲手翻动每一章';
   syncStorybookControls(snapshot);
-  if (animate) animatePageTurn(animate);
+  if (animate) animatePageTurn(animate, oldPageSnapshot);
   saveStorybookSnapshot();
 }
 
@@ -811,17 +845,63 @@ function restoreStorybookPreview() {
   }
 }
 
+async function restoreStorybookFromServer() {
+  if (state.storybook.storyPackage) return false;
+  try {
+    const response = await fetch('/api/storybook-state');
+    const payload = await response.json();
+    if (!response.ok || payload?.ok !== true || !payload.state) return false;
+    initializeStoryReader(payload.state.storyPackage, payload.state.readerSnapshot);
+    goToScene('storybook', { focus: false });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function friendlyStoryPackageError(payload, response) {
+  if (payload?.message && typeof payload.message === 'string') return payload.message;
+  if (response?.status === 413) return '故事摘要超过 64KB 限制，请缩短后再试。';
+  if (response?.status === 400) return '安全故事线未通过服务端校验，请换一句重新说。';
+  return '七章故事暂时没有生成，请检查本机服务后再试。';
+}
+
+function friendlyStorybookImageError(payload, response) {
+  if (payload?.message && typeof payload.message === 'string') return payload.message;
+  if (response?.status === 413) return '七章故事包超过图片请求大小限制，请缩短故事内容后再试。';
+  if (response?.status === 409) return '七章插画仍在生成，请等待本次绘本完成。';
+  if (response?.status === 503) return 'Image 2 服务尚未配置，暂时无法绘制七章插画。';
+  if (response?.status === 504) return '七章插画绘制等待超时，本次没有生成结果。';
+  if (payload?.status === 'partial_failure') {
+    const failedChapters = Array.isArray(payload.illustrations)
+      ? payload.illustrations.filter((item) => item.state === 'failed').map((item) => item.chapterNumber)
+      : [];
+    return failedChapters.length
+      ? '七章故事已写好，但第 ' + failedChapters.join('、') + ' 章插画生成失败，请检查服务后再试。'
+      : '七章故事已写好，但插画生成未完成，请检查各章生成状态后再试。';
+  }
+  return '七章故事已写好，但图片生成服务未完成本次插画，请检查服务后再试。';
+}
+
 async function requestStoryPackage() {
   if (state.storybook.loading || !state.expression.safeBrief || state.expression.safeBrief.safetyStatus !== 'story_safe') return;
   state.storybook.loading = true;
   generateStory.disabled = true;
-  generateStory.textContent = '正在写成七章…';
-  storybookStatus.textContent = '理线人正在整理七章故事';
+  generateStory.textContent = '正在寄出…';
+  storybookStatus.textContent = '绾线正在整理七章故事';
+  setGenerationView('progress');
+  setStoryGenerationStage('prompting');
+  if (storyPromptPreview) storyPromptPreview.textContent = '正在生成安全故事 Prompt…';
+  if (chapterGenerationStatus) chapterGenerationStatus.replaceChildren();
+  if (generationPromptDetails) generationPromptDetails.open = false;
   const requestToken = ++state.storybook.requestToken;
   const controller = new AbortController();
   state.storybook.requestController = controller;
   let response = null;
   let payload = null;
+  let imageResponse = null;
+  let imagePayload = null;
+  let initialChapters = null;
 
   try {
     response = await fetch('/api/story-package', {
@@ -836,23 +916,92 @@ async function requestStoryPackage() {
       payload = null;
     }
     if (!response.ok || payload?.ok !== true || !payload.storyPackage) throw new Error('story_generation_failed');
+    initialChapters = payload.storyPackage.chapterCards.map((card) => ({
+      chapterNumber: card.identity?.chapterNumber,
+      title: card.userVisibleCopy?.chapterTitle,
+      chapterText: card.userVisibleCopy?.chapterText,
+      imagePrompt: card.promptContract?.imagePrompt,
+      statusLabel: '短剧本与 Image Prompt 已生成',
+      state: 'written',
+    }));
+    setStoryGenerationStage('writing', { storyPrompt: payload.storyPackage.storyPrompt, chapters: initialChapters });
+    setStoryGenerationStage('image-prompting', { storyPrompt: payload.storyPackage.storyPrompt, chapters: initialChapters });
+    storybookStatus.textContent = '七章故事已冻结，正在并行绘制七张插画';
+    setStoryGenerationStage('illustrating', {
+      storyPrompt: payload.storyPackage.storyPrompt,
+      chapters: initialChapters.map((chapter) => ({ ...chapter, statusLabel: '等待图片生成', state: 'queued' })),
+    });
+    imageResponse = await fetch('/api/images/generate-book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storyPackage: payload.storyPackage }),
+      signal: controller.signal,
+    });
+    try {
+      imagePayload = await imageResponse.json();
+    } catch {
+      imagePayload = null;
+    }
+    if (!imageResponse.ok || imagePayload?.ok !== true || imagePayload.status !== 'succeeded') {
+      throw new Error('chapter_image_generation_failed');
+    }
+    const storyPackage = {
+      ...payload.storyPackage,
+      chapterIllustrations: imagePayload.illustrations,
+    };
     if (requestToken !== state.storybook.requestToken) return;
-    initializeStoryReader(payload.storyPackage);
+    initializeStoryReader(storyPackage);
     generateStory.textContent = '七章故事已生成';
+    setStoryGenerationStage('ready', {
+      storyPrompt: storyPackage.storyPrompt,
+      chapters: storyPackage.chapterCards.map((card) => {
+        const illustration = imagePayload.illustrations.find((item) => item.chapterNumber === card.identity.chapterNumber);
+        return {
+          chapterNumber: card.identity.chapterNumber,
+          title: card.userVisibleCopy.chapterTitle,
+          chapterText: card.userVisibleCopy.chapterText,
+          imagePrompt: card.promptContract?.imagePrompt,
+          statusLabel: illustration?.state === 'succeeded' ? '插画已完成' : '插画未完成',
+          state: illustration?.state || 'failed',
+        };
+      }),
+    });
+    setPaperBoatState('idle');
     goToScene('storybook');
     announce('七章童话已经写好，请由你亲手翻页');
   } catch (error) {
     if (requestToken !== state.storybook.requestToken || error?.name === 'AbortError') return;
-    storybookStatus.textContent = response?.status === 400
-      ? '安全故事线未通过服务端校验，请换一句重新说'
-      : '七章故事暂时没有生成，请检查本机服务后再试';
+    const imageGenerationFailed = error.message === 'chapter_image_generation_failed';
+    const failedResponse = imageGenerationFailed ? imageResponse : response;
+    storybookStatus.textContent = imageGenerationFailed
+      ? friendlyStorybookImageError(imagePayload, imageResponse)
+      : friendlyStoryPackageError(payload, response);
+    setStoryGenerationStage('error', imageGenerationFailed && initialChapters
+      ? {
+        storyPrompt: payload?.storyPackage?.storyPrompt,
+        chapters: initialChapters.map((chapter) => {
+          const illustration = imagePayload?.illustrations?.find(
+            (item) => item.chapterNumber === chapter.chapterNumber,
+          );
+          return {
+            ...chapter,
+            statusLabel: illustration?.error?.code
+              ? '插画失败：' + illustration.error.code
+              : illustration?.state === 'succeeded' ? '插画已完成' : '插画未完成',
+            state: illustration?.state || 'failed',
+          };
+        }),
+      }
+      : undefined);
     generateStory.disabled = false;
-    generateStory.textContent = '重新生成七章故事';
+    generateStory.textContent = '寄出这封信';
+    setPaperBoatState('error');
     announce(storybookStatus.textContent);
   } finally {
     if (requestToken === state.storybook.requestToken) {
       state.storybook.loading = false;
       state.storybook.requestController = null;
+      if (state.paperBoat.state !== 'error') setPaperBoatState('idle');
     }
   }
 }
@@ -889,6 +1038,44 @@ function returnToExpression() {
   announce('已回到安全故事线，当前七章故事仍保留在本机');
 }
 
+function setStoryGenerationStage(stage, details = {}) {
+  const labels = {
+    prompting: '正在整理 AI Prompt',
+    writing: '正在生成七章短剧本',
+    'image-prompting': '正在生成每章 AI Image Prompt',
+    illustrating: '七章图片正在并行生成',
+    ready: '七章绘本已经准备完成',
+    error: '绘本生成未完成',
+  };
+  const activeIndex = ['prompting', 'writing', 'image-prompting', 'illustrating'].indexOf(stage);
+  generationStatus.textContent = labels[stage] || labels.prompting;
+  generationSteps.forEach((step, index) => {
+    step.classList.toggle('is-complete', stage === 'ready' || (activeIndex >= 0 && index < activeIndex));
+    step.classList.toggle('is-active', activeIndex === index);
+  });
+  if (storyPromptPreview && details.storyPrompt !== undefined) {
+    storyPromptPreview.textContent = details.storyPrompt || '本次没有返回可展示的 Prompt';
+  }
+  if (chapterGenerationStatus && Array.isArray(details.chapters)) {
+    chapterGenerationStatus.replaceChildren();
+    details.chapters.forEach((chapter, index) => {
+      const item = document.createElement('li');
+      item.dataset.chapterState = chapter.state || 'written';
+      const title = document.createElement('strong');
+      title.textContent = '第 ' + (chapter.chapterNumber || index + 1) + ' 章 · ' + (chapter.title || '未命名章节');
+      const copy = document.createElement('span');
+      copy.textContent = chapter.chapterText || '短剧本已生成';
+      const prompt = document.createElement('small');
+      prompt.textContent = chapter.imagePrompt ? 'Image Prompt：' + chapter.imagePrompt : (chapter.statusLabel || '等待插画生成');
+      item.append(title, copy, prompt);
+      chapterGenerationStatus.append(item);
+    });
+  }
+  if (stage === 'ready' && generationPromptDetails) generationPromptDetails.open = false;
+  if (stage === 'error' && generationPromptDetails) generationPromptDetails.open = true;
+  if (labels[stage]) announce(labels[stage]);
+}
+
 function updateGenerationProgress(activeIndex) {
   const labels = ['正在整理故事线', '正在调色', 'gpt-image-2 正在绘制'];
   generationStatus.textContent = labels[activeIndex];
@@ -905,7 +1092,7 @@ function startGenerationProgress() {
   updateGenerationProgress(0);
   state.expression.progressTimers.push(
     window.setTimeout(() => updateGenerationProgress(1), 1100),
-    window.setTimeout(() => updateGenerationProgress(2), 3200),
+    window.setTimeout(() => updateGenerationProgress(2), 2200),
   );
 }
 
@@ -1016,56 +1203,27 @@ function bindPressFeedback(element) {
 function resetEntry() {
   resetExpressionFlow();
   state.doorOpened = false;
-  clearDoorDrag();
-  doorHandle.removeAttribute('aria-disabled');
-  doorHint.innerHTML = '<span aria-hidden="true">↔</span> 向右拉开门把 · 也可按 Enter';
-  setDoorProgress(0);
+  doorScene.classList.remove('is-playing', 'is-transitioning');
+  doorHandle.disabled = false;
+  worldEntryVideo.currentTime = 0;
+  worldEntryVideo.pause();
   goToScene('door');
   window.setTimeout(() => doorHandle.focus(), state.reduceMotion ? 0 : 350);
 }
 
-function continueFromTraveler() {
-  state.displayName = normalizeName(travelerName.value);
-  saveProfile();
-  updateProfileUI();
-  goToScene('foyer');
-}
-
-const travelerPressTargets = [travelerForm.querySelector('.primary-button'), skipProfile, ...markOptions];
-travelerPressTargets.forEach(bindPressFeedback);
 expressionPressTargets.forEach(bindPressFeedback);
 storybookPressTargets.forEach(bindPressFeedback);
 
-doorHandle.addEventListener('pointerdown', handleDoorPointerDown);
-doorHandle.addEventListener('pointermove', handleDoorPointerMove);
-doorHandle.addEventListener('pointerup', stopDoorDrag);
-doorHandle.addEventListener('pointercancel', stopDoorDrag);
-doorHandle.addEventListener('keydown', handleDoorKeyboard);
-
-travelerForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  continueFromTraveler();
+emotionDoorButtons.forEach((button) => {
+  const doorId = button.dataset.emotionDoor;
+  button.addEventListener('pointerenter', () => selectEmotionDoor(doorId));
+  button.addEventListener('focus', () => selectEmotionDoor(doorId));
+  button.addEventListener('click', () => activateEmotionDoor(doorId));
 });
 
-skipProfile.addEventListener('click', () => {
-  travelerName.value = '';
-  state.displayName = '';
-  state.pocketMark = '';
-  continueFromTraveler();
-});
-
-markOptions.forEach((option) => {
-  option.addEventListener('click', () => {
-    const mark = option.dataset.mark;
-    state.pocketMark = state.pocketMark === mark ? '' : mark;
-    updateProfileUI({ syncInput: false });
-  });
-});
-
-innerDoor.addEventListener('click', () => {
-  resetExpressionFlow();
-  goToScene('expression');
-});
+doorHandle.addEventListener('click', finishOpeningDoor);
+worldEntryVideo.addEventListener('ended', completeWorldEntry);
+worldEntryVideo.addEventListener('error', completeWorldEntry);
 
 demoSentence.addEventListener('click', () => {
   expressionText.value = DEMO_SENTENCE;
@@ -1089,6 +1247,10 @@ expressionNotSure.addEventListener('click', () => startExpression('not_sure_how_
 followupSubmit.addEventListener('click', () => completeFollowUp('answered'));
 followupSkip.addEventListener('click', () => completeFollowUp('skipped'));
 generateStory.addEventListener('click', requestStoryPackage);
+paperBoatRetry?.addEventListener('click', () => {
+  setPaperBoatState('idle');
+  generateStory.click();
+});
 generateImage.addEventListener('click', requestRealImage);
 storybookPrevious.addEventListener('click', goPreviousChapter);
 storybookNext.addEventListener('click', goNextChapter);
@@ -1125,10 +1287,11 @@ window.__REALM_STAGE8__ = Object.freeze({
 });
 
 loadPreferences();
+selectEmotionDoor('overthinking');
 resetExpressionFlow({ preserveStorybook: true });
-setDoorProgress(0);
 if (restoreStorybookPreview()) {
   goToScene('storybook', { focus: false });
 } else {
   goToScene('door', { focus: false });
 }
+void restoreStorybookFromServer();
