@@ -9,6 +9,83 @@
 5. 浏览器打开 `http://127.0.0.1:3000/` 后按 `F11` 全屏。
 6. 推荐分辨率：`1920×1080` 或 `2048×1152`，浏览器缩放保持 `100%`。
 
+## 真实 `gpt-image-2` 现场探针（上台前单独执行）
+
+探针是真实联网链路检查，与本地入口预检分开。**默认运行只检查配置和参考图，不发送生成请求、不收费。** 只有命令中完整出现 `--confirm-paid-generation` 时，才会发出一次真实请求。
+
+### 1. 配置服务端 `.env.local`
+
+在仓库根目录执行：
+
+```powershell
+Copy-Item .env.example .env.local
+notepad .env.local
+```
+
+至少确认以下两项已填写：
+
+```env
+AI_GATEWAY_API_KEY=请填写服务端密钥
+MEDIA_BASE_URL=https://draw.openai-next.com
+```
+
+- 密钥只放在 `.env.local`，不要写入网页、仓库、截图、聊天记录或投屏终端命令。
+- 探针只从仓库根目录 `.env.local` 读取 `AI_GATEWAY_API_KEY` 和 `MEDIA_BASE_URL`。
+- 固定模型为 `gpt-image-2`，固定输出为 `720×1280`、`medium`、PNG。
+- 默认将 `src/assets/world-gate-reference.png` 同时作为 `guardianIp` 和 `style` 参考图。
+
+### 2. 先做零费用配置检查
+
+```powershell
+node scripts\image2-live-probe.js
+```
+
+成功时应看到：
+
+```text
+configuration_ready_no_request
+付费确认已提供: 否
+付费请求已发送: 否
+请求次数: 0
+```
+
+该步骤只检查 `.env.local`、安全网关地址和参考图，不调用图像供应商。
+
+### 3. 明确确认后执行一次真实生成
+
+```powershell
+node scripts\image2-live-probe.js --confirm-paid-generation
+```
+
+- 此命令会真实联网并可能产生费用。
+- 一次运行只发一个请求；失败不重试，也不切换模型、接口或本地样例。
+- 预计等待约 **1–2 分钟**；网络和供应商排队可能使耗时变化。
+- 探针不会打印 API Key、完整 Prompt 或供应商响应正文。
+
+### 4. 查看安全记录与图片
+
+```powershell
+Get-Content runtime\probe\latest.json
+```
+
+记录包含：
+
+- 是否真的发送付费请求；
+- 请求次数和实际耗时；
+- HTTP 类别与安全错误码；
+- 成功图片的绝对路径、字节数、格式、宽高；
+- 使用的固定模型和参考图路径。
+
+生成图片保存在 `runtime/generated/`，探针记录保存在 `runtime/probe/latest.json`；`runtime/` 已被 Git 忽略。
+
+### 现场失败话术
+
+如果真实生成失败，页面和讲解统一使用：
+
+> 这一步正在调用真实的 `gpt-image-2` 在线生成服务。本次在线生成未完成，我们不会用预生成图片冒充结果；现场保留安全错误码，演示后再检查网络或服务状态。
+
+不要现场连续重跑、不要切换 fallback、不要展示 `.env.local`，也不要把已有样例说成当前请求的生成结果。
+
 ## 3 分钟讲解路线
 
 ### 0:00–0:35 世界大门
