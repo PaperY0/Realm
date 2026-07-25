@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
+const { validateSafeStoryBrief } = require('../src/services/image-generation');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
@@ -64,7 +65,7 @@ const context = {
   String,
 };
 vm.createContext(context);
-vm.runInContext(constants + '\n' + pureFunctions + '\nthis.logic = { DEMO_SENTENCE, FOLLOW_UPS, createSafeStoryBrief, normalizeExpression };', context);
+vm.runInContext(constants + '\n' + pureFunctions + '\nthis.logic = { DEMO_SENTENCE, FOLLOW_UPS, assessExpressionSafety, classifyExpressionTheme, createSafeStoryBrief, normalizeExpression };', context);
 const logic = context.logic;
 
 assert.equal(logic.FOLLOW_UPS.length, 2);
@@ -86,7 +87,7 @@ assert.equal(brief.sessionNeed, null);
 assert.ok(Array.isArray(brief.feltPressure) && brief.feltPressure.length > 0);
 assert.ok(Array.isArray(brief.storyUsableFacts) && brief.storyUsableFacts.length > 0);
 assert.ok(Array.isArray(brief.prohibitedInterpretations) && brief.prohibitedInterpretations.length > 0);
-assert.equal(brief.fearedMeaning, '担心停下或做得不完美会带来否定性的意义');
+assert.equal(brief.fearedMeaning, '担心一次停顿或不完美会被理解为对自身价值的否定');
 assert.equal(brief.desiredDirection, null);
 assert.ok(brief.missingStoryInformation.includes('旅人此刻最希望靠近的方向'));
 assert.equal(JSON.stringify(brief).includes(logic.DEMO_SENTENCE), false);
@@ -96,6 +97,43 @@ const notSureBrief = logic.createSafeStoryBrief({ mode: 'not_sure_how_to_say', r
 assert.equal(notSureBrief.safetyStatus, 'story_safe');
 assert.equal(notSureBrief.repeatedResponse, null);
 assert.ok(notSureBrief.missingStoryInformation.includes('具体情境与压力来源'));
+
+validateSafeStoryBrief(brief);
+validateSafeStoryBrief(notSureBrief);
+
+const griefBrief = logic.createSafeStoryBrief({
+  mode: 'free_text',
+  rawText: '我很想念去世的奶奶，希望留住和她的回忆。',
+  followUpAnswers: [],
+});
+assert.equal(griefBrief.situationCategory, '面对重要关系的失去与记忆保存');
+assert.match(griefBrief.coreTension, /思念|记忆/);
+assert.doesNotMatch(griefBrief.coreTension, /不够好|被标准追赶/);
+assert.equal(griefBrief.desiredDirection, '希望以温柔而不失真的方式保存重要记忆');
+assert.equal(JSON.stringify(griefBrief).includes('奶奶'), false);
+validateSafeStoryBrief(griefBrief);
+
+const answerSensitiveBrief = logic.createSafeStoryBrief({
+  mode: 'free_text',
+  rawText: '我正在经历一段告别。',
+  followUpAnswers: [
+    { target: 'fearedMeaning', status: 'answered', value: '我怕以后会忘记那些回忆' },
+    { target: 'desiredDirection', status: 'answered', value: '我想用一种方式好好纪念' },
+  ],
+});
+assert.equal(answerSensitiveBrief.fearedMeaning, '担心重要的连接或记忆会随着时间变淡');
+assert.equal(answerSensitiveBrief.desiredDirection, '希望以温柔而不失真的方式保存重要记忆');
+assert.equal(JSON.stringify(answerSensitiveBrief).includes('我怕以后'), false);
+validateSafeStoryBrief(answerSensitiveBrief);
+
+assert.equal(logic.assessExpressionSafety('我想伤害自己。').safe, false);
+assert.throws(
+  () => logic.createSafeStoryBrief({ mode: 'free_text', rawText: '我想伤害自己。', followUpAnswers: [] }),
+  /unsafe_expression/,
+);
+assert.match(app, /function blockUnsafeExpression\(\)/);
+assert.match(app, /当前不会发送到图像服务/);
+assert.match(requestSource, /safeBrief\.safetyStatus !== 'story_safe'/);
 
 // Apple-style feedback is local to the newly introduced controls.
 assert.match(app, /expressionPressTargets\.forEach\(bindPressFeedback\)/);

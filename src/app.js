@@ -310,61 +310,152 @@ function createBriefId() {
   return 'brief-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }
 
+function assessExpressionSafety(rawText, followUpAnswers = []) {
+  const answerText = followUpAnswers
+    .filter((answer) => answer?.status === 'answered' && answer.value)
+    .map((answer) => normalizeExpression(answer.value, 240))
+    .join('\n');
+  const combined = [normalizeExpression(rawText), answerText].filter(Boolean).join('\n');
+  const immediateRiskPattern = /(?:自杀|想死|不想活|结束生命|轻生|伤害自己|割腕|跳楼|上吊|服毒|伤害他人|杀死|杀了|弄死|同归于尽)/i;
+  return Object.freeze({
+    safe: !immediateRiskPattern.test(combined),
+    code: immediateRiskPattern.test(combined) ? 'immediate_safety_risk' : 'story_safe',
+  });
+}
+
+function classifyExpressionTheme(text) {
+  const value = normalizeExpression(text);
+  if (/去世|离世|逝去|过世|失去.{0,6}(?:亲人|家人|朋友|爱人)|想念.{0,8}(?:奶奶|爷爷|外婆|外公|亲人|家人|朋友)|告别|怀念/.test(value)) return 'grief_memory';
+  if (/不够好|很累|疲惫|不敢停|停下来|完美|失败|落后|必须|应该/.test(value)) return 'performance_pressure';
+  if (/争吵|冷战|关系|不被理解|被拒绝|孤独|孤单|朋友|家人|伴侣/.test(value)) return 'relationship_tension';
+  if (/迷茫|未来|选择|决定|改变|不知道怎么办|不确定/.test(value)) return 'uncertainty_change';
+  return value ? 'unclassified' : 'not_yet_said';
+}
+
+function abstractFearedMeaning(value) {
+  const answer = normalizeExpression(value, 240);
+  if (!answer) return null;
+  if (/不够好|失败|否定|没用|落后|做不好/.test(answer)) return '担心一次停顿或不完美会被理解为对自身价值的否定';
+  if (/忘记|消失|失去|离开|回忆|记不住/.test(answer)) return '担心重要的连接或记忆会随着时间变淡';
+  if (/拒绝|抛弃|不理解|孤单|孤独/.test(answer)) return '担心失去理解、连接或陪伴';
+  if (/失控|未知|来不及|没有选择/.test(answer)) return '担心未知变化会让自己失去可选择的空间';
+  return null;
+}
+
+function abstractDesiredDirection(value) {
+  const answer = normalizeExpression(value, 240);
+  if (!answer) return null;
+  if (/休息|停一停|慢下来|喘息|放松/.test(answer)) return '希望获得一点允许自己放慢脚步和喘息的空间';
+  if (/记住|留住|回忆|纪念|保存/.test(answer)) return '希望以温柔而不失真的方式保存重要记忆';
+  if (/理解|说清|沟通|被听见|陪伴/.test(answer)) return '希望获得被理解、被听见或重新连接的空间';
+  if (/勇气|开始|尝试|向前|选择/.test(answer)) return '希望按自己的节奏靠近一个可以尝试的方向';
+  return null;
+}
+
 function createSafeStoryBrief({ mode, rawText, followUpAnswers = [] }) {
   const normalized = normalizeExpression(rawText);
-  const demoPattern = /不够好|很累|不敢停|停下来|做得.{0,3}好/;
-  const exhaustionPattern = /累|疲惫|撑不住|休息|停下来/;
-  const perfectionPattern = /不够|必须|应该|完美|做好|失败|落后/;
-  const hasExpression = mode === 'free_text' && normalized.length > 0;
-  const resemblesDemo = hasExpression && demoPattern.test(normalized);
-  const mentionsExhaustion = hasExpression && exhaustionPattern.test(normalized);
-  const mentionsPerformance = hasExpression && perfectionPattern.test(normalized);
-  const answeredTargets = new Set(
-    followUpAnswers.filter((answer) => answer.status === 'answered').map((answer) => answer.target),
-  );
+  if (!assessExpressionSafety(normalized, followUpAnswers).safe) {
+    throw new Error('unsafe_expression');
+  }
 
-  const situationCategory = hasExpression
-    ? '持续努力、外部标准与自我照顾之间的拉扯'
-    : '一份尚未找到完整说法的生活压力';
-  const coreTension = resemblesDemo || (mentionsExhaustion && mentionsPerformance)
-    ? '已经感到疲惫，却担心停下来会证明自己不够好'
-    : hasExpression
-      ? '想照顾自己的感受，同时担心放慢脚步会带来不好的意义'
+  const hasExpression = mode === 'free_text' && normalized.length > 0;
+  const theme = classifyExpressionTheme(hasExpression ? normalized : '');
+  const answerByTarget = new Map(
+    followUpAnswers
+      .filter((answer) => answer?.status === 'answered' && answer.value)
+      .map((answer) => [answer.target, normalizeExpression(answer.value, 240)]),
+  );
+  let fearedMeaning = abstractFearedMeaning(answerByTarget.get('fearedMeaning'));
+  let desiredDirection = abstractDesiredDirection(answerByTarget.get('desiredDirection'));
+  let situationCategory;
+  let coreTension;
+  let feltPressure;
+  let repeatedResponse = null;
+  let emotionalDirection;
+  let storyUsableFacts;
+
+  if (theme === 'performance_pressure') {
+    situationCategory = '持续努力、自我要求与休息需要之间的拉扯';
+    coreTension = '已经感到疲惫，却担心停下来会证明自己不够好';
+    feltPressure = ['持续要求自己再多做一点', '难以允许自己在疲惫时停下'];
+    repeatedResponse = '在感到压力时仍继续要求自己向前';
+    emotionalDirection = '从被无尽刻度催促，走向允许自己在灯光里停留和喘息片刻';
+    storyUsableFacts = [
+      '旅人背着一只会随自我要求增加重量的行囊',
+      '旅人已经疲惫，却仍难以允许自己停下',
+      '故事可以让守门者邀请旅人放下一枚不必完成的刻度',
+    ];
+    if (!fearedMeaning && /不够好|失败|落后|不敢停/.test(normalized)) {
+      fearedMeaning = '担心停下或做得不完美会带来否定性的意义';
+    }
+  } else if (theme === 'grief_memory') {
+    situationCategory = '面对重要关系的失去与记忆保存';
+    coreTension = '一边承受思念与失去的重量，一边希望珍贵记忆不会被时间冲淡';
+    feltPressure = ['重要关系离开后留下的思念', '担心珍贵记忆随时间变淡'];
+    emotionalDirection = '从独自抱紧思念，走向让重要记忆以温柔象征被安放';
+    storyUsableFacts = [
+      '旅人带着一盏承载重要记忆的小灯来到门前',
+      '时间的风让灯影摇晃，却不能替旅人定义这段关系',
+      '故事可以寻找一种温柔保存记忆的方式，而不虚构现实结局',
+    ];
+    if (!fearedMeaning && /忘记|失去|离开|回忆|想念/.test(normalized)) {
+      fearedMeaning = '担心重要的连接或记忆会随着时间变淡';
+    }
+    if (!desiredDirection && /希望|想要|留住|记住|回忆|纪念/.test(normalized)) {
+      desiredDirection = '希望以温柔而不失真的方式保存重要记忆';
+    }
+  } else if (theme === 'relationship_tension') {
+    situationCategory = '关系中的距离、理解与连接';
+    coreTension = '想靠近理解与连接，同时担心表达会带来更多距离';
+    feltPressure = ['关系中的距离感', '表达与被理解之间的不确定'];
+    emotionalDirection = '从独自猜测，走向为真实表达保留一个不被催促的空间';
+    storyUsableFacts = [
+      '旅人站在两座相隔的灯塔之间',
+      '故事只呈现距离与靠近的愿望，不替任何人断言动机',
+    ];
+  } else if (theme === 'uncertainty_change') {
+    situationCategory = '面对变化、选择与未知方向';
+    coreTension = '想向前选择，却还看不清哪条路更适合自己';
+    feltPressure = ['未知变化带来的不确定', '希望作出选择却缺少足够信息'];
+    emotionalDirection = '从急着找到唯一答案，走向允许自己先看清下一小步';
+    storyUsableFacts = [
+      '旅人来到一处分岔的微光小径',
+      '故事可以照亮下一小步，但不替旅人决定现实选择',
+    ];
+  } else {
+    situationCategory = hasExpression ? '一段尚未被完整分类的个人经历' : '一份尚未找到完整说法的生活压力';
+    coreTension = hasExpression
+      ? '用户希望被温柔理解，但现有信息不足以安全概括具体冲突'
       : '想让一份说不清的重量被温柔接住，又不希望它被擅自解释';
-  const feltPressure = resemblesDemo || mentionsPerformance
-    ? ['持续要求自己再多做一点', '难以允许自己在疲惫时停下']
-    : hasExpression
-      ? ['需要继续维持眼前的努力', '担心自己的感受不被理解']
-      : ['暂时还找不到合适的表达方式'];
+    feltPressure = ['一份仍在寻找合适表达方式的重量'];
+    emotionalDirection = '从急于得到解释，走向允许未知被谨慎保留';
+    storyUsableFacts = [
+      '旅人带着一份尚未命名的重量来到门前',
+      '故事必须保留未知，不替旅人补写原因、人物或结局',
+    ];
+  }
 
   const missingStoryInformation = [];
   if (!hasExpression) missingStoryInformation.push('具体情境与压力来源');
-  if (!answeredTargets.has('fearedMeaning')) missingStoryInformation.push('这份压力最令人担心的意义');
-  if (!answeredTargets.has('desiredDirection')) missingStoryInformation.push('旅人此刻最希望靠近的方向');
+  if (!fearedMeaning) missingStoryInformation.push('这份压力最令人担心的意义');
+  if (!desiredDirection) missingStoryInformation.push('旅人此刻最希望靠近的方向');
+  if (theme === 'unclassified') missingStoryInformation.push('可被安全抽象的主题线索');
 
   return {
-    schemaVersion: 'stage8-web-v1',
+    schemaVersion: 'stage8-web-v2',
     briefId: createBriefId(),
     safetyStatus: 'story_safe',
     sessionNeed: null,
     situationCategory,
     coreTension,
     feltPressure,
-    repeatedResponse: hasExpression ? '在感到压力时仍继续要求自己向前' : null,
-    fearedMeaning: answeredTargets.has('fearedMeaning')
-      ? '担心停下或做得不完美会带来否定性的意义'
-      : null,
-    desiredDirection: answeredTargets.has('desiredDirection')
-      ? '希望获得一点允许自己放慢脚步的空间'
-      : null,
-    emotionalDirection: '从被标准追赶，走向允许自己在灯光里停留和喘息片刻',
-    storyUsableFacts: [
-      coreTension,
-      '童话可以把压力转译成一条不断催促旅人前行的发光道路',
-      '故事只支持温柔看见与重新选择，不宣称现实问题已经解决',
-    ],
+    repeatedResponse,
+    fearedMeaning,
+    desiredDirection,
+    emotionalDirection,
+    storyUsableFacts,
     factsNotToInvent: ['具体人物身份与关系', '未说明的现实事件与结局', '未表达过的动机或经历'],
-    prohibitedInterpretations: ['不得作心理诊断', '不得断言他人动机', '不得把停下描述为失败', '不得承诺现实问题已经解决'],
+    prohibitedInterpretations: ['不得作心理诊断', '不得断言他人动机', '不得承诺治愈或现实问题已经解决'],
     userConfirmedSentence: null,
     missingStoryInformation,
   };
@@ -422,6 +513,19 @@ function resetExpressionFlow({ focus = false } = {}) {
   if (focus) window.setTimeout(() => expressionText.focus(), state.reduceMotion ? 0 : 180);
 }
 
+function blockUnsafeExpression() {
+  state.expression.mode = null;
+  state.expression.followUpIndex = 0;
+  state.expression.safeBrief = null;
+  clearTransientExpression();
+  setExpressionStep('entry');
+  expressionInlineError.textContent = '这段话可能涉及即时安全风险，当前不会发送到图像服务。若你或他人正处危险，请立即联系当地急救、警方或可信任的人。';
+  expressionInlineError.hidden = false;
+  privacyNote.textContent = '高风险内容已在当前页面拦截并清除，未发送到图像服务';
+  announce('这段内容不会进入生图流程，请先寻求现实中的即时支持');
+  window.setTimeout(() => expressionText.focus(), state.reduceMotion ? 0 : 180);
+}
+
 function showFollowUp() {
   const followUp = FOLLOW_UPS[state.expression.followUpIndex];
   if (!followUp) {
@@ -444,6 +548,10 @@ function startExpression(mode, rawText = null) {
     expressionText.focus();
     return;
   }
+  if (!assessExpressionSafety(normalized).safe) {
+    blockUnsafeExpression();
+    return;
+  }
   expressionInlineError.hidden = true;
   state.expression.mode = mode;
   state.expression.rawText = normalized;
@@ -456,12 +564,18 @@ function completeFollowUp(status) {
   const followUp = FOLLOW_UPS[state.expression.followUpIndex];
   if (!followUp) return;
   const answer = normalizeExpression(followupAnswer.value, 240);
-  state.expression.followUpAnswers.push({
+  const nextAnswer = {
     id: followUp.id,
     target: followUp.target,
     status: status === 'answered' && answer ? 'answered' : 'skipped',
     value: status === 'answered' && answer ? answer : null,
-  });
+  };
+  const nextAnswers = [...state.expression.followUpAnswers, nextAnswer];
+  if (!assessExpressionSafety(state.expression.rawText, nextAnswers).safe) {
+    blockUnsafeExpression();
+    return;
+  }
+  state.expression.followUpAnswers.push(nextAnswer);
   followupAnswer.value = '';
   state.expression.followUpIndex += 1;
   showFollowUp();
@@ -481,6 +595,10 @@ function renderSafeSummary(brief) {
 }
 
 function finishExpressionBrief() {
+  if (!assessExpressionSafety(state.expression.rawText, state.expression.followUpAnswers).safe) {
+    blockUnsafeExpression();
+    return;
+  }
   const brief = createSafeStoryBrief({
     mode: state.expression.mode,
     rawText: state.expression.rawText,
@@ -541,7 +659,11 @@ function friendlyGenerationError(payload, response) {
 }
 
 async function requestRealImage() {
-  if (state.expression.generating || !state.expression.safeBrief) return;
+  if (
+    state.expression.generating
+    || !state.expression.safeBrief
+    || state.expression.safeBrief.safetyStatus !== 'story_safe'
+  ) return;
   state.expression.generating = true;
   generateStory.disabled = true;
   retryGeneration.disabled = true;
@@ -710,6 +832,8 @@ restartDemo.addEventListener('click', resetEntry);
 window.__REALM_STAGE8__ = Object.freeze({
   DEMO_SENTENCE,
   FOLLOW_UPS,
+  assessExpressionSafety,
+  classifyExpressionTheme,
   createSafeStoryBrief,
   normalizeExpression,
 });
