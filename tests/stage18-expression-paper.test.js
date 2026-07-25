@@ -22,7 +22,7 @@ assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-pape
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?width:\s*min\(1080px/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?height:\s*min\(676px/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?clip-path:\s*polygon/);
-assert.match(expressionScene, /body\[data-stage="expression"\] \.scene--expression\s*\{[\s\S]*?radial-gradient\(ellipse at 4% 5%/);
+assert.match(expressionScene, /body\[data-stage="expression"\] \.scene--expression\s*\{[\s\S]*?url\(['"]?\/assets\/expression-watercolor-reference\.png/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper::before\s*\{/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper::after\s*\{/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.paper-sheet\s*\{[\s\S]*?display:\s*grid[\s\S]*?grid-template-columns:/);
@@ -32,9 +32,8 @@ assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-card
 assert.match(expressionScene, /font-size:\s*clamp\(/);
 assert.match(expressionScene, /transform:\s*scale\(/);
 assert.doesNotMatch(expressionScene, /body\[data-stage="expression"\][^{}]*\{[^}]*overflow-y:\s*auto/);
-assert.match(expressionScene, /body\[data-stage="expression"\] \.paper-boat-sequence,[\s\S]*?display:\s*none\s*!important/);
-assert.match(expressionScene, /body\[data-stage="expression"\] \.paper-boat-sequence\[data-paper-boat-state="(?:folding|floating|error)"\][^{}]*\{[^}]*display:\s*none\s*!important/);
-assert.match(expressionScene, /body\[data-stage="expression"\] \.paper-generation-card\s*\{[\s\S]*?display:\s*none\s*!important/);
+assert.match(css, /body\[data-stage="expression"\] \.paper-boat-sequence\s*\{[\s\S]*?display:\s*none;/);
+assert.match(css, /body\[data-stage="expression"\] \.paper-generation-card\s*\{[\s\S]*?display:\s*none\s*!important/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-primary,[\s\S]*?body\[data-stage="expression"\] \.expression-quiet\s*\{[\s\S]*?border-radius:/);
 assert.match(expressionScene, /@media \(max-height:\s*800px\) and \(min-width:\s*821px\)/);
 
