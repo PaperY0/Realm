@@ -4,6 +4,7 @@
   "private": true,
   "description": "藏梦书境 V0 本机单实例工程骨架",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node tests/stage3.test.js"
   }
 }
