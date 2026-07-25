@@ -1911,3 +1911,725 @@ body.reduce-motion .reference-seam-light {
     transition-duration: 1ms !important;
   }
 }
+
+
+/* Web-only traveler page restyle: reference-led watercolor calm + Apple-style response. */
+body[data-stage="traveler"] {
+  background: #f3eee2;
+}
+
+body[data-stage="traveler"] .world-shell {
+  background:
+    radial-gradient(ellipse at 24% 13%, rgba(240, 248, 250, 0.92) 0 15%, transparent 42%),
+    radial-gradient(ellipse at 69% 24%, rgba(230, 236, 210, 0.66) 0 14%, transparent 37%),
+    radial-gradient(ellipse at 94% 70%, rgba(246, 216, 193, 0.76) 0 12%, transparent 40%),
+    linear-gradient(122deg, #eaf1f2 0%, #f2f3df 49%, #f6dfce 100%);
+}
+
+body[data-stage="traveler"] .world-shell::after {
+  opacity: 0.075;
+  mix-blend-mode: multiply;
+  background-image:
+    repeating-linear-gradient(1deg, rgba(92, 73, 59, 0.17) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(91deg, rgba(255, 255, 255, 0.62) 0 1px, transparent 1px 13px);
+}
+
+body[data-stage="traveler"] .world-header {
+  top: clamp(30px, 4.1vh, 48px);
+  right: clamp(54px, 4.8vw, 98px);
+  left: clamp(54px, 4.8vw, 98px);
+}
+
+body[data-stage="traveler"] .brand {
+  gap: 14px;
+}
+
+body[data-stage="traveler"] .brand-mark {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(77, 65, 84, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 252, 244, 0.78);
+  box-shadow: 0 5px 18px rgba(69, 55, 65, 0.07);
+  transform: none;
+}
+
+body[data-stage="traveler"] .brand strong {
+  color: #3d354a;
+  font-size: 20px;
+  letter-spacing: 0.13em;
+}
+
+body[data-stage="traveler"] .brand small {
+  margin-top: 4px;
+  color: #777080;
+  font-size: 11px;
+}
+
+body[data-stage="traveler"] .motion-toggle--global {
+  top: clamp(34px, 4.4vh, 51px);
+  right: clamp(54px, 4.8vw, 98px);
+}
+
+body[data-stage="traveler"] .motion-toggle {
+  gap: 11px;
+  color: #756c7b;
+  font-size: 13px;
+}
+
+body[data-stage="traveler"] .toggle-track {
+  width: 50px;
+  height: 28px;
+  padding: 3px;
+  border-color: rgba(73, 60, 80, 0.14);
+  background: rgba(255, 252, 244, 0.8);
+  box-shadow: inset 0 1px 3px rgba(67, 54, 70, 0.06);
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 100ms ease-out;
+}
+
+body[data-stage="traveler"] .toggle-track span {
+  width: 20px;
+  height: 20px;
+  background: #8a7593;
+  box-shadow: 0 2px 6px rgba(55, 42, 60, 0.22);
+  transition: transform 360ms cubic-bezier(0.2, 0.78, 0.24, 1), background-color 180ms ease;
+}
+
+body[data-stage="traveler"] .motion-toggle:active .toggle-track {
+  transform: scale(0.97);
+}
+
+body[data-stage="traveler"] .motion-toggle input:checked + .toggle-track span {
+  transform: translateX(22px);
+}
+
+body[data-stage="traveler"] .scene--traveler {
+  grid-template-columns: minmax(550px, 0.96fr) minmax(620px, 1.04fr);
+  align-items: center;
+  gap: clamp(76px, 7vw, 142px);
+  padding: clamp(154px, 16vh, 190px) clamp(88px, 8vw, 164px) clamp(92px, 9vh, 112px);
+  background: transparent;
+}
+
+body[data-stage="traveler"] .paper-sky {
+  inset: 0;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 16% 22%, rgba(255, 253, 237, 0.5), transparent 25%),
+    radial-gradient(ellipse at 48% 46%, rgba(240, 246, 222, 0.36), transparent 31%),
+    radial-gradient(ellipse at 87% 42%, rgba(231, 209, 209, 0.24), transparent 34%);
+  pointer-events: none;
+}
+
+body[data-stage="traveler"] .paper-sky::before,
+body[data-stage="traveler"] .paper-sky::after {
+  position: absolute;
+  border-radius: 50%;
+  content: "";
+  filter: blur(28px);
+}
+
+body[data-stage="traveler"] .paper-sky::before {
+  top: 17%;
+  left: 37%;
+  width: 25vw;
+  height: 34vh;
+  background: rgba(244, 244, 215, 0.3);
+}
+
+body[data-stage="traveler"] .paper-sky::after {
+  right: -7%;
+  bottom: -4%;
+  width: 38vw;
+  height: 48vh;
+  background: rgba(246, 201, 177, 0.28);
+}
+
+body[data-stage="traveler"] .traveler-landscape {
+  z-index: 2;
+  right: 35%;
+  bottom: 0;
+  left: 0;
+  height: 47%;
+  opacity: 0.97;
+}
+
+body[data-stage="traveler"] .name-tree {
+  bottom: 17%;
+  left: clamp(78px, 7.2vw, 148px);
+  width: clamp(210px, 14.4vw, 294px);
+  height: clamp(275px, 29vh, 340px);
+  filter: drop-shadow(0 10px 12px rgba(76, 86, 57, 0.05));
+}
+
+body[data-stage="traveler"] .name-tree::before {
+  left: 47%;
+  width: 31px;
+  height: 60%;
+  border-radius: 48% 52% 22% 26%;
+  background: linear-gradient(90deg, #765b4b 0%, #8c6a57 64%, #725647 100%);
+  transform: rotate(3deg);
+}
+
+body[data-stage="traveler"] .name-tree span {
+  background: rgba(112, 145, 75, 0.88);
+  box-shadow: inset 0 -18px 30px rgba(66, 102, 58, 0.13);
+}
+
+body[data-stage="traveler"] .name-tree span:nth-child(1) {
+  top: 0;
+  left: 10%;
+  width: 67%;
+  height: 45%;
+  transform: rotate(-9deg);
+}
+
+body[data-stage="traveler"] .name-tree span:nth-child(2) {
+  top: 13%;
+  right: 0;
+  width: 62%;
+  height: 45%;
+  transform: rotate(10deg);
+}
+
+body[data-stage="traveler"] .name-tree span:nth-child(3) {
+  top: 28%;
+  left: -1%;
+  width: 57%;
+  height: 38%;
+}
+
+body[data-stage="traveler"] .stone-shore {
+  right: -8%;
+  bottom: -35%;
+  left: -12%;
+  height: 74%;
+  border-radius: 50% 54% 0 0;
+  background:
+    radial-gradient(ellipse at 24% 25%, rgba(219, 133, 105, 0.88) 0 2.4%, transparent 2.7%),
+    radial-gradient(ellipse at 42% 36%, rgba(117, 145, 111, 0.8) 0 2.5%, transparent 2.9%),
+    radial-gradient(ellipse at 68% 29%, rgba(143, 125, 173, 0.76) 0 2.5%, transparent 2.9%),
+    linear-gradient(180deg, #c5c7a6 0%, #bfc2a0 100%);
+  box-shadow: inset 0 20px 50px rgba(255, 250, 219, 0.13);
+  transform: rotate(1deg);
+}
+
+body[data-stage="traveler"] .traveler-copy {
+  z-index: 8;
+  align-self: start;
+  max-width: 760px;
+  margin-top: clamp(30px, 6vh, 72px);
+}
+
+body[data-stage="traveler"] .traveler-copy .eyebrow {
+  margin-bottom: 23px;
+  color: #77607e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+
+body[data-stage="traveler"] .traveler-copy h2 {
+  color: #342d42;
+  font-size: clamp(50px, 3.95vw, 76px);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: 0.018em;
+  text-wrap: balance;
+}
+
+body[data-stage="traveler"] .traveler-copy > p:last-child {
+  max-width: 710px;
+  margin-top: clamp(31px, 4vh, 45px);
+  color: #696373;
+  font-size: clamp(16px, 1.16vw, 21px);
+  line-height: 1.9;
+  letter-spacing: 0.015em;
+}
+
+body[data-stage="traveler"] .traveler-card {
+  z-index: 9;
+  width: min(100%, 770px);
+  padding: clamp(38px, 3.1vw, 54px);
+  border: 1px solid rgba(88, 72, 80, 0.1);
+  border-radius: 36px;
+  background:
+    linear-gradient(rgba(255, 252, 243, 0.9), rgba(255, 252, 243, 0.9)),
+    repeating-linear-gradient(0deg, rgba(109, 86, 64, 0.04) 0 1px, transparent 1px 7px);
+  box-shadow: 0 24px 58px rgba(72, 54, 67, 0.09);
+  backdrop-filter: blur(4px);
+  transform: none;
+}
+
+body[data-stage="traveler"] .field-label,
+body[data-stage="traveler"] .mark-fieldset legend {
+  color: #493f54;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: 0.025em;
+}
+
+body[data-stage="traveler"] .field-label span,
+body[data-stage="traveler"] .mark-fieldset legend span {
+  color: #918692;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+body[data-stage="traveler"] .name-field {
+  margin-top: 13px;
+}
+
+body[data-stage="traveler"] .name-field input {
+  height: 64px;
+  padding: 0 61px 0 22px;
+  border-color: rgba(77, 64, 80, 0.18);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #40374b;
+  font-size: 16px;
+  box-shadow: inset 0 1px 3px rgba(75, 59, 71, 0.04), 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+body[data-stage="traveler"] .name-field input:hover {
+  border-color: rgba(91, 71, 98, 0.31);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+body[data-stage="traveler"] .name-field input:focus {
+  border-color: rgba(100, 76, 113, 0.54);
+  outline: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 4px rgba(111, 84, 125, 0.1), inset 0 1px 3px rgba(75, 59, 71, 0.03);
+}
+
+body[data-stage="traveler"] .name-field input:focus-visible {
+  outline: 2px solid rgba(45, 109, 163, 0.72);
+  outline-offset: 2px;
+}
+
+body[data-stage="traveler"] .name-leaf {
+  right: 22px;
+  color: #789357;
+  font-size: 23px;
+}
+
+body[data-stage="traveler"] .mark-fieldset {
+  margin-top: 34px;
+}
+
+body[data-stage="traveler"] .mark-grid {
+  grid-template-columns: repeat(5, minmax(84px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+body[data-stage="traveler"] .mark-option {
+  min-height: 94px;
+  gap: 8px;
+  padding: 12px 7px 10px;
+  border-color: rgba(81, 66, 77, 0.14);
+  border-radius: 20px;
+  background: rgba(249, 244, 233, 0.73);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.58);
+  transform: translateY(0) scale(1);
+  transform-origin: center;
+  transition:
+    transform 360ms cubic-bezier(0.2, 0.78, 0.24, 1),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease;
+  will-change: transform;
+}
+
+body[data-stage="traveler"] .mark-option:hover {
+  border-color: rgba(101, 81, 108, 0.27);
+  background: rgba(252, 248, 239, 0.91);
+  box-shadow: 0 8px 18px rgba(74, 57, 72, 0.06);
+  transform: translateY(-2px) scale(1);
+}
+
+body[data-stage="traveler"] .mark-option b {
+  font-size: 29px;
+  font-weight: 700;
+}
+
+body[data-stage="traveler"] .mark-option span {
+  color: #665d6d;
+  font-size: 12px;
+}
+
+body[data-stage="traveler"] .mark-option.is-selected {
+  border-color: rgba(111, 82, 128, 0.43);
+  background: rgba(234, 221, 240, 0.86);
+  box-shadow: 0 9px 20px rgba(82, 61, 91, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+  transform: translateY(-1px) scale(1);
+}
+
+body[data-stage="traveler"] .mark-option.is-pressed,
+body[data-stage="traveler"] .mark-option:active {
+  box-shadow: 0 2px 7px rgba(75, 57, 72, 0.08);
+  transform: translateY(1px) scale(0.97);
+  transition-duration: 90ms;
+}
+
+body[data-stage="traveler"] .traveler-actions {
+  gap: 23px;
+  margin-top: 34px;
+}
+
+body[data-stage="traveler"] .primary-button {
+  min-height: 58px;
+  padding: 0 32px;
+  border-color: #584463;
+  background: #584765;
+  color: #fffaf1;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  box-shadow: 0 9px 20px rgba(62, 45, 70, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: translateY(0) scale(1);
+  transition:
+    transform 380ms cubic-bezier(0.2, 0.8, 0.25, 1),
+    background-color 160ms ease,
+    box-shadow 180ms ease;
+  will-change: transform;
+}
+
+body[data-stage="traveler"] .primary-button:hover {
+  background: #4f3d5a;
+  box-shadow: 0 12px 25px rgba(62, 45, 70, 0.19), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px) scale(1);
+}
+
+body[data-stage="traveler"] .primary-button.is-pressed,
+body[data-stage="traveler"] .primary-button:active {
+  box-shadow: 0 3px 9px rgba(62, 45, 70, 0.15);
+  transform: translateY(1px) scale(0.97);
+  transition-duration: 90ms;
+}
+
+body[data-stage="traveler"] .text-button {
+  min-height: 48px;
+  padding: 0 4px;
+  color: #776c7d;
+  font-size: 15px;
+  text-decoration-thickness: 1px;
+  transition: color 160ms ease, transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+body[data-stage="traveler"] .text-button:hover {
+  color: #514759;
+}
+
+body[data-stage="traveler"] .text-button.is-pressed,
+body[data-stage="traveler"] .text-button:active {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+}
+
+body[data-stage="traveler"] .memory-line {
+  margin-top: 24px;
+  color: #8f7c89;
+  font-size: 12px;
+}
+
+body[data-stage="traveler"] .world-footer {
+  right: clamp(54px, 4.8vw, 98px);
+  bottom: clamp(20px, 2.6vh, 31px);
+  left: clamp(54px, 4.8vw, 98px);
+  color: rgba(72, 64, 77, 0.62);
+  font-size: 12px;
+}
+
+@media (max-width: 1450px), (max-height: 820px) {
+  body[data-stage="traveler"] .world-header {
+    top: 18px;
+  }
+
+  body[data-stage="traveler"] .motion-toggle--global {
+    top: 19px;
+  }
+
+  body[data-stage="traveler"] .scene--traveler {
+    grid-template-columns: minmax(430px, 0.92fr) minmax(520px, 1.08fr);
+    gap: clamp(44px, 5vw, 80px);
+    padding: 94px clamp(54px, 6vw, 96px) 62px;
+  }
+
+  body[data-stage="traveler"] .traveler-copy {
+    margin-top: 24px;
+  }
+
+  body[data-stage="traveler"] .traveler-copy h2 {
+    font-size: clamp(43px, 4vw, 59px);
+  }
+
+  body[data-stage="traveler"] .traveler-copy > p:last-child {
+    margin-top: 26px;
+    font-size: 16px;
+  }
+
+  body[data-stage="traveler"] .traveler-card {
+    padding: 30px 34px;
+    border-radius: 30px;
+  }
+
+  body[data-stage="traveler"] .name-field input {
+    height: 56px;
+  }
+
+  body[data-stage="traveler"] .mark-fieldset {
+    margin-top: 25px;
+  }
+
+  body[data-stage="traveler"] .mark-option {
+    min-height: 76px;
+  }
+
+  body[data-stage="traveler"] .traveler-actions {
+    margin-top: 25px;
+  }
+
+  body[data-stage="traveler"] .primary-button {
+    min-height: 51px;
+  }
+
+  body[data-stage="traveler"] .memory-line {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 1040px) {
+  body[data-stage="traveler"] {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body[data-stage="traveler"] .world-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: auto;
+    overflow: hidden;
+  }
+
+  body[data-stage="traveler"] .world-header {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    padding: 18px 24px 10px;
+  }
+
+  body[data-stage="traveler"] .motion-toggle--global {
+    position: absolute;
+    top: 19px;
+    right: 24px;
+  }
+
+  body[data-stage="traveler"] .scene-deck,
+  body[data-stage="traveler"] .scene--traveler {
+    min-height: calc(100vh - 128px);
+    min-height: calc(100dvh - 128px);
+    height: auto;
+  }
+
+  body[data-stage="traveler"] .scene--traveler {
+    grid-template-columns: 1fr;
+    align-content: start;
+    justify-items: center;
+    gap: 34px;
+    padding: 54px 28px 94px;
+  }
+
+  body[data-stage="traveler"] .traveler-copy,
+  body[data-stage="traveler"] .traveler-card {
+    width: min(100%, 720px);
+  }
+
+  body[data-stage="traveler"] .traveler-copy {
+    margin-top: 0;
+  }
+
+  body[data-stage="traveler"] .traveler-copy h2 {
+    font-size: clamp(42px, 7.2vw, 64px);
+  }
+
+  body[data-stage="traveler"] .traveler-landscape {
+    right: 20%;
+    height: 34%;
+    opacity: 0.34;
+  }
+
+  body[data-stage="traveler"] .name-tree {
+    bottom: 2%;
+    left: 4%;
+  }
+
+  body[data-stage="traveler"] .world-footer {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    padding: 16px 24px 20px;
+    background: rgba(239, 237, 218, 0.72);
+  }
+}
+
+@media (max-width: 620px) {
+  body[data-stage="traveler"] .world-header {
+    padding: 14px 16px 8px;
+  }
+
+  body[data-stage="traveler"] .brand {
+    gap: 9px;
+  }
+
+  body[data-stage="traveler"] .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  body[data-stage="traveler"] .brand strong {
+    font-size: 15px;
+  }
+
+  body[data-stage="traveler"] .brand small {
+    display: none;
+  }
+
+  body[data-stage="traveler"] .motion-toggle--global {
+    top: 13px;
+    right: 14px;
+  }
+
+  body[data-stage="traveler"] .motion-toggle {
+    gap: 7px;
+    font-size: 11px;
+  }
+
+  body[data-stage="traveler"] .toggle-track {
+    width: 44px;
+    height: 26px;
+  }
+
+  body[data-stage="traveler"] .toggle-track span {
+    width: 18px;
+    height: 18px;
+  }
+
+  body[data-stage="traveler"] .motion-toggle input:checked + .toggle-track span {
+    transform: translateX(18px);
+  }
+
+  body[data-stage="traveler"] .scene-deck,
+  body[data-stage="traveler"] .scene--traveler {
+    min-height: calc(100dvh - 112px);
+  }
+
+  body[data-stage="traveler"] .scene--traveler {
+    gap: 27px;
+    padding: 44px 16px 72px;
+  }
+
+  body[data-stage="traveler"] .traveler-copy .eyebrow {
+    margin-bottom: 14px;
+    font-size: 10px;
+  }
+
+  body[data-stage="traveler"] .traveler-copy h2 {
+    font-size: clamp(36px, 10.8vw, 50px);
+    line-height: 1.18;
+  }
+
+  body[data-stage="traveler"] .traveler-copy h2 br {
+    display: none;
+  }
+
+  body[data-stage="traveler"] .traveler-copy > p:last-child {
+    margin-top: 21px;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  body[data-stage="traveler"] .traveler-card {
+    padding: 24px 18px;
+    border-radius: 26px;
+  }
+
+  body[data-stage="traveler"] .field-label,
+  body[data-stage="traveler"] .mark-fieldset legend {
+    font-size: 15px;
+  }
+
+  body[data-stage="traveler"] .name-field input {
+    height: 55px;
+    padding-left: 16px;
+    font-size: 15px;
+  }
+
+  body[data-stage="traveler"] .mark-fieldset {
+    margin-top: 25px;
+  }
+
+  body[data-stage="traveler"] .mark-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+  }
+
+  body[data-stage="traveler"] .mark-option {
+    min-height: 78px;
+  }
+
+  body[data-stage="traveler"] .traveler-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 25px;
+  }
+
+  body[data-stage="traveler"] .primary-button {
+    width: 100%;
+    min-height: 54px;
+  }
+
+  body[data-stage="traveler"] .text-button {
+    min-height: 44px;
+  }
+
+  body[data-stage="traveler"] .memory-line {
+    margin-top: 17px;
+    font-size: 11px;
+  }
+
+  body[data-stage="traveler"] .traveler-landscape {
+    right: 0;
+    height: 27%;
+    opacity: 0.18;
+  }
+
+  body[data-stage="traveler"] .world-footer {
+    padding: 14px 16px 18px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-stage="traveler"] .mark-option,
+  body[data-stage="traveler"] .primary-button,
+  body[data-stage="traveler"] .text-button,
+  body[data-stage="traveler"] .toggle-track,
+  body[data-stage="traveler"] .toggle-track span {
+    transform: none !important;
+  }
+}
+
+body.reduce-motion[data-stage="traveler"] .mark-option,
+body.reduce-motion[data-stage="traveler"] .primary-button,
+body.reduce-motion[data-stage="traveler"] .text-button,
+body.reduce-motion[data-stage="traveler"] .toggle-track,
+body.reduce-motion[data-stage="traveler"] .toggle-track span {
+  transform: none !important;
+}

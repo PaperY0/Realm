@@ -246,6 +246,24 @@ function handleDoorKeyboard(event) {
 }
 
 
+function bindPressFeedback(element) {
+  const release = () => element.classList.remove('is-pressed');
+
+  element.addEventListener('pointerdown', (event) => {
+    if (event.button > 0 || state.reduceMotion) return;
+    element.classList.add('is-pressed');
+  });
+  element.addEventListener('pointerup', release);
+  element.addEventListener('pointercancel', release);
+  element.addEventListener('pointerleave', release);
+  element.addEventListener('blur', release);
+  element.addEventListener('keydown', (event) => {
+    if (state.reduceMotion || (event.key !== 'Enter' && event.key !== ' ')) return;
+    element.classList.add('is-pressed');
+  });
+  element.addEventListener('keyup', release);
+}
+
 function resetEntry() {
   state.doorOpened = false;
   clearDoorDrag();
@@ -262,6 +280,9 @@ function continueFromTraveler() {
   updateProfileUI();
   goToScene('foyer');
 }
+
+const travelerPressTargets = [travelerForm.querySelector('.primary-button'), skipProfile, ...markOptions];
+travelerPressTargets.forEach(bindPressFeedback);
 
 doorHandle.addEventListener('pointerdown', handleDoorPointerDown);
 doorHandle.addEventListener('pointermove', handleDoorPointerMove);
