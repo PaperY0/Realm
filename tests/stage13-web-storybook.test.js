@@ -248,6 +248,11 @@ assert.doesNotMatch(storybookFunctions, /\/api\/images\/generate(?!-book)|reques
 assert.match(storybookFunctions, /章节插画尚未生成/);
 
 // The turn layer is a two-sided paper sheet, isolated from ordinary page transforms.
+const animatePageTurn = functionSource(app, 'animatePageTurn');
+assert.match(animatePageTurn, /function\s+animatePageTurn\s*\(\s*direction\s*,\s*frontPage\s*,\s*backPage\s*\)/);
+assert.match(animatePageTurn, /makeFace\(frontPage,\s*'storybook-turn-sheet__front'\)/);
+assert.match(animatePageTurn, /makeFace\(backPage,\s*'storybook-turn-sheet__back'\)/);
+assert.doesNotMatch(animatePageTurn, /storybook-page--copy/);
 assert.match(css, /\.storybook-turn-sheet\s*\{/);
 assert.match(css, /\.storybook-turn-sheet__front\s*,\s*\n?\s*\.storybook-turn-sheet__back\s*\{/);
 assert.match(css, /\.storybook-turn-shadow\s*\{/);
