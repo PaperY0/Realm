@@ -12,11 +12,42 @@ echo.
 
 where node >nul 2>nul
 if errorlevel 1 (
-  echo [错误] 未找到 Node.js。请先安装 Node.js 18 或更高版本。
+  echo [错误] 未找到 Node.js。
+  echo 本项目现场 Demo 已锁定 Node.js 24.x，请安装 Node.js 24 后重试。
   pause
   exit /b 1
 )
 
+set "NODE_VERSION="
+set "NODE_MAJOR="
+for /f "delims=" %%V in ('node -p "process.versions.node" 2^>nul') do set "NODE_VERSION=%%V"
+for /f "tokens=1 delims=." %%M in ("%NODE_VERSION%") do set "NODE_MAJOR=%%M"
+
+if not "%NODE_MAJOR%"=="24" (
+  echo [错误] 当前 Node.js 版本为 %NODE_VERSION%。
+  echo 本项目依赖 node:sqlite，现场 Demo 仅支持并锁定 Node.js 24.x。
+  echo 请切换到 Node.js 24 后重新启动。
+  pause
+  exit /b 1
+)
+
+node -e "const { DatabaseSync } = require('node:sqlite'); const db = new DatabaseSync(':memory:'); db.close();" >nul 2>nul
+if errorlevel 1 (
+  echo [错误] 当前 Node.js 24 环境无法使用 node:sqlite。
+  echo 请重新安装官方 Node.js 24，并确认安装完整。
+  pause
+  exit /b 1
+)
+
+where npm >nul 2>nul
+if errorlevel 1 (
+  echo [错误] 未找到 npm。请重新安装官方 Node.js 24，并确保 npm 已加入 PATH。
+  pause
+  exit /b 1
+)
+
+echo [环境] Node.js %NODE_VERSION% 与 node:sqlite 检查通过。
+echo.
 echo [1/2] 正在执行现场预检...
 call npm run demo:check
 if errorlevel 1 (

@@ -2,6 +2,9 @@
   "name": "dream-book-world",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "description": "藏梦书境 V0 本机单实例 Demo",
   "scripts": {
     "start": "node -r ./src/services/image-generation.js server.js",
