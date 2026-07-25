@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#ebe1d2" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%2730%27 fill=%27%23fffaf0%27/%3E%3Cpath d=%27M32 14c2.3 10.2 7.8 15.7 18 18-10.2 2.3-15.7 7.8-18 18-2.3-10.2-7.8-15.7-18-18 10.2-2.3 15.7-7.8 18-18Z%27 fill=%27%23cc8452%27/%3E%3C/svg%3E" />
     <title>藏梦书境 · 世界入口</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?v=expression-watercolor-20260726" />
     <script src="/reader-state.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
@@ -21,12 +21,6 @@
           </span>
         </a>
       </header>
-
-      <label class="motion-toggle motion-toggle--global">
-        <input id="reduce-motion" type="checkbox" aria-label="减少动态" />
-        <span class="toggle-track" aria-hidden="true"><span></span></span>
-        <span>减少动态</span>
-      </label>
 
       <main class="scene-deck" id="scene-deck">
         <section class="scene scene--door is-active" data-scene="door" aria-labelledby="door-title">
@@ -52,7 +46,8 @@
         </section>
 
         <section class="scene scene--foyer" data-scene="foyer" aria-labelledby="foyer-title" aria-hidden="true">
-          <img class="emotion-hall-art" src="/assets/emotion-hall.png" alt="五扇情绪大门与五位守门 IP 的水彩门厅" />
+          <div class="emotion-hall-canvas">
+          <img class="emotion-hall-background" src="/assets/emotion-hall/layers/background.png" alt="" width="2048" height="1152" aria-hidden="true" />
           <div class="emotion-hall-shade" aria-hidden="true"></div>
           <div class="emotion-hall-heading">
             <p class="eyebrow">藏梦书境 · 情绪门厅</p>
@@ -61,30 +56,40 @@
           </div>
 
           <div class="emotion-door-stage" aria-label="情绪大门">
-            <button class="emotion-door emotion-door--overthinking" id="inner-door" type="button" data-emotion-door="overthinking" data-guardian="wanxian" aria-describedby="emotion-door-status">
+            <button class="emotion-door emotion-door--overthinking" id="inner-door" type="button" data-emotion-door="overthinking" data-guardian="wanxian" aria-label="进入内耗故事世界" aria-describedby="emotion-door-status">
+              <span class="emotion-door__door" aria-hidden="true"><img class="emotion-door__door-image" src="/assets/emotion-hall/layers/door-overthinking.png" alt="" /></span>
+              <span class="emotion-door__light" aria-hidden="true"></span>
+              <span class="emotion-door__guardian" aria-hidden="true"><img class="emotion-door__guardian-image" src="/assets/emotion-hall/layers/guardian-overthinking.png" alt="" /></span>
+              <span class="emotion-door__shadow" aria-hidden="true"></span>
               <span class="emotion-door__focus" aria-hidden="true"></span>
-              <span class="emotion-door__label">内耗</span>
-              <span class="emotion-door__state">现在开放</span>
             </button>
-            <button class="emotion-door emotion-door--sadness" type="button" data-emotion-door="sadness" data-guardian="tingyu" aria-describedby="emotion-door-status">
+            <button class="emotion-door emotion-door--sadness" type="button" data-emotion-door="sadness" data-guardian="tingyu" aria-label="悲伤故事世界尚未开启" aria-describedby="emotion-door-status">
+              <span class="emotion-door__door" aria-hidden="true"><img class="emotion-door__door-image" src="/assets/emotion-hall/layers/door-sadness.png" alt="" /></span>
+              <span class="emotion-door__light" aria-hidden="true"></span>
+              <span class="emotion-door__guardian" aria-hidden="true"><img class="emotion-door__guardian-image" src="/assets/emotion-hall/layers/guardian-sadness.png" alt="" /></span>
+              <span class="emotion-door__shadow" aria-hidden="true"></span>
               <span class="emotion-door__focus" aria-hidden="true"></span>
-              <span class="emotion-door__label">悲伤</span>
-              <span class="emotion-door__state">尚未开启</span>
             </button>
-            <button class="emotion-door emotion-door--anxiety" type="button" data-emotion-door="anxiety" data-guardian="xibai" aria-describedby="emotion-door-status">
+            <button class="emotion-door emotion-door--anxiety" type="button" data-emotion-door="anxiety" data-guardian="xibai" aria-label="焦虑故事世界尚未开启" aria-describedby="emotion-door-status">
+              <span class="emotion-door__door" aria-hidden="true"><img class="emotion-door__door-image" src="/assets/emotion-hall/layers/door-anxiety.png" alt="" /></span>
+              <span class="emotion-door__light" aria-hidden="true"></span>
+              <span class="emotion-door__guardian" aria-hidden="true"><img class="emotion-door__guardian-image" src="/assets/emotion-hall/layers/guardian-anxiety.png" alt="" /></span>
+              <span class="emotion-door__shadow" aria-hidden="true"></span>
               <span class="emotion-door__focus" aria-hidden="true"></span>
-              <span class="emotion-door__label">焦虑</span>
-              <span class="emotion-door__state">尚未开启</span>
             </button>
-            <button class="emotion-door emotion-door--anger" type="button" data-emotion-door="anger" data-guardian="cangjin" aria-describedby="emotion-door-status">
+            <button class="emotion-door emotion-door--anger" type="button" data-emotion-door="anger" data-guardian="cangjin" aria-label="愤怒故事世界尚未开启" aria-describedby="emotion-door-status">
+              <span class="emotion-door__door" aria-hidden="true"><img class="emotion-door__door-image" src="/assets/emotion-hall/layers/door-anger.png" alt="" /></span>
+              <span class="emotion-door__light" aria-hidden="true"></span>
+              <span class="emotion-door__guardian" aria-hidden="true"><img class="emotion-door__guardian-image" src="/assets/emotion-hall/layers/guardian-anger.png" alt="" /></span>
+              <span class="emotion-door__shadow" aria-hidden="true"></span>
               <span class="emotion-door__focus" aria-hidden="true"></span>
-              <span class="emotion-door__label">愤怒</span>
-              <span class="emotion-door__state">尚未开启</span>
             </button>
-            <button class="emotion-door emotion-door--joy" type="button" data-emotion-door="joy" data-guardian="lingya" aria-describedby="emotion-door-status">
+            <button class="emotion-door emotion-door--joy" type="button" data-emotion-door="joy" data-guardian="lingya" aria-label="喜悦故事世界尚未开启" aria-describedby="emotion-door-status">
+              <span class="emotion-door__door" aria-hidden="true"><img class="emotion-door__door-image" src="/assets/emotion-hall/layers/door-joy.png" alt="" /></span>
+              <span class="emotion-door__light" aria-hidden="true"></span>
+              <span class="emotion-door__guardian" aria-hidden="true"><img class="emotion-door__guardian-image" src="/assets/emotion-hall/layers/guardian-joy.png" alt="" /></span>
+              <span class="emotion-door__shadow" aria-hidden="true"></span>
               <span class="emotion-door__focus" aria-hidden="true"></span>
-              <span class="emotion-door__label">喜悦</span>
-              <span class="emotion-door__state">尚未开启</span>
             </button>
           </div>
 
@@ -96,6 +101,7 @@
               <p class="emotion-door-dialogue__status" id="emotion-door-status">点击内耗之门，进入风铃入口。</p>
             </div>
           </aside>
+          </div>
         </section>
 
         <section class="scene scene--expression" data-scene="expression" aria-labelledby="expression-title" aria-hidden="true">

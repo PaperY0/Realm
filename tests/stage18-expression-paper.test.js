@@ -22,8 +22,8 @@ assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-pape
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?width:\s*min\(1080px/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?height:\s*min\(676px/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper\s*\{[\s\S]*?clip-path:\s*polygon/);
-assert.match(expressionScene, /body\[data-stage="expression"\] \.scene--expression\s*\{[\s\S]*?url\(['"]?\/assets\/expression-watercolor-wash\.png/);
-assert.match(css, /body\[data-stage="expression"\] \.world-shell\s*\{[\s\S]*?url\(['"]?\/assets\/expression-watercolor-wash\.png/);
+assert.match(expressionScene, /body\[data-stage="expression"\] \.scene--expression\s*\{[\s\S]*?url\(['"]?\/assets\/expression-watercolor-wash\.png\?v=20260726/);
+assert.match(css, /body\[data-stage="expression"\] \.world-shell\s*\{[\s\S]*?url\(['"]?\/assets\/expression-watercolor-wash\.png\?v=20260726/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper::before\s*\{/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.expression-paper::after\s*\{/);
 assert.match(expressionScene, /body\[data-stage="expression"\] \.paper-sheet\s*\{[\s\S]*?display:\s*grid[\s\S]*?grid-template-columns:/);

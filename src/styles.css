@@ -3687,6 +3687,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   height: 100%;
   min-height: 100%;
   overflow: hidden;
+  background: #d7b477 url("/assets/emotion-hall/layers/background.png") center / cover no-repeat;
 }
 
 .emotion-hall-background,
@@ -3699,7 +3700,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
 
 .emotion-hall-background {
   z-index: 0;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   filter: saturate(0.93) contrast(0.98);
 }
@@ -3824,7 +3825,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
 .emotion-door {
   position: absolute;
   top: 51%;
-  width: 13.7%;
+  width: 15.2%;
   height: 57%;
   border: 0;
   border-radius: 44% 44% 10% 10% / 20% 20% 6% 6%;
@@ -3835,6 +3836,25 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   isolation: isolate;
   overflow: visible;
   transition: filter 260ms ease, opacity 260ms ease;
+}
+
+.emotion-door::before {
+  position: absolute;
+  z-index: 0;
+  inset: 1.5% 2.5% 1.5%;
+  border-radius: 46% 46% 9% 9% / 21% 21% 6% 6%;
+  background:
+    linear-gradient(90deg, rgba(86, 58, 48, 0.23), transparent 16% 84%, rgba(86, 58, 48, 0.2)),
+    rgba(87, 62, 57, 0.14);
+  box-shadow:
+    inset 0 0 0 2px rgba(104, 72, 63, 0.2),
+    inset 0 -1.1rem 1.4rem rgba(71, 51, 48, 0.2),
+    0 0.35rem 0.8rem rgba(78, 56, 48, 0.16);
+  opacity: 0.8;
+  transform: scale(0.96, 0.985);
+  filter: blur(0.2px);
+  content: "";
+  pointer-events: none;
 }
 
 .emotion-door--overthinking { left: 16%; }
@@ -3926,35 +3946,6 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   transition: opacity 220ms ease, transform 220ms ease;
 }
 
-.emotion-door__label,
-.emotion-door__state {
-  position: absolute;
-  left: 50%;
-  z-index: 7;
-  display: block;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-
-.emotion-door__label {
-  bottom: 16%;
-  padding: 0.42rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(59, 44, 53, 0.5);
-  font-family: Georgia, "Songti SC", serif;
-  font-size: clamp(0.95rem, 1.25vw, 1.35rem);
-  letter-spacing: 0.15em;
-  text-shadow: 0 1px 0 rgba(44, 30, 37, 0.35);
-  transition: background 220ms ease, box-shadow 220ms ease, color 220ms ease;
-}
-
-.emotion-door__state {
-  bottom: 8%;
-  color: rgba(255, 248, 231, 0.76);
-  font-size: clamp(0.65rem, 0.75vw, 0.8rem);
-  letter-spacing: 0.12em;
-}
-
 .emotion-door:hover,
 .emotion-door:focus-visible,
 .emotion-door.is-selected {
@@ -3985,14 +3976,6 @@ body[data-stage="foyer"] .scene--foyer.is-active {
 
 .emotion-door:focus-visible {
   outline: none;
-}
-
-.emotion-door:focus-visible .emotion-door__label,
-.emotion-door.is-selected .emotion-door__label {
-  color: #fff9df;
-  background: #59445f;
-  box-shadow: 0 0.7rem 1.4rem rgba(59, 39, 53, 0.2);
-  text-shadow: 0 0 0.7rem rgba(255, 220, 132, 0.68), 0 1px 0 rgba(44, 30, 37, 0.35);
 }
 
 .emotion-door:not(.emotion-door--overthinking) {
@@ -4079,7 +4062,7 @@ body[data-stage="foyer"] .scene--foyer.is-active {
 
   .emotion-door {
     top: 51%;
-    width: 13.7%;
+    width: 15.2%;
     height: 57%;
   }
 
@@ -4089,15 +4072,6 @@ body[data-stage="foyer"] .scene--foyer.is-active {
   .emotion-door--anger { left: 68%; }
   .emotion-door--joy { left: 85%; }
 
-  .emotion-door__label {
-    bottom: 12%;
-    font-size: 0.82rem;
-  }
-
-  .emotion-door__state {
-    bottom: 4%;
-    font-size: 0.58rem;
-  }
 
   .emotion-door-dialogue {
     position: fixed;
@@ -4652,11 +4626,11 @@ body[data-stage="expression"] .paper-sheet::before {
 /* Reference match: the expression page follows the supplied watercolor letter composition. */
 body[data-stage="expression"] .scene--expression {
   padding: 0;
-  background: url('/assets/expression-watercolor-wash.png') center / cover no-repeat;
+  background: url('/assets/expression-watercolor-wash.png?v=20260726') center / cover no-repeat;
 }
 
 body[data-stage="expression"] .world-shell {
-  background: url('/assets/expression-watercolor-wash.png') center / cover no-repeat;
+  background: url('/assets/expression-watercolor-wash.png?v=20260726') center / cover no-repeat;
 }
 
 body[data-stage="expression"] .world-footer,
