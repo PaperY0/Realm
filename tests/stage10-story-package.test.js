@@ -91,6 +91,76 @@ assert.equal(packageA.storyTemplateMatch.templateVersion, 'echo-controlled-v1');
 assert.equal(Object.hasOwn(packageA.storyTemplateMatch, 'templateTitle'), false);
 assert.ok(packageA.chapterCards.every((card) => !Object.hasOwn(card.narrativeContract, 'templateSpreadNumbers')));
 
+
+// Two semantically different, sufficiently grounded briefs produce distinct echo stories.
+// coreStruggle, desiredDirection, and symbolicPreference are mapped through controlled local motifs.
+const restEchoBrief = validSafeStoryBrief({
+  briefId: 'brief-stage10-echo-rest-moon-clock',
+  coreTension: '总想把每件事做到完美，已经疲惫仍不敢停下来',
+  coreStruggle: '总想把每件事做到完美，已经疲惫仍不敢停下来',
+  desiredDirection: '希望允许自己休息、放慢速度，并为呼吸留白',
+  emotionalDirection: '从被完美刻度追赶，走向能够在月光里放慢并照看自己的呼吸',
+  symbolicPreference: '月亮和慢钟',
+  storyUsableFacts: [
+    '旅人会在任务完成后立刻寻找下一格刻度',
+    '旅人已经感到疲惫，却仍担心休息等于不够努力',
+    '旅人希望从一小段可以呼吸的留白开始',
+  ],
+  missingStoryInformation: [],
+});
+const connectionEchoBrief = validSafeStoryBrief({
+  briefId: 'brief-stage10-echo-connection-paper-boat',
+  situationCategory: '想表达真实感受与害怕被误解之间的拉扯',
+  coreTension: '想向重要的朋友开口，却害怕被误解，所以总把话藏起来',
+  coreStruggle: '想向重要的朋友开口，却害怕被误解，所以总把话藏起来',
+  feltPressure: ['担心表达不够准确', '担心开口后产生更远的距离'],
+  repeatedResponse: '把已经来到嘴边的话重新收回去',
+  fearedMeaning: '害怕一次误解会被当作无法连接的证明',
+  desiredDirection: '希望尝试诚实表达，让声音抵达并重新建立连接',
+  emotionalDirection: '从把话藏进沉默，走向允许一句真实的话乘着纸船抵达',
+  symbolicPreference: '纸船与回声河',
+  storyUsableFacts: [
+    '旅人已经多次想开口，却在最后一刻把话收回',
+    '旅人担心表达会被误解',
+    '旅人希望先尝试说出一句具体而真实的话',
+  ],
+  missingStoryInformation: [],
+});
+const restEchoPackage = createStoryPackage(restEchoBrief);
+const connectionEchoPackage = createStoryPackage(connectionEchoBrief);
+const restTitles = restEchoPackage.chapterCards.map((card) => card.userVisibleCopy.chapterTitle);
+const connectionTitles = connectionEchoPackage.chapterCards.map((card) => card.userVisibleCopy.chapterTitle);
+const restTexts = restEchoPackage.chapterCards.map((card) => card.userVisibleCopy.chapterText);
+const connectionTexts = connectionEchoPackage.chapterCards.map((card) => card.userVisibleCopy.chapterText);
+
+assert.equal(restEchoPackage.storyTemplateMatch.route, 'echo');
+assert.equal(connectionEchoPackage.storyTemplateMatch.route, 'echo');
+assert.equal(restTitles.length, 7);
+assert.equal(connectionTitles.length, 7);
+assert.equal(restTitles.filter((title, index) => title !== connectionTitles[index]).length, 7);
+assert.equal(restTexts.filter((chapterText, index) => chapterText !== connectionTexts[index]).length, 7);
+assert.notDeepEqual(restTexts, connectionTexts, 'different grounded briefs must not receive identical chapter copy');
+
+const restTitleCopy = restTitles.join('\n');
+const restChapterCopy = restTexts.join('\n');
+assert.match(restTitleCopy, /过满的刻度/);
+assert.match(restTitleCopy, /月亮慢钟/);
+assert.match(restTitleCopy, /慢灯|呼吸/);
+assert.match(restChapterCopy, /总想把每件事做到完美/);
+assert.match(restChapterCopy, /允许自己休息、放慢速度/);
+assert.match(restChapterCopy, /月亮慢钟|月光的慢钟/);
+
+const connectionTitleCopy = connectionTitles.join('\n');
+const connectionChapterCopy = connectionTexts.join('\n');
+assert.match(connectionTitleCopy, /藏起的声音/);
+assert.match(connectionTitleCopy, /纸船与回声河/);
+assert.match(connectionTitleCopy, /让声音抵达|声音抵达/);
+assert.match(connectionChapterCopy, /想向重要的朋友开口/);
+assert.match(connectionChapterCopy, /诚实表达，让声音抵达/);
+assert.match(connectionChapterCopy, /纸船|回声河/);
+assert.equal(validateStoryPackage(restEchoPackage).overallResult, 'pass');
+assert.equal(validateStoryPackage(connectionEchoPackage).overallResult, 'pass');
+
 // The complete fallback source is preserved verbatim and mapped without dropping a spread.
 assert.equal(MIANMIAN_UNFINISHED_NAME_TEMPLATE.title, '《绵绵和没有写完的名字》');
 assert.equal(MIANMIAN_UNFINISHED_NAME_TEMPLATE.format, '标签卷｜绘本正文');
