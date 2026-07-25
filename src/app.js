@@ -93,9 +93,9 @@ const state = {
   },
   paperBoat: {
     state: 'idle',
-    messageTimer: null,
     transitionTimer: null,
-    messageIndex: 0,
+    voyageCopyIndex: -1,
+    voyageCopyListener: null,
   },
 };
 
@@ -147,6 +147,7 @@ const storyPromptPreview = document.querySelector('#story-prompt-preview');
 const chapterGenerationStatus = document.querySelector('#chapter-generation-status');
 const paperBoatSequence = document.querySelector('#paper-boat-sequence');
 const paperBoatVideo = document.querySelector('#paper-boat-video');
+const paperBoatVoyageMessage = document.querySelector('#paper-boat-voyage-message');
 const paperBoatStatus = document.querySelector('#paper-boat-status');
 const paperBoatRetry = document.querySelector('#paper-boat-retry');
 const expressionPressTargets = Array.from(document.querySelectorAll('.expression-action'));
@@ -457,18 +458,36 @@ function resetGenerationView() {
   setGenerationView('idle');
 }
 
-const PAPER_BOAT_MESSAGES = [
-  '绾线把这句话轻轻压进纸痕里。',
-  '第一道折痕，是给自己留出的空间。',
-  '纸船已经下水，故事湖正在替你保管这份重量。',
-  '七章故事正在湖面另一侧慢慢写好。',
+const PAPER_BOAT_VOYAGE_COPY = [
+  '纸船载着这句话，驶入还没有名字的湖面。',
+  '风把没说完的部分，轻轻收进水波里。',
+  '远处的灯还没有亮起，故事正在另一岸慢慢展开。',
+  '不必现在抵达，先让这一点重量有地方安放。',
+  '七章故事正在水面下，一页一页长出来。',
 ];
 
+function syncPaperBoatVoyageCopy() {
+  if (!paperBoatVideo || !paperBoatVoyageMessage) return;
+  const duration = paperBoatVideo.duration;
+  const nextIndex = Number.isFinite(duration) && duration > 0 && Number.isFinite(paperBoatVideo.currentTime)
+    ? Math.min(
+      PAPER_BOAT_VOYAGE_COPY.length - 1,
+      Math.max(0, Math.floor((paperBoatVideo.currentTime / duration) * PAPER_BOAT_VOYAGE_COPY.length)),
+    )
+    : 0;
+  if (state.paperBoat.voyageCopyIndex === nextIndex) return;
+  state.paperBoat.voyageCopyIndex = nextIndex;
+  paperBoatVoyageMessage.textContent = PAPER_BOAT_VOYAGE_COPY[nextIndex];
+}
+
 function clearPaperBoatWait() {
-  if (state.paperBoat.messageTimer) window.clearInterval(state.paperBoat.messageTimer);
   if (state.paperBoat.transitionTimer) window.clearTimeout(state.paperBoat.transitionTimer);
-  state.paperBoat.messageTimer = null;
   state.paperBoat.transitionTimer = null;
+  if (paperBoatVideo && state.paperBoat.voyageCopyListener) {
+    paperBoatVideo.removeEventListener('timeupdate', state.paperBoat.voyageCopyListener);
+  }
+  state.paperBoat.voyageCopyListener = null;
+  state.paperBoat.voyageCopyIndex = -1;
   if (paperBoatVideo) {
     paperBoatVideo.pause();
     paperBoatVideo.currentTime = 0;
@@ -493,22 +512,21 @@ function startPaperBoatWait() {
   state.paperBoat.state = 'folding';
   paperBoatSequence.dataset.paperBoatState = 'folding';
   paperBoatSequence.hidden = false;
+  document.body.dataset.paperBoatWaiting = 'true';
   paperBoatSequence.setAttribute('aria-hidden', 'false');
   if (paperBoatRetry) paperBoatRetry.hidden = true;
-  let messageIndex = 0;
-  if (paperBoatStatus) paperBoatStatus.textContent = PAPER_BOAT_MESSAGES[messageIndex];
   if (paperBoatVideo) {
     paperBoatVideo.currentTime = 0;
-    const playback = paperBoatVideo.play();
-    if (playback?.catch) playback.catch(() => {});
   }
-  state.paperBoat.messageTimer = window.setInterval(() => {
-    messageIndex = (messageIndex + 1) % PAPER_BOAT_MESSAGES.length;
-    if (paperBoatStatus) paperBoatStatus.textContent = PAPER_BOAT_MESSAGES[messageIndex];
-  }, 3600);
   state.paperBoat.transitionTimer = window.setTimeout(() => {
-    state.paperBoat.state = 'floating';
-    paperBoatSequence.dataset.paperBoatState = 'floating';
+    setPaperBoatState('floating');
+    if (paperBoatVideo) {
+      state.paperBoat.voyageCopyListener = syncPaperBoatVoyageCopy;
+      paperBoatVideo.addEventListener('timeupdate', state.paperBoat.voyageCopyListener);
+      const playback = paperBoatVideo.play();
+      if (playback?.catch) playback.catch(() => {});
+    }
+    syncPaperBoatVoyageCopy();
   }, 1800);
 }
 

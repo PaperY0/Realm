@@ -4277,6 +4277,15 @@ body[data-stage="expression"] .paper-boat-sequence {
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"],
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="floating"],
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] { display: grid; }
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] {
+  align-content: center;
+  justify-items: center;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 220, 139, .56), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(226, 165, 141, .24), transparent 28%),
+    repeating-linear-gradient(0deg, rgba(143, 96, 72, .035) 0 1px, transparent 1px 5px),
+    var(--paper);
+}
 body[data-stage="expression"] .paper-boat-lake {
   position: absolute;
   inset: 0;
@@ -4298,6 +4307,10 @@ body[data-stage="expression"] .paper-boat-lake__veil {
 body[data-stage="expression"] .paper-boat-fold {
   display: none;
 }
+body[data-stage="expression"] .paper-boat-fold-copy,
+body[data-stage="expression"] .paper-boat-voyage-copy {
+  display: none;
+}
 body[data-stage="expression"] .paper-boat-guide {
   display: none;
 }
@@ -4314,6 +4327,47 @@ body[data-stage="expression"] .paper-boat-fold {
   height: 130px;
   margin: auto;
   perspective: 500px;
+}
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-lake,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-voyage-copy,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-guide,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-retry {
+  display: none !important;
+}
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-fold {
+  display: block;
+}
+body[data-stage="expression"] .paper-boat-fold-copy {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: min(420px, calc(100% - 40px));
+  margin-top: 24px;
+  color: #624c54;
+  text-align: center;
+}
+body[data-stage="expression"] .paper-boat-fold-copy__eyebrow,
+body[data-stage="expression"] .paper-boat-voyage-copy__eyebrow {
+  margin: 0 0 9px;
+  color: #9b6c61;
+  font-size: .73rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+body[data-stage="expression"] #paper-boat-fold-title {
+  margin: 0;
+  color: #5f4851;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+body[data-stage="expression"] #paper-boat-fold-copy {
+  margin: 12px 0 0;
+  color: #80646a;
+  font-size: 1rem;
+  line-height: 1.7;
 }
 body[data-stage="expression"] .paper-boat-fold__sheet {
   position: absolute;
@@ -4375,15 +4429,46 @@ body[data-stage="expression"] .paper-boat-retry {
   color: #fff8e1;
   background: rgba(91, 69, 100, .72);
 }
+body[data-stage="expression"] .paper-boat-voyage-copy {
+  position: absolute;
+  z-index: 2;
+  left: clamp(18px, 5vw, 72px);
+  bottom: clamp(24px, 8vh, 76px);
+  display: block;
+  width: min(480px, calc(100% - 36px));
+  padding: 15px 18px 17px;
+  border: 1px solid rgba(255, 244, 206, .28);
+  border-radius: 14px;
+  color: #fff8e1;
+  background: rgba(68, 52, 84, .46);
+  box-shadow: 0 12px 34px rgba(52, 39, 65, .18);
+  text-shadow: 0 1px 14px rgba(45, 32, 51, .3);
+  transition: opacity .25s ease;
+}
+body[data-stage="expression"] .paper-boat-voyage-copy__eyebrow { color: #f5d58d; }
+body[data-stage="expression"] #paper-boat-voyage-message {
+  margin: 0;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  line-height: 1.65;
+}
 
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-guide,
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-retry {
   display: flex;
 }
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-lake,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-fold,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-fold-copy,
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="error"] .paper-boat-voyage-copy {
+  display: none !important;
+}
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-guide,
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="floating"] .paper-boat-guide,
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-retry,
 body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="floating"] .paper-boat-retry {
+  display: none !important;
+}
+body[data-stage="expression"] .paper-boat-sequence[data-paper-boat-state="folding"] .paper-boat-voyage-copy {
   display: none !important;
 }
 
