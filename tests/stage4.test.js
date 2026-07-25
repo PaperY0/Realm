@@ -197,7 +197,12 @@ async function run() {
   const port = 43000 + Math.floor(Math.random() * 1000);
   const child = spawn(process.execPath, ['server.js'], {
     cwd: root,
-    env: { ...process.env, PORT: String(port) },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      AI_GATEWAY_API_KEY: '',
+      MEDIA_BASE_URL: '',
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let stderr = '';
@@ -255,3 +260,4 @@ run().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
