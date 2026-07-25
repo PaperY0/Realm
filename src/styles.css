@@ -4652,7 +4652,7 @@ body[data-stage="expression"] .paper-sheet::before {
 /* Reference match: the expression page follows the supplied watercolor letter composition. */
 body[data-stage="expression"] .scene--expression {
   padding: 0;
-  background: url('/assets/expression-watercolor-reference.png') center / cover no-repeat;
+  background: url('/assets/expression-watercolor-wash.png') center / cover no-repeat;
 }
 
 body[data-stage="expression"] .world-footer,
